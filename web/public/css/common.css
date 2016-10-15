@@ -1,0 +1,117 @@
+.container table {
+    border-radius: 0px;
+}
+
+.container {
+    display: block;
+    max-height: 20em;
+    overflow-x: hidden;
+    overflow-y: scroll;
+    border-top-left-radius: 6px;
+    border-top-right-radius: 0px;
+    border-bottom-left-radius: 6px;
+    border-bottom-right-radius: 0px;
+}
+
+.template {
+    display: block;
+    visibility: hidden;
+    max-height: 0px;
+    margin: 0px;
+    padding: 0px;
+}
+
+.data {
+    display: none;
+    visibility: hidden;
+    max-height: 0px;
+    margin: 0px;
+    padding: 0px;
+}
+
+.container table ::-webkit-scrollbar {
+    border-left: 2px solid rgba(0,0,0,0.25);
+    width: 12px;
+    height: 12px;
+}
+
+.container table ::-webkit-scrollbar-track {
+    border-top-right-radius: 0px;
+    border-bottom-right-radius: 6px;
+    background: rgba(255,255,255,0.15);
+}
+
+.container table ::-webkit-scrollbar-thumb {
+    border-top-right-radius: 6px;
+    border-bottom-right-radius: 6px;
+    border-left: 2px solid rgba(0,0,0,0.35);
+    background: rgba(255,255,255,0.25);
+}
+
+.container table ::-webkit-scrollbar-thumb:hover {
+    background: rgba(59,198,184,0.5);
+}
+
+.container table,
+.container table thead,
+.container table tbody {
+    padding: 0px;
+    margin: 0px;
+}
+
+.container table {
+    width: 100%;
+    max-height: 240px;
+    border-spacing: 0px;
+    overflow: hidden;
+}
+
+.container table thead {
+    left: 0px;
+    top: 0px;
+    height: 20px;
+    width: 100%;
+    background: rgba(59,198,184,0.8);
+    border-bottom: 2px solid rgba(0,0,0,0.1);
+}
+
+.container table tbody {
+    left: 0px;
+    top: 0px;
+    width: 100%;
+}
+
+.container table thead tr {
+    margin: 0px;
+    padding: 0px;
+}
+
+.container table thead tr th {
+    text-align: center;
+    font-weight: bold;
+    margin: 0px;
+    padding-top: 3px;
+    padding-bottom: 3px;
+    padding-left: 6px;
+    padding-right: 6px;
+}
+
+.container table tbody tr {
+    margin: 0px;
+    padding: 0px;
+}
+
+.container table tbody tr th,
+.container table tbody tr td,
+{
+    margin: 0px;
+    padding: 0px;
+}
+
+.container table tbody tr td:nth-child(odd) {
+    background: rgba(255,255,255,0.25);
+}
+
+.container table tbody tr td:nth-child(even) {
+    background: rgba(255,255,255,0.20);
+}

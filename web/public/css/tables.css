@@ -1,0 +1,12 @@
+#games > table > thead > tr { min-width: 100%; }
+#games > table > thead > tr > th:nth-child(1) { min-width: 60%; }
+#games > table > thead > tr > th:nth-child(2) { min-width: 10%; }
+#games > table > thead > tr > th:nth-child(3) { min-width: 10%; }
+#games > table > thead > tr > th:nth-child(4) { min-width: 20%; }
+
+#games > table > tbody > tr { min-width: 100%; }
+#games > table > tbody > tr > td:nth-child(1) { min-width: 60%; text-align: left; }
+#games > table > tbody > tr > td:nth-child(2) { min-width: 10%; }
+#games > table > tbody > tr > td:nth-child(3) { min-width: 10%; }
+#games > table > tbody > tr > td:nth-child(4) { min-width: 20%; }
+

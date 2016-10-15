@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="Content-type" content="text/html; charset=<% settings.charset %>">
+    <title>New Edge Stats</title>
+    <link rel="stylesheet" href="<% request.uri_base %>/css/edgestats.css">
+    <link rel="stylesheet" href="<% request.uri_base %>/css/common.css">
+    <link rel="stylesheet" href="<% request.uri_base %>/css/tables.css">
+    <!-- Grab jQuery from a CDN, fall back to local if necessary -->
+    <script src="//code.jquery.com/jquery-1.11.0.min.js"></script>
+    <script type="text/javascript">/* <![CDATA[ */
+    !window.jQuery && document.write('<script type="text/javascript" src="<% request.uri_base %>/javascripts/jquery.min.js"><\/script>')
+    /* ]]> */</script>
+  </head>
+  <body>
+    <div id="logo">
+      <div id="image">
+	<center>
+	  <a href="http://new-edge.org">Home</a> | <a href="http://forum.new-edge.org">Forum</a> | <a href="http://stats.new-edge.org">Stats</a>
+	</center>
+      </div>
+      <div id="left"></div>
+      <div id="right"></div>
+    </div>
+    <div id="menu">
+      <ul class="links">
+	<% FOREACH entry IN menu %>
+	<li><a href="[% entry.link %]"><% entry.title %></a></li>
+	<% END %>
+      </ul>
+      <ul class="servers">
+	<% FOREACH s IN servers %>
+	<% IF s.id == server.id %><li class="selected"><% ELSE %><li><% END %>
+	<a class="server" href="?page=<% page %>&server=<% s.id %><% params %>"><% s.name.replace_all %></a>
+        <% END %>
+	</li>
+      </ul>
+    </div>
+    <% content %>
+    <!--   
+    <div id="loading">
+      <p class="loading">Loading...</p>
+    </div>
+    -->
+    <div id="footer">
+      (&copy;) 2016 <a href="http://www.new-edge.org">New EDGE</a>
+    </div>
+  </body>
+</html>

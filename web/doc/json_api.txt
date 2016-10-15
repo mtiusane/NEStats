@@ -1,0 +1,2 @@
+/json/games/:server/:offset/:limit
+/json/game/:id

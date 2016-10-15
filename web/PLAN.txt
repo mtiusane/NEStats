@@ -1,0 +1,36 @@
+Url scheme
+----------
+
+/servers
+/games
+/maps
+
+/map/:id
+/game/:id
+/player/:id
+
+/server/:id
+/server/:id/games
+/server/:id/players
+/server/:id/maps
+
+/json/servers/:offset/limit
+/json/games/:offset/limit
+/json/maps/:offset/limit
+
+/json/players/:offset/limit -- Likely not possible / players server specific?
+
+/json/player/:id -- TODO
+
+/json/server/:id
+/json/server/:id/players/:offset/limit
+/json/server/:id/games/:offset/:limit
+/json/server/:id/maps/:offset/:limit
+
+/json/game/:id
+/json/game/:id/sessions/:team/:offset/:limit
+
+/json/map/:id
+
+
+

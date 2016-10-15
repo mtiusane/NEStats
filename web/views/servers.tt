@@ -1,0 +1,22 @@
+<div id="content">
+  <script src="/javascripts/common.js"></script>
+  <script src="/javascripts/servers.js"></script>
+  <div id="servers" class="container">
+    <table>
+      <thead>
+	<tr class="title">
+          <th>Server</th>
+          <th>Map</th>
+	  <th>Players</th>
+	</tr>
+      </thead>
+      <tbody>
+	<tr class="template">
+          <td class="server"></td>
+          <td class="map"></td>
+          <td class="players"></td>
+	</tr>
+      </tbody>
+    </table>
+  </div>
+</div>
