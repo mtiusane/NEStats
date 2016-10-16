@@ -14,18 +14,16 @@
       </tbody>
     </table>
   </div>
-  <!-- TODO: Could list the player's recent sessions with info about servers player... -->
+  <!-- TODO: Could list the player''s recent sessions with info about servers player... -->
   <% FOREACH team IN [ 'human' 'alien' 'spectator' ] %>
     <div id="sessions" class="container">
       <a class="data player_id" href="<% player_id %>"></a>
-      <a class="data team_name" href="<% team %>"></a>
       <table>
         <thead>
 	  <tr class="title">
 	    <th colspan="4"><% team %></th>
 	  </tr>
           <tr class="title">
-	    <th>#</th>
 	    <th>Player</th>
 	    <th>Ping</th>
 	    <th>Score</th>
@@ -33,7 +31,6 @@
         </thead>
         <tbody>
           <tr class="template">
-	    <td class="index"></td>
 	    <td class="player"></td>
 	    <td class="ping"></td>
 	    <td class="score"></td>

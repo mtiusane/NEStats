@@ -6,6 +6,7 @@
     <link rel="stylesheet" href="<% request.uri_base %>/css/edgestats.css">
     <link rel="stylesheet" href="<% request.uri_base %>/css/common.css">
     <link rel="stylesheet" href="<% request.uri_base %>/css/tables.css">
+    <link rel="stylesheet" href="<% request.uri_base %>/css/emoticons.css">
     <!-- Grab jQuery from a CDN, fall back to local if necessary -->
     <script src="//code.jquery.com/jquery-1.11.0.min.js"></script>
     <script type="text/javascript">/* <![CDATA[ */
@@ -25,7 +26,7 @@
     <div id="menu">
       <ul class="links">
 	<% FOREACH entry IN menu %>
-	<li><a href="[% entry.link %]"><% entry.title %></a></li>
+	<li><a href="<% entry.link %>"><% entry.title %></a></li>
 	<% END %>
       </ul>
       <ul class="servers">

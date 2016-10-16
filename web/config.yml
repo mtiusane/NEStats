@@ -22,16 +22,15 @@ charset: "UTF-8"
 
 template: "template_toolkit"
 engines:
-  template_toolkit:
-    start_tag: '<%'
-    end_tag:   '%>'
-  JSON:
-    allow_blessed: '1'
-    canonical: '1'
-    convert_blessed: '1'
+  template:
+    template_toolkit:
+      encoding: 'utf8'
+      start_tag: '<%'
+      end_tag:   '%>'
+  serializer:
+    JSON:
+      allow_blessed: '1'
+      convert_blessed: '1'
 
 # For session support enable the following line and see Dancer::Session
 session: "YAML"
-
-serializer: "JSON"
-

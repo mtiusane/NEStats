@@ -1,4 +1,15 @@
 #!/usr/bin/env perl
-use Dancer;
+use strict;
+use warnings;
+
+use FindBin;
+use lib "$FindBin::Bin/../lib";
+
 use NEStats;
-dance;
+use NEStatsJSON;
+use Plack::Builder;
+
+builder {
+    mount '/'     => NEStats->to_app,
+    mount '/json' => NEStatsJSON->to_app,
+};

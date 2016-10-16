@@ -844,7 +844,6 @@ sub updateGlicko2 {
 
 sub updateRankings {
     my ($self) = @_;
-    return unless defined($self->{last_glicko2});
     my $server_id = $self->{db_server}->id;
     my $lastUpdate = Stats::DB::TimeStamp->new(name => 'last_glicko2',server_id => $server_id);
     if (!$lastUpdate->load(speculative => 1) || $self->getDuration($lastUpdate->value,$self->{last_glicko2}) >= 12*3600) {
