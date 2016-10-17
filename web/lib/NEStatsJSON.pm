@@ -9,8 +9,6 @@ use DateTime::Format::Duration;
 
 use lib '../lib';
 
-use Stats::Emoticons qw/$emoticons/;
-
 use Stats::DB;
 use Stats::DB::Game;
 use Stats::DB::Map;
@@ -81,12 +79,33 @@ get '/player/:id' => sub {
     if ($player->load(speculative => 1)) {
 	$glicko2 = Glicko2::Player->new unless($glicko2->load(speculative => 1));
 	return {
-	    (map { $_ => $player->{$_} } (qw/id displayname total_time total_time_h total_time_a total_kills total_deaths total_assists total_bkills total_bdeaths total_built total_sessions total_rqs/)),
-	    glicko2 => { map { $_ => $glicko2->{$_} } (qw/rating rd volatility/) }
+	    (map { $_ => $player->{$_} } (qw/id total_time total_time_h total_time_a total_kills total_deaths total_assists total_bkills total_bdeaths total_built total_sessions total_rqs/)),
+	    (map { 'glicko2_'.$_ => $glicko2->{$_} } (qw/rating rd volatility/)),
+	    displayname => replace_all($player->{displayname})
 	}
     } else {
 	return { error => 'Unknown player: '.params->{id} }
     }
+};
+
+get '/player/:id/deaths_by_weapon/:offset/:limit' => sub {
+    my $player = Stats::DB::Player->new(id => params->{id});
+    my $count = Stats::DB::PlayerWeapon::Manager->get_player_weapons_count(where => [ player_id => $player->id ],require_objects => [ 'weapon' ]);
+    my @deaths = @{Stats::DB::PlayerWeapon::Manager->get_player_weapons(where => [ player_id => $player->id ],sort_by => [ 'total_deaths desc', 'total_bdeaths desc' ],with_objects => [ 'weapon' ],offset => params->{offset},limit => max(25,params->{limit}))};
+    return {
+	deaths => [
+	    map {
+		my $death = $_;
+		+{
+		    weapon_displayname => replace_all($death->weapon->displayname),
+		    (map { 'weapon_'.$_ => $death->weapon->$_ } grep { !/^id|displayname$/ } keys(%{$death->weapon})),
+		    (map { $_ => $death->{$_} } grep { !/^displayname|weapon$/ } keys(%$death))
+		}
+	    } @deaths
+	],
+	offset => params->{offset},
+	total  => $count
+    };
 };
 
 get '/server/:id' => sub {

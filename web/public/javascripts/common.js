@@ -36,19 +36,35 @@ Common = {
 	Common.scroll_container($(container),$(container).find('table'),link,elements,line);
     },
 
-    load_fields_generic: function(container,data) {
+    load_fields_generic: function(selector,data) {
+	// $.each(selector.find('a.data.field'),function(field_index,field) {
+	//     var name = field.attr('href');
+	//     if (_.has(data,name)) {
+	// 	$(field).replaceWith(data[name]);
+	//     }
+	// });
+	
 	$.each(data,function(name,value) {
-	    if (!name.startsWith('_')) {
-		$.each(container.find('.f_'+name),function(field_index,field) {
+	    // console.log("Finding: "+name);
+	    selector.find('.f_'+name).each(function(field_index,field) {
+		// console.log("Loading field: f_"+name, field);
+		if ($(field).hasClass('f__sum')) {
+		    var sum = $(field).data('f__sum');
+		    if (sum === undefined) sum = 0.0;
+		    sum += Number(value);
+		    $(field).data('f__sum',sum);
+		    $(field).html(sum);
+		} else {
 		    $(field).html(value);
-		});
-	    }
+		}
+	    });
 	});
     },
 
     scroll_table_generic: function(container,link,elements) {
     	Common.scroll_table(container,link,elements,function(template,data,index) {
 	    var entry = template.clone();
+	    data._index = 1+index;
 	    Common.load_fields_generic(entry,data);
 	    return entry;
 	});
