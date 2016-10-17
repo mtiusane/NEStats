@@ -13,7 +13,7 @@ Common = {
 	    $.get(link(offset,limit),function(data) {
 		var lines = elements(data);
 		$.each(lines,function(index,element) {
-		    table.append(line(template,element));
+		    table.append(line(template,element,offset+index));
 		});
 		table.data('total',data.total);
 		table.data('offset',table.data('offset')+lines.length);
@@ -34,6 +34,24 @@ Common = {
     
     scroll_table: function(container,link,elements,line) {
 	Common.scroll_container($(container),$(container).find('table'),link,elements,line);
+    },
+
+    load_fields_generic: function(container,data) {
+	$.each(data,function(name,value) {
+	    if (!name.startsWith('_')) {
+		$.each(container.find('.f_'+name),function(field_index,field) {
+		    $(field).html(value);
+		});
+	    }
+	});
+    },
+
+    scroll_table_generic: function(container,link,elements) {
+    	Common.scroll_table(container,link,elements,function(template,data,index) {
+	    var entry = template.clone();
+	    Common.load_fields_generic(entry,data);
+	    return entry;
+	});
     },
 
     format_percent: function(value) {
@@ -80,5 +98,23 @@ Common = {
 	return result;
     },
 
+    rating: function(r,rd) {
+	var fill_color = '#ff5533';
+	var empty_color = '#3355ff';
+	var stroke_color = fill_color;
+	var cw = 160;
+	var ch = 16;
+	var rd_fill_left = cw * ( 0.5*r - 2.0 * rd ) / r;
+	var rd_fill_width = cw * ( 4.0 * rd ) / r;
+	var x0 =       rd_fill_width /  4.0,x1 = 3.0*rd_fill_width / 10.0,x2 = rd_fill_width / 2.0;
+	var x3 = 2.0 * rd_fill_width / 10.0,x4 =     rd_fill_width /  4.0,x5 = rd_fill_width / 2.0;
+	var move = 'm '+$.each([ rd_fill_left, ch ], function(i,v) { return Number(v).toFixed(2); }).reduce(function(a,b) { return a + ' ' + b; });
+	var curve = 'c '+$.each([ x0, 0.0, x1, -ch, x2, -ch, x3, 0, x4, ch, x5, ch ], function(i,v) { return Number(v).toFixed(2); }).reduce(function(a,b) { return a + ' ' + b; });
+	var result = $('<div class="rating"></div>');
+	var svg = $('<svg style="width: '+cw+'px; height: '+ch+'px; background: '+empty_color+'"><path d="'+move+' '+curve+'" fill="'+fill_color+'" stroke="'+stroke_color+'" stroke-width="1">');
+	result.append(svg);
+	result.append('<span class="overlay">'+Number(r).toFixed(2)+'</span>');
+	return result;
+    },
     
 };

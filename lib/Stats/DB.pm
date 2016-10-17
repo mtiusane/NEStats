@@ -23,5 +23,6 @@ __PACKAGE__->register_db(
 );
 
 __PACKAGE__->default_domain((hostname =~ /\.new-edge\.org$/) ? 'production' : 'development');
+__PACKAGE__->default_connect_options({ mysql_auto_reconnect => 1 });
 
 1;

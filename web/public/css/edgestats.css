@@ -34,6 +34,7 @@ div {
 
 table {
     border-collapse: collapse;
+    border-radius: 6px;
 }
 
 tr {
@@ -74,10 +75,6 @@ tr td {
 
 .text {
     text-align: left;
-}
-
-table {
-    border-radius: 6px;
 }
 
 tr th {
@@ -426,7 +423,10 @@ div#menu {
     display: block;
     text-shadow: 0px 0px 5px #000;
     color: #efefef;
-    padding: 0px;
+    padding-right: 0px;
+    padding-left: 34px;
+    padding-top: 0px;
+    padding-bottom: 0px;
     margin: 0px;
     width: 100%;
     height: 60px;
@@ -447,19 +447,20 @@ div#menu {
 
 div#menu > ul {
     display: inline-block;
-    padding-top: 18px;
-    padding-bottom: 18px;
-    padding-left: 34px;
-    padding-right: 34px;
     margin: 0px;
+    padding: 0px;
     height: 60px;
+    max-width: 100%;
+    max-height: 60px;
+    list-style-type: none;
+    overflow: auto;
 }
 
 div#menu > ul > li {
     display: inline-block;
     padding: 0px;
-    margin-top: 0px;
-    margin-bottom: 0px;
+    margin-top: 18px;
+    margin-bottom: 18px;
     margin-left: 8px;
     margin-right: 8px;
 }

@@ -1,0 +1,32 @@
+<div id="content">
+  <script src="/javascripts/common.js"></script>
+  <script src="/javascripts/maps.js"></script>
+  <div id="maps" class="container">
+    <a class="data server_id" href="<% server_id %>"></a>
+    <table>
+      <thead>
+      	<tr class="title"><th colspan="7"><span class="f_server_name"></span> - Maps</th></tr>
+	<tr class="title">
+	  <th>Name</th>
+	  <th>Games Played</th>
+	  <th>Human Wins</th>
+	  <th>Alien Wins</th>
+	  <th>Draws</th>
+	  <th>Total Kills</th>
+	  <th>Total Deaths</th>
+	</tr>
+      </thead>
+      <tbody>
+	<tr class="template">
+	  <td class="f_name"></td>
+	  <td class="f_total_games"></td>
+	  <td class="f_human_wins"></td>
+	  <td class="f_alien_wins"></td>
+	  <td class="f_draws"></td>
+	  <td class="f_total_kills"></td>
+	  <td class="f_total_deaths"</td>
+	</tr>
+      </tbody>
+    </table>
+  </div>
+</div>

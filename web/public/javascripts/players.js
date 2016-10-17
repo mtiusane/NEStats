@@ -9,11 +9,11 @@ $(document).ready(function() {
 	    return '/json/server/'+server_id+'/players/'+offset+'/'+limit;
 	},function(data) {
 	    return data.players;
-	},function(template,data) {
-	    var glicko = data.glicko;
+	},function(template,data,index) {
 	    var player = data.player;
 	    var entry = template.clone();
-	    entry.find('.f_rank').html(player.index);
+	    entry.find('.f_index').html('<span class="number">'+(1+index)+'</span>');
+	    entry.find('.f_rank').html(Common.rating(data.glicko2.rating,data.glicko2.rd));
 	    entry.find('.f_name').html('<span class="name text"><a href="/player/'+player.id+'">'+player.name+'</a></span>');
 	    entry.find('.f_kills').html(Common.bar(player.total_kills,Common.sum([player.total_kills,player.total_deaths,player.total_bdeaths]),null,player.total_kills,Common.sum([player.total_deaths,player.total_bdeaths])));
 	    entry.find('.f_assists').html(player.total_assists);

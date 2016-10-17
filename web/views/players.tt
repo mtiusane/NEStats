@@ -5,20 +5,22 @@
     <a class="data server_id" href="<% server_id %>"></a>
     <table>
       <thead>
-      	<tr class="title"><th colspan="8" class="f_server_name"></th></tr>
+      	<tr class="title"><th colspan="9" class="f_server_name"></th></tr>
 	<tr class="title">
-	  <th>Rank</th>
+	  <th>Index</th>
+	  <th>Ranking</th>
 	  <th>Name</th>
 	  <th>Kills</th>
 	  <th>Assists</th>
 	  <th>Buildings</th>
-	  <th>Building Kills</th>
-	  <th>Team Preferences</th>
+	  <th>Building Kills / Deaths</th>
+	  <th>Team Preference</th>
 	  <th>Reliability</th>
 	</tr>
       </thead>
       <tbody>
 	<tr class="template">
+	  <td class="f_index"></td>
 	  <td class="f_rank"></td>
 	  <td class="f_name"></td>
 	  <td class="f_kills"></td>

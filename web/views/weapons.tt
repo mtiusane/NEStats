@@ -1,0 +1,24 @@
+<div id="content">
+  <script src="/javascripts/common.js"></script>
+  <script src="/javascripts/weapons.js"></script>
+  <div id="weapons" class="container">
+    <a class="data server_id" href="<% server_id %>"></a>
+    <table>
+      <thead>
+      	<tr class="title"><th colspan="3"><span class="f_server_name"></span> - Weapons</th></tr>
+	<tr class="title">
+	  <th>Name</th>
+	  <th>Total Kills</th>
+	  <th>Total Building Kills</th>
+	</tr>
+      </thead>
+      <tbody>
+	<tr class="template">
+	  <td class="f_name"></td>
+	  <td class="f_total_kills"></td>
+	  <td class="f_total_bkills"></td>
+	</tr>
+      </tbody>
+    </table>
+  </div>
+</div>

@@ -58,6 +58,7 @@ sub new {
         line  => undef,
 	source_path => undef,
         # games => [ ],
+	in_game => 0,
     };
     $self->{slots}->[1023] = {
         connect       => DateTime->now,
@@ -203,8 +204,7 @@ sub handleShutdownGame {
     foreach my $cache (qw/map players player_weapons session_weapons game_weapons/) { $self->dropCache($cache); }
 
     my $updateNeeded = $self->{db_game}->max_players > 0;
-
-    $updateNeeded ||= $self->updateGlicko2();
+    $updateNeeded = 1 if ($self->updateGlicko2());
 
     undef $self->{game};
     undef $self->{db_game};
@@ -552,7 +552,19 @@ sub handleExit {
     $self->{game}->{result} = $fields{reason};
     $self->{game}->{end} = $self->parseTime($fields{time});
     $self->{db_game}->end($self->{db_game}->start->clone->add_duration($self->{game}->{end}));
-    $self->{db_game}->outcome($fields{reason});
+    if ($fields{reason} =~ /^humans.*$/i) { # 'Humans win.'
+	$self->{db_game}->outcome('humans');
+    } elsif ($fields{reason} =~ /^aliens.*$/i) { # 'Aliens win.'
+	$self->{db_game}->outcome('aliens');
+    } elsif ($fields{reason} =~ /^evacuation.*$/i) { # 'Evacuation.'
+	$self->{db_game}->outcome('draw');
+    } elsif ($fields{reason} =~ /^timelimit.*$/i) { # 'Timelimit hit.'
+	$self->{db_game}->outcome('draw');
+    } elsif ($fields{reason} =~ /^nextmap.*$/i) { # 'nextmap was run by (console|playername)'
+	$self->{db_game}->outcome('draw');
+    } else {
+	$self->{db_game}->outcome($fields{reason});
+    }
     $self->{db_game}->save;
 }
 
@@ -777,14 +789,15 @@ sub getDuration {
 sub updateGlicko2 {
     my ($self) = @_;
     my $game = $self->{db_game};
-    return 0 unless (defined $game->end);
+    #return 0 unless (defined $game->end);
+    return 0 unless (defined $game->outcome);
     my $score_values;
-    if ((!defined($game->outcome)) || ($game->outcome =~ /^evacuation/i) || ($game->outcome =~ /^timelimit/i)) {
-	$score_values = { human => 0.5, alien => 0.5 }
-    } elsif ($game->outcome =~ /^humans/i) {
+    if ($game->outcome =~ /^humans/i) {
 	$score_values = { human => 1.0, alien => 0.0 }
     } elsif ($game->outcome =~ /^aliens/i) {
 	$score_values = { human => 0.0, alien => 1.0 }
+    } else { # /^draw$/i
+	$score_values = { human => 0.5, alien => 0.5 }
     }
     unless (defined $score_values) {
 	$self->log->warn("Unrecognized outcome: '".$game->outcome."' skipping rankings update.");
@@ -820,6 +833,7 @@ sub updateGlicko2 {
     my %opponents = (human => $teams{alien_composite},alien => $teams{human_composite});
     foreach my $team ('human','alien') {
 	foreach my $entry (@{$teams{$team}}) {
+	    # print "Append queue: ".((defined $entry->{db}) ? $entry->{db}->id : 'null')."\n";
 	    next unless (defined $entry->{db});
 	    # queued update
 	    Stats::DB::Glicko2Score->new(glicko2_id          => $entry->{db}->id,
@@ -838,7 +852,7 @@ sub updateGlicko2 {
 	}
     }
     $self->{last_glicko2} = $game->end->clone;
-    print "  Last glicko2: ".$self->{last_glicko2}."\n";
+    # print "  Last glicko2: ".$self->{last_glicko2}."\n";
     return 1;
 }
 
@@ -846,8 +860,8 @@ sub updateRankings {
     my ($self) = @_;
     my $server_id = $self->{db_server}->id;
     my $lastUpdate = Stats::DB::TimeStamp->new(name => 'last_glicko2',server_id => $server_id);
-    if (!$lastUpdate->load(speculative => 1) || $self->getDuration($lastUpdate->value,$self->{last_glicko2}) >= 12*3600) {
-	print "  Updating glicko2\n";
+    if (!$lastUpdate->load(speculative => 1) || !defined($lastUpdate->value) || !defined($self->{last_glicko2}) || $self->getDuration($lastUpdate->value,$self->{last_glicko2}) >= 12*3600) {
+	# print "  Updating glicko2\n";
 	my %matches = map {
 	    $_->id => {
 		glicko2  => $self->loadGlicko2($_->id),
@@ -941,13 +955,22 @@ sub parseLine {
     my ($self,$line) = @_;
     $self->{line} = $line; # For debug messages use
     eval {
-        if ($line =~ /^\s*(?<time>\d+:\d+)\s*InitGame:\s+\\(?<rawdata>.+)\s*$/) {
-            my %data = split /\\/,$+{rawdata};
-            $self->handleInitGame(%+,%data);
-        } elsif ($line =~ /^\s*(?:\d+:\d+)\s*RealTime:\s+(?<year>\d{4})[\/-](?<month>\d{2})[\/-](?<day>\d{2})\s+(?<hour>\d{2}):(?<minute>\d{2}):(?<second>\d{2})(?:(\s+(?<time_zone>[A-Z]+)))?\s*$/) { # TODO: optional time_zone added for unv
-            $self->handleRealTime(%+);
-        } elsif ($line =~ /^\s*(?<time>\d+:\d+)\s*ShutdownGame:\s*$/) {
+	if ($line =~ /^\s*(?<time>\d+:\d+)\s*-+\s*$/) {
+            # Delimiter - skipped
+	} elsif (!$self->{in_game}) {
+	    if ($line =~ /^\s*(?<time>\d+:\d+)\s*InitGame:\s+\\(?<rawdata>.+)\s*$/) {
+		my %data = split /\\/,$+{rawdata};
+		$self->handleInitGame(%+,%data);
+		$self->{in_game} = 1;
+	    } else {
+		$self->log->warn("Unrecognized line: $line");
+		return;
+	    }
+	} elsif ($line =~ /^\s*(?<time>\d+:\d+)\s*ShutdownGame:\s*$/) {
             $self->handleShutdownGame(%+);
+	    $self->{in_game} = 0;
+	} elsif ($line =~ /^\s*(?:\d+:\d+)\s*RealTime:\s+(?<year>\d{4})[\/-](?<month>\d{2})[\/-](?<day>\d{2})\s+(?<hour>\d{2}):(?<minute>\d{2}):(?<second>\d{2})(?:(\s+(?<time_zone>[A-Z]+)))?\s*$/) { # TODO: optional time_zone added for unv
+            $self->handleRealTime(%+);
         } elsif ($line =~ /^\s*(?<time>\d+:\d+)\s*Beginning\s*Sudden\s*Death\s*$/) {
             $self->handleSuddenDeath(%+);
         } elsif ($line =~ /^\s*(?<time>\d+:\d+)\s*Beginning\s*Weak\s*Sudden\s*Death\s*$/) {
@@ -981,8 +1004,6 @@ sub parseLine {
             # 1101:22score: 48  ping: 412  client: 0 kwergangregory
             # 17:31 score: 8  ping: 322  client: 1 bluedemon1
             $self->handleScore(%+);
-        } elsif ($line =~ /^\s*(?<time>\d+:\d+)\s*-+\s*$/) {
-            # Delimiter - skipped
         } elsif ($line =~ /^\s*(?<time>\d+:\d+)\s*Warmup:\s+(?<duration>\d+)\s*$/) {
             # Warmup definition - not used
         } elsif ($line =~ /^\s*(?<time>\d+:\d+)\s*ClientBegin:\s+(?<slot>\d+)\s*$/) {
@@ -1029,8 +1050,8 @@ sub parseLine {
             $self->handleCombatStats(%+);
         } elsif ($line =~ /^\s*(?<time>\d+:\d+)\s*Clan(?<type>Add|Remove|Resign|Auth):\s+\[(?<tag>.+?)\]\s+(?<guid>\S+)\s+(?<isleader>[01])\s+(?<name>.+)\s*$/) {
             $self->handleClanInfo(%+);
-	} elsif ($line =~ /^\s(\d+)\s+(?<time>\d+:\d+)\s*-+\s*$/) {
-	    # 4  0:00 ------------------------------------------------------------
+	#} elsif ($line =~ /^\s(\d+)\s+(?<time>\d+:\d+)\s*-+\s*$/) {
+	#    # 4  0:00 ------------------------------------------------------------
         } else {
             $self->log->warn("Unrecognized line: $line");
         }

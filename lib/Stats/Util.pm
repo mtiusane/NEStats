@@ -1,11 +1,16 @@
 package Stats::Util;
 
+use strict;
+use warnings;
+
 use base qw/Exporter/;
 our @EXPORT_OK = qw/replace_colors replace_smileys replace_all remove_all weapon_name format_duration/;
 
 use CGI qw/escapeHTML/;
 use Stats::DB::Weapon;
 use DateTime::Format::Duration;
+
+use Stats::Emoticons qw/$emoticons/;
 
 my %color_names = (
     '0' => 'color0',
@@ -71,14 +76,14 @@ sub remove_all {
     return $line;
 }
 
-my $weapon_names = { };
-sub weapon_name
-{
-    my ($name) = @_;
-    return $weapon_names->{$name} if ($weapon_names->{$name});
-    my $weapon = Stats::DB::Weapon->new(server_id => $server->id,name => $name);
-    return $weapon_names->{$name} = ($weapon->load(speculative => 1)) ? replace_all($weapon->displayname) : $name;
-}
+# my $weapon_names = { };
+# sub weapon_name
+# {
+#     my ($name) = @_;
+#     return $weapon_names->{$name} if ($weapon_names->{$name});
+#     my $weapon = Stats::DB::Weapon->new(server_id => $server->id,name => $name);
+#     return $weapon_names->{$name} = ($weapon->load(speculative => 1)) ? replace_all($weapon->displayname) : $name;
+# }
 
 my $format = DateTime::Format::Duration->new(pattern => '%H:%M:%S',normalize => 1);
 sub format_duration {

@@ -38,47 +38,57 @@ use Rose::DB::Object::Helpers qw/as_tree/;
 
 # -- Template handlers --
 
-# set serializer => 'Mutable';
 set content_type => 'text/html';
+
+my $global_menu = [
+    { link => '/server/1/games', title => 'Games' },
+    { link => '/server/1/players', title => 'Players' },
+    { link => '/server/1/maps', title => 'Maps' },
+    { link => '/server/1/weapons', title => 'Weapons' }
+];
 
 get '/' => sub {
     redirect '/servers'; # template 'index';
 };
 
 get '/servers' => sub {
-    template 'servers';
+    template 'servers',{ menu => $global_menu };
 };
 
 get '/games' => sub {
-    template 'games';
+    template 'games',{ menu => $global_menu };
 };
 
 get '/maps' => sub {
-    template 'maps';
+    template 'maps',{ menu => $global_menu };
 };
 
 get '/map/:id' => sub {
-    template 'map',{ map_id => params->{id} };
+    template 'map',{ menu => $global_menu, map_id => params->{id} };
 };
 
 get '/game/:id' => sub {
-    template 'game',{ game_id => params->{id} };
+    template 'game',{ menu => $global_menu, game_id => params->{id} };
 };
 
 get '/player/:id' => sub {
-    template 'player',{ player_id => params->{id} };
+    template 'player',{ menu => $global_menu, player_id => params->{id} };
 };
 
 get '/server/:id/games' => sub {
-    template 'games',{ server_id => params->{id} };
+    template 'games',{ menu => $global_menu, server_id => params->{id} };
 };
 
 get '/server/:id/players' => sub {
-    template 'players',{ server_id => params->{id} };
+    template 'players',{ menu => $global_menu, server_id => params->{id} };
 };
 
 get '/server/:id/maps' => sub {
-    template 'maps',{ server_id => params->{id} };
+    template 'maps',{ menu => $global_menu, server_id => params->{id} };
+};
+
+get '/server/:id/weapons' => sub {
+    template 'weapons',{ menu => $global_menu, server_id => params->{id} };
 };
 
 true;

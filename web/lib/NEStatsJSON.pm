@@ -90,6 +90,13 @@ get '/player/:id' => sub {
 };
 
 get '/server/:id' => sub {
+    my $server = Stats::DB::Server->new(id => params->{id});
+    $server->load(speculative => 1);
+    return {
+	id   => $server->id,
+	name => replace_all($server->name),
+	url  => $server->url
+    };
 };
 
 get '/server/:id/players/:offset/:limit' => sub {
@@ -102,7 +109,7 @@ get '/server/:id/players/:offset/:limit' => sub {
 	}
     } @{Stats::DB::PlayerRanking::Manager->get_player_rankings(
 	where        => $where,
-	sort_by      => 'by_kills',
+	sort_by      => 'by_glicko2 asc',
 	limit        => params->{limit},
 	offset       => params->{offset},
 	with_objects => [ 'player', 'glicko2' ],
@@ -136,7 +143,6 @@ get '/server/:id/games/:offset/:limit' => sub {
 	offset => params->{offset},
 	with_objects => [ 'map' ]
     )};
-    content_type 'application/json';
     return {
 	games => \@games,
 	offset => params->{offset},
@@ -145,6 +151,38 @@ get '/server/:id/games/:offset/:limit' => sub {
 };
 
 get '/server/:id/maps/:offset/:limit' => sub {
+    my $count = Stats::DB::Map::Manager->get_maps_count(where => [ server_id => params->{id} ]);
+    my @maps = @{Stats::DB::Map::Manager->get_maps(
+        where   => [ server_id => params->{id} ],
+	sort_by => 'total_games desc',
+	limit   => max(25,params->{limit}),
+	offset  => params->{offset},
+    )};
+    return {
+	maps   => \@maps,
+	offset => params->{offset},
+	total  => $count
+    };
+};
+
+get '/server/:id/weapons/:offset/:limit' => sub {
+    my $count = Stats::DB::Weapon::Manager->get_weapons_count(where => [ server_id => params->{id} ]);
+    my @weapons = map {
+	id           => $_->id,
+	name         => replace_all($_->displayname),
+	total_kills  => $_->total_kills,
+	total_bkills => $_->total_bkills
+    },@{Stats::DB::Weapon::Manager->get_weapons(
+        where   => [ server_id => params->{id} ],
+	sort_by => 'total_kills desc',
+	limit   => max(25,params->{limit}),
+	offset  => params->{offset},
+    )};
+    return {
+	weapons => \@weapons,
+	offset  => params->{offset},
+	total   => $count
+    };
 };
 
 get '/game/:id' => sub {
