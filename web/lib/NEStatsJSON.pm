@@ -302,7 +302,60 @@ get '/game/:id/sessions/:team/:offset/:limit' => sub {
 };
 
 get '/map/:id' => sub {
+    my $map = Stats::DB::Map->new(id => params->{id});
+    unless ($map->load(speculative => 1)) {
+	return {
+	    error => "Invalid map id: ".params->{id}
+	}
+    }
+    return {
+	displayname => replace_all($map->name),
+	(map { $_ => $map->{$_} } grep { !/^_/ } keys(%$map))
+    }
+};
 
+get '/map/:id/top_killers/:offset/:limit' => sub {
+    my $map = Stats::DB::Map->new(id => params->{id});
+    my $count = Stats::DB::Game::Manager->get_games_count(where => [ map_id => $map->id ]); # , max_players => { gt => 0 }
+    my @top_killers = @{Stats::DB::PlayerMap::Manager->get_player_maps(where => [ map_id => $map->id, total_kills => { gt => 0 } ],with_objects => [ 'player' ],sort_by => 'total_kills desc',offset => params->{offset},limit => params->{limit})};
+    return {
+	top_killers => [
+	    map {
+		my $killer = $_;
+		{
+		    player_displayname => replace_all($killer->player->displayname),
+		    (map { $_ => $killer->{$_} } grep { !/^_/ } grep { !/^player$/ } keys(%$killer))
+		}
+	    } @top_killers
+	],
+	offset => params->{offset},
+	total  => $count
+    };
+	    
+};
+
+get '/map/:id/recent_games/:offset/:limit' => sub {
+    my $map = Stats::DB::Map->new(id => params->{id});
+    unless ($map->load(speculative => 1)) {
+	return {
+	    error => "Invalid map id: ".params->{id}
+	}
+    }
+    my $count = Stats::DB::Game::Manager->get_games_count(where => [ max_players => { gt => 1 }, map_id => $map->id ]);
+    my @games = @{Stats::DB::Game::Manager->get_games(where => [ max_players => { gt => 1 }, map_id => $map->id ],sort_by => 'start desc',limit => params->{limit},offset => params->{offset})};
+    return {
+	recent_games => [
+	    map {
+		my $game = $_;
+		+{
+		    # map_displayname => replace_all($map->name),
+		    map { $_ => $game->{$_} } grep { !/^_/ } keys(%$game)
+		}
+	    } @games
+	],
+	offset => params->{offset},
+	total  => $count
+    };
 };
 
 true;

@@ -1,0 +1,52 @@
+<div id="content">
+  <script src="/javascripts/common.js"></script>
+  <script src="/javascripts/map.js"></script>
+  <div id="map">
+    <a class="data map_id" href="<% map_id %>"></a>
+    <div id="map_overall">
+      <h1>Map: <span class="f_displayname"></span></h1>
+    </div>
+    <div id="map_top_killers" class="container">
+      <table>
+	<thead>
+	  <tr class="title"><th colspan="3">Top Killers</th></tr>
+	  <tr class="title">
+	    <th>Index</th>
+	    <th>Killer</th>
+	    <th>Total Kills</th>
+	  </tr>
+	</thead>
+	<tbody>
+	  <tr class="template">
+	    <td class="f__index"></td>
+	    <td class="f_player_displayname"></td>
+	    <td class="f_total_kills"></td>
+	  </tr>
+	</tbody>
+      </table>
+    </div>
+    <div id="map_recent_games" class="container">
+      <table>
+	<thead>
+	  <tr class="title"><th colspan="5">Recent Games</th></tr>
+	  <tr class="title">
+	    <th>Date</th>
+	    <th>Start</th>
+	    <th>End</th>
+	    <th>Max Players</th>
+	    <th>Outcome</th>
+	  </tr>
+	</thead>
+	<tbody>
+	  <tr class="template">
+	    <td class="f_date"></td>
+	    <td class="f_start"></td>
+	    <td class="f_end"></td>
+	    <td class="f_max_players"></td>
+	    <td class="f_outcome"></td>
+	  </tr>
+	</tbody>
+      </table>
+    </div>
+</div>
+</div>

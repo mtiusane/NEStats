@@ -3,8 +3,8 @@
   <script src="/javascripts/player.js"></script>
   <div id="player">
     <a class="data player_id" href="<% player_id %>"></a>
-    <h1>Player: <span class="f_displayname"></span></h1>
     <div id="player_overall" class="container noscroll">
+      <h1>Player: <span class="f_displayname"></span></h1>
       <table>
 	<thead>
 	  <tr class="title"><th colspan="4">Overall</th></tr>
