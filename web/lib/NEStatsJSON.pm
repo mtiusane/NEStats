@@ -324,7 +324,7 @@ get '/map/:id/top_killers/:offset/:limit' => sub {
 		my $killer = $_;
 		{
 		    player_displayname => replace_all($killer->player->displayname),
-		    (map { $_ => $killer->{$_} } grep { !/^_/ } grep { !/^player$/ } keys(%$killer))
+		    (map { $_ => $killer->{$_} } grep { !/^_/ } grep { !/^player$/ } keys(%$killer)),
 		}
 	    } @top_killers
 	],
@@ -349,7 +349,7 @@ get '/map/:id/recent_games/:offset/:limit' => sub {
 		my $game = $_;
 		+{
 		    # map_displayname => replace_all($map->name),
-		    map { $_ => $game->{$_} } grep { !/^_/ } keys(%$game)
+		    (map { $_ => $game->$_ } $game->meta->column_names),
 		}
 	    } @games
 	],

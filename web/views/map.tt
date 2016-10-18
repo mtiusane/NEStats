@@ -39,9 +39,9 @@
 	</thead>
 	<tbody>
 	  <tr class="template">
-	    <td class="f_date"></td>
-	    <td class="f_start"></td>
-	    <td class="f_end"></td>
+	    <td class="f__date f_start"></td>
+	    <td class="f__time f_start"></td>
+	    <td class="f__time f_end"></td>
 	    <td class="f_max_players"></td>
 	    <td class="f_outcome"></td>
 	  </tr>

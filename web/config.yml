@@ -31,6 +31,7 @@ engines:
     JSON:
       allow_blessed: '1'
       convert_blessed: '1'
+      allow_nonref: '1'
 
 # For session support enable the following line and see Dancer::Session
 session: "YAML"

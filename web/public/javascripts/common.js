@@ -48,12 +48,17 @@ Common = {
 	    // console.log("Finding: "+name);
 	    selector.find('.f_'+name).each(function(field_index,field) {
 		// console.log("Loading field: f_"+name, field);
-		if ($(field).hasClass('f__sum')) {
-		    var sum = $(field).data('f__sum');
+		field = $(field);
+		if (field.hasClass('f__sum')) {
+		    var sum = field.data('f__sum');
 		    if (sum === undefined) sum = 0.0;
 		    sum += Number(value);
-		    $(field).data('f__sum',sum);
-		    $(field).html(sum);
+		    field.data('f__sum',sum);
+		    field.html(sum);
+		} else if (field.hasClass('f__date')) {
+		    $(field).html(new Date(value).toLocaleDateString());
+		} else if (field.hasClass('f__time')) {
+		    $(field).html(new Date(value).toLocaleTimeString());
 		} else {
 		    $(field).html(value);
 		}
