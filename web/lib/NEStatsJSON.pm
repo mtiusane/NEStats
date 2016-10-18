@@ -90,8 +90,8 @@ get '/player/:id' => sub {
 
 get '/player/:id/deaths_by_weapon/:offset/:limit' => sub {
     my $player = Stats::DB::Player->new(id => params->{id});
-    my $count = Stats::DB::PlayerWeapon::Manager->get_player_weapons_count(where => [ player_id => $player->id ],require_objects => [ 'weapon' ]);
-    my @deaths = @{Stats::DB::PlayerWeapon::Manager->get_player_weapons(where => [ player_id => $player->id ],sort_by => [ 'total_deaths desc', 'total_bdeaths desc' ],with_objects => [ 'weapon' ],offset => params->{offset},limit => max(25,params->{limit}))};
+    my $count = Stats::DB::PlayerWeapon::Manager->get_player_weapons_count(where => [ player_id => $player->id, total_kills => { gt => 0 } ],require_objects => [ 'weapon' ]);
+    my @deaths = @{Stats::DB::PlayerWeapon::Manager->get_player_weapons(where => [ player_id => $player->id, total_deaths => { gt => 0 } ],sort_by => [ 'total_deaths desc', 'total_bdeaths desc' ],with_objects => [ 'weapon' ],offset => params->{offset},limit => max(25,params->{limit}))};
     return {
 	deaths => [
 	    map {
@@ -103,6 +103,40 @@ get '/player/:id/deaths_by_weapon/:offset/:limit' => sub {
 		}
 	    } @deaths
 	],
+	offset => params->{offset},
+	total  => $count
+    };
+};
+
+get '/player/:id/kills_by_weapon/:offset/:limit' => sub {
+    my $player = Stats::DB::Player->new(id => params->{id});
+    my $count = Stats::DB::PlayerWeapon::Manager->get_player_weapons_count(where => [ player_id => $player->id, total_kills => { gt => 0 } ],require_objects => [ 'weapon' ]);
+    my @kills = @{Stats::DB::PlayerWeapon::Manager->get_player_weapons(where => [ player_id => $player->id, total_kills => { gt => 0 } ],sort_by => [ 'total_kills desc', 'total_bkills desc' ],with_objects => [ 'weapon' ],offset => params->{offset},limit => max(25,params->{limit}))};
+    return {
+	kills => [
+	    map {
+		my $kill = $_;
+		+{
+		    weapon_displayname => replace_all($kill->weapon->displayname),
+		    (map { 'weapon_'.$_ => $kill->weapon->$_ } grep { !/^id|displayname$/ } keys(%{$kill->weapon})),
+		    (map { $_ => $kill->{$_} } grep { !/^displayname|weapon$/ } keys(%$kill))
+		}
+	    } @kills
+	],
+	offset => params->{offset},
+	total  => $count
+    };
+};
+
+get '/player/:id/favorite_maps/:offset/:limit' => sub {
+    my $player = Stats::DB::Player->new(id => params->{id});
+    my $count = Stats::DB::PlayerMap::Manager->get_player_maps_count(where => [ player_id => $player->id,total_kills => { gt => 0 } ],require_objects => => [ 'map' ]);
+    my @maps = map {
+	displayname => replace_all($_->map->name),
+	total_kills => $_->total_kills
+    },@{Stats::DB::PlayerMap::Manager->get_player_maps(where => [ player_id => $player->id, total_kills => { gt => 0 } ],sort_by => 'total_kills desc',with_objects => [ 'map' ],offset => params->{offset},limit => max(25,params->{limit}))};
+    return {
+	maps   => \@maps,
 	offset => params->{offset},
 	total  => $count
     };
