@@ -144,6 +144,44 @@ sub loadPlayer {
     return $self->loadCached('players',qw/Stats::DB::Player/,undef,{ id => $id });
 }
 
+sub beginSession {
+    my ($self,%fields) = @_;
+    my $result = Stats::DB::Session->new(
+	game_id   => $fields{game_id},
+	player_id => $fields{player_id},
+	name      => $fields{name},
+	ip        => $fields{ip},
+	team      => $fields{team},
+	start     => $fields{start}
+	);
+    $result->save;
+    return $result;
+}
+
+sub endSession {
+    my ($self,$session,$end) = @_;
+    $session->end($end);
+    $session->save;
+    if ($session->team =~ /^human|alien$/) {
+	if (my $player = $self->loadPlayer($session->player_id)) {
+	    my $duration = $self->getDuration($end-$session->start);
+	    $player->total_time($player->total_time+$duration);
+	    my $playerMap = Stats::DB::PlayerMap->new(player_id => $player->id,map_id => $self->{db_game}->map_id);
+	    $playerMap->load(speculative => 1);
+	    $playerMap->total_time($playerMap->total_time+$duration);
+	    $playerMap->save();
+	    if ($session->team eq 'human') {
+		$player->total_rqs($player->total_rqs+1) if (!defined($self->{db_game}->end));
+		$player->total_time_h($player->total_time_h+$duration);
+	    } elsif ($session->team eq 'alien') {
+		$player->total_rqs($player->total_rqs+1) if (!defined($self->{db_game}->end));
+		$player->total_time_a($player->total_time_a+$duration);
+	    }
+	    $player->save;
+	}
+    }
+}
+
 sub handleInitGame {
     my ($self,%fields) = @_;
     $self->{game} = {
@@ -248,15 +286,14 @@ sub handleClientConnect
 	$name       .= " $fields{flags}";
 	$simplename .= " $fields{flags}";
     }
-    my $db_session = Stats::DB::Session->new(
-        player_id => defined($db_player) ? $db_player->id : undef,
+    my $db_session = $self->beginSession(
+	game_id   => $self->{db_game}->id,
+	player_id => (defined($db_player) ? $db_player->id : undef),
 	name      => $name,
-        game_id   => $self->{db_game}->id,
-        ip        => $fields{ip},
-        team      => 'spectator',
-        start     => $self->{db_game}->start->clone->add_duration($self->parseTime($fields{time}))
+	ip        => $fields{ip},
+	team      => 'spectator',
+	start     => $self->parseTimeRelative($fields{time})
     );
-    $db_session->save;
     return unless (defined $self->{game});
     # my $event = Stats::DB::TeamEvent->new(
     #   time       => $self->parseTimeRelative($fields{time}),
@@ -304,25 +341,7 @@ sub handleClientDisconnect {
     my $db_session = $self->{slots}->[$fields{slot}]->{db_session};
     if (defined $db_session) {
         my $duration = $self->getDuration($time);
-        $db_session->end($self->{db_game}->start->clone->add_duration($self->parseTime($fields{time})));
-        $db_session->save;
-	if ($db_session->team =~ /^human|alien$/) {
-	    if (my $player = $self->loadPlayer($db_session->player_id)) {
-		$player->total_time($player->total_time+$duration);
-		my $playerMap = Stats::DB::PlayerMap->new(player_id => $player->id,map_id => $self->{db_game}->map_id);
-		$playerMap->load(speculative => 1);
-		$playerMap->total_time($playerMap->total_time+$duration);
-		$playerMap->save();
-		if ($db_session->team eq 'human') {
-		    $player->total_rqs($player->total_rqs+1) if (!defined($self->{db_game}->end));
-		    $player->total_time_h($player->total_time_h+$duration);
-		} elsif ($db_session->team eq 'alien') {
-		    $player->total_rqs($player->total_rqs+1) if (!defined($self->{db_game}->end));
-		    $player->total_time_a($player->total_time_a+$duration);
-		}
-		$player->save;
-	    }
-	}
+	$self->endSession($db_session,$self->parseTimeRelative($fields{time}));
     } else {
         $self->log->warn("ClientDisconnect(): No active db_session for slot $fields{slot} guid $fields{guid}");
     }
@@ -604,32 +623,26 @@ sub handleChangeTeam {
     return unless (defined $self->{game});
     my $db_session = $self->{slots}->[$fields{slot}]->{db_session};
     if (defined $db_session) {
-        $db_session->end($self->{db_game}->start->clone->add_duration($self->parseTime($fields{time})));
-        $db_session->save;
+	$self->endSession($db_session,$self->parseTimeRelative($fields{time}));
     } else {
         $self->log->warn("ChangeTeam(): No active db_session for slot $fields{slot} guid $fields{guid}");
         return;
     }
     my $player_id = $db_session->player_id;
-    my $db_session = $self->{slots}->[$fields{slot}]->{db_session} = Stats::DB::Session->new(
-        player_id => $player_id,
+    my $db_session = $self->{slots}->[$fields{slot}]->{db_session} = $self->startSession(
+	game_id   => $self->{db_game}->id,
+	player_id => $player_id,
 	name      => $self->{slots}->[$fields{slot}]->{name},
-        game_id   => $self->{db_game}->id,
         team      => $fields{team},
         ip        => $self->{slots}->[$fields{slot}]->{ip},
-        start     => $self->{db_game}->start->clone->add_duration($self->parseTime($fields{time}))
+        start     => $self->parseTimeRelative($fields{time})
     );
-    $db_session->save;
-    if ($fields{team} =~ /^alien|human$/) {
-	if (my $db_player = $self->loadPlayer($player_id)) {
-	    $db_player->total_sessions($db_player->total_sessions+1);
-	    $db_player->save;
+    if (my $db_player = $self->loadPlayer($player_id)) {
+	$db_player->total_sessions($db_player->total_sessions+1);
+	if ($fields{team} !~ /^alien|human$/) { # 'spectator'
+	    $db_player->total_rqs($db_player->total_rqs+1);    
 	}
-    } elsif (!defined($self->{db_game}->end)) { # 'spectator'
-	if (my $db_player = $self->loadPlayer($player_id)) {
-	    $db_player->total_rqs($db_player->total_rqs+1);
-	    $db_player->save;
-	}
+	$db_player->save;
     }
 }
 
