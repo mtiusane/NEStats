@@ -49,7 +49,9 @@ Common = {
 	    selector.find('.f_'+name).each(function(field_index,field) {
 		// console.log("Loading field: f_"+name, field);
 		field = $(field);
-		if (field.hasClass('f__sum')) {
+		if (field.is('a')) {
+		    field.attr('href',value);
+		} else if (field.hasClass('f__sum')) {
 		    var sum = field.data('f__sum');
 		    if (sum === undefined) sum = 0.0;
 		    sum += Number(value);
@@ -77,6 +79,18 @@ Common = {
 
     format_percent: function(value) {
 	return Number(100.0 * value).toFixed(2) + '%';
+    },
+
+    format_duration: function(seconds) {
+	seconds = Number(seconds);
+	var hours = Math.floor(seconds / 3600.0);
+	seconds -= 3600.0 * hours;
+	var minutes = Math.floor(seconds / 60.0);
+	seconds -= 60.0 * minutes;
+	seconds = Math.floor(seconds);
+	if (hours > 0) return hours + ':' + minutes + ':' + seconds;
+	if (minutes > 0) return minutes + ':' + seconds;
+	return seconds;
     },
 
     sum: function(values) {

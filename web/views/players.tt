@@ -5,17 +5,19 @@
     <a class="data server_id" href="<% server_id %>"></a>
     <table>
       <thead>
-      	<tr class="title"><th colspan="9" class="f_server_name"></th></tr>
+      	<tr class="title"><th colspan="10" class="f_server_name"></th></tr>
 	<tr class="title">
 	  <th>Index</th>
 	  <th>Ranking</th>
 	  <th>Name</th>
+	  <th>Sessions Count</th>
+	  <th>Total Playtime</th>
 	  <th>Kills</th>
 	  <th>Assists</th>
 	  <th>Buildings</th>
 	  <th>Building Kills / Deaths</th>
 	  <th>Team Preference</th>
-	  <th>Reliability</th>
+	  <!-- <th>Reliability</th> -->
 	</tr>
       </thead>
       <tbody>
@@ -23,12 +25,14 @@
 	  <td class="f_index"></td>
 	  <td class="f_rank"></td>
 	  <td class="f_name"></td>
+	  <td class="f_total_sessions"></td>
+	  <td class="f_total_playtime"></td>
 	  <td class="f_kills"></td>
 	  <td class="f_assists"></td>
 	  <td class="f_buildings"></td>
 	  <td class="f_building_kd"</td>
 	  <td class="f_team_preference"></td>
-	  <td class="f_reliability"></td>
+	  <!-- <td class="f_reliability"></td> -->
 	</tr>
       </tbody>
     </table>

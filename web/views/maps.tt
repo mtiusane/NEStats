@@ -18,7 +18,7 @@
       </thead>
       <tbody>
 	<tr class="template">
-	  <td class="f_name"></td>
+	  <td><a class="f_url" href=""><span class="f_name"></span></a></td>
 	  <td class="f_total_games"></td>
 	  <td class="f_human_wins"></td>
 	  <td class="f_alien_wins"></td>

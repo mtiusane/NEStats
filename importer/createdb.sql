@@ -3,7 +3,7 @@
 -- drop database if exists stats;
 
 -- create database stats;
--- use stats;
+use stats;
 
 -- Create default user with full privileges
 -- create user 'stats'@'localhost' identified by 'stats';
@@ -62,12 +62,6 @@ create table players (
 
        total_sessions int not null default 0,
        total_rqs int not null default 0,
-
-       -- Elo ranking based on team outcomes
-       elo_team int not null default 1000,
-
-       -- Elo ranking based on individual kills/deaths
-       elo_combat int not null default 1000,
 
        foreign key(server_id) references servers(id),
        unique(server_id,guid)
@@ -146,7 +140,9 @@ create table maps (
        total_deaths int not null default 0,
        total_bkills int not null default 0,
        total_bdeaths int not null default 0,
+       total_loaded int not null default 0,
        total_games int not null default 0,
+       total_time int not null default 0,
 
        -- total human/alien kills
        total_hkills int not null default 0,
@@ -383,6 +379,7 @@ create table player_maps (
        
        total_games int not null default 0,
        total_sessions int not null default 0,
+       total_time int not null default 0,
 
        total_kills int not null default 0,
        total_bkills int not null default 0,

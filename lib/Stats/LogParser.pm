@@ -36,6 +36,8 @@ use List::Util qw/max pairs/;
 
 use Log::Log4perl qw/:easy/;
 
+use constant MIN_GLICKO2_TIME => 3600;
+
 sub new {
     my ($class,$initializer,%params) = @_;
     die "Server ip (server_ip) and name (server_name) must be provided." unless (defined($params{server_name}) && defined($params{server_ip}));
@@ -164,7 +166,7 @@ sub handleRealTime {
     my $map = Stats::DB::Map->new(server_id => $self->{db_server}->id,name => $self->{game}->{map});
     $map->load(speculative => 1) || $map->save;
     # TODO: if ($self->{cache}->{total_players} > 0) -- perhaps at some point
-    $map->total_games($map->total_games+1);
+    $map->total_loaded($map->total_loaded+1);
     $self->{cache}->{map} = $map;
     $self->{cache}->{total_players} = 0;
     $self->{db_game} = Stats::DB::Game->new(
@@ -189,21 +191,12 @@ sub handleShutdownGame {
 	next if $self->{slots}->[$slot]->{disconnected};
         $self->handleClientDisconnect(time => $fields{time},guid => $self->{slots}->[$slot]->{guid},slot => $slot);
     }
-    my $outcome = $self->{db_game}->outcome;
-    my $map = $self->{cache}->{map};
-    if ($outcome eq 'Humans win.') {
-        $map->human_wins($map->human_wins+1);
-    } elsif ($outcome eq 'Aliens win.') {
-        $map->alien_wins($map->alien_wins+1);
-    } else {
-        $map->draws($map->draws+1);
-    }
-    $map->save;
-    
+    my $hadPlayers = $self->{db_game}->max_players > 0;
+  
     foreach my $player (values %{$self->{cache}->{players}}) { $player->save; }
     foreach my $cache (qw/map players player_weapons session_weapons game_weapons/) { $self->dropCache($cache); }
 
-    my $updateNeeded = $self->{db_game}->max_players > 0;
+    my $updateNeeded = $hadPlayers;
     $updateNeeded = 1 if ($self->updateGlicko2());
 
     undef $self->{game};
@@ -306,22 +299,29 @@ sub handleClientConnect
 sub handleClientDisconnect {
     my ($self,%fields) = @_;
     return unless (defined $self->{game});
-    push @{$self->{game}->{players}->{$fields{guid}}->{sessions}},$self->parseTime($fields{time});
+    my $time = $self->parseTime($fields{time});
+    push @{$self->{game}->{players}->{$fields{guid}}->{sessions}},$time;
     my $db_session = $self->{slots}->[$fields{slot}]->{db_session};
     if (defined $db_session) {
-        my $duration = $self->parseTime($fields{time});
-        $db_session->end($self->{db_game}->start->clone->add_duration($duration));
+        my $duration = $self->getDuration($time);
+        $db_session->end($self->{db_game}->start->clone->add_duration($self->parseTime($fields{time})));
         $db_session->save;
-        if (my $player = $self->loadPlayer($db_session->player_id)) {
-	    $player->total_time($player->total_time+$duration->seconds);
-	    if ($db_session->team eq 'human') {
-		$player->total_rqs($player->total_rqs+1) if (!defined($self->{db_game}->end));
-		$player->total_time_h($player->total_time_h+$duration->seconds);
-	    } elsif ($db_session->team eq 'alien') {
-		$player->total_rqs($player->total_rqs+1) if (!defined($self->{db_game}->end));
-		$player->total_time_a($player->total_time_a+$duration->seconds);
+	if ($db_session->team =~ /^human|alien$/) {
+	    if (my $player = $self->loadPlayer($db_session->player_id)) {
+		$player->total_time($player->total_time+$duration);
+		my $playerMap = Stats::DB::PlayerMap->new(player_id => $player->id,map_id => $self->{db_game}->map_id);
+		$playerMap->load(speculative => 1);
+		$playerMap->total_time($playerMap->total_time+$duration);
+		$playerMap->save();
+		if ($db_session->team eq 'human') {
+		    $player->total_rqs($player->total_rqs+1) if (!defined($self->{db_game}->end));
+		    $player->total_time_h($player->total_time_h+$duration);
+		} elsif ($db_session->team eq 'alien') {
+		    $player->total_rqs($player->total_rqs+1) if (!defined($self->{db_game}->end));
+		    $player->total_time_a($player->total_time_a+$duration);
+		}
+		$player->save;
 	    }
-	    $player->save;
 	}
     } else {
         $self->log->warn("ClientDisconnect(): No active db_session for slot $fields{slot} guid $fields{guid}");
@@ -566,6 +566,20 @@ sub handleExit {
 	$self->{db_game}->outcome($fields{reason});
     }
     $self->{db_game}->save;
+    if ($self->{db_game}->max_players >= 2) {
+	my $outcome = $self->{db_game}->outcome;
+	my $map = $self->{cache}->{map};
+	if ($outcome eq 'humans') {
+	    $map->human_wins($map->human_wins+1);
+	} elsif ($outcome eq 'aliens') {
+	    $map->alien_wins($map->alien_wins+1);
+	} else {
+	    $map->draws($map->draws+1);
+	}
+	$map->total_games($map->total_games+1);
+	$map->total_time($map->total_time+$self->getDuration($self->{db_game}->end - $self->{db_game}->start));
+	$map->save;
+    }
 }
 
 sub handleScore {
@@ -773,16 +787,16 @@ sub loadGlicko2 {
 
 sub saveGlicko2 {
     my ($self,$glicko2) = @_;
-    return unless (defined $glicko2->{db});
-    $glicko2->{db}->rating($glicko2->{glicko}->rating);
-    $glicko2->{db}->rd($glicko2->{glicko}->rd);
-    $glicko2->{db}->volatility($glicko2->{glicko}->volatility);
-    $glicko2->{db}->save;
+    if (defined(my $db = $glicko2->{db})) {
+	$db->rating($glicko2->{glicko}->rating);
+	$db->rd($glicko2->{glicko}->rd);
+	$db->volatility($glicko2->{glicko}->volatility);
+	$db->save;
+    }
 }
 
 sub getDuration {
-    my ($self,$start,$end) = @_;
-    my $d = $end-$start;
+    my ($self,$d) = @_;
     return 86400*$d->days+3600*$d->hours+60*$d->minutes+$d->seconds;
 }
 
@@ -808,12 +822,12 @@ sub updateGlicko2 {
 	push @{$teams{$session->team}},$self->loadGlicko2($session->player_id,session => $session);
     }
     next unless(scalar(@{$teams{human}}) && scalar(@{$teams{alien}}));
-    my $game_duration = $self->getDuration($game->start,$game->end);
+    my $game_duration = $self->getDuration($game->end - $game->start);
     foreach my $team ('human','alien') {
 	my $comp = $teams{$team.'_composite'} = Glicko2::Player->new(rating => 0,rd => 0,volatility => 0);
 	my $team_duration = 0.0;
 	foreach my $session (@{$teams{$team}}) {
-	    my $session_duration = $self->getDuration($session->{session}->start,$session->{session}->end);
+	    my $session_duration = $self->getDuration($session->{session}->end - $session->{session}->start);
 	    my $relative_duration = $session_duration/$game_duration;
 	    $team_duration += $relative_duration;
 	    # print "R: ".$relative_duration." -> ".$team_duration." -> ".$game_duration."\n";
@@ -860,7 +874,7 @@ sub updateRankings {
     my ($self) = @_;
     my $server_id = $self->{db_server}->id;
     my $lastUpdate = Stats::DB::TimeStamp->new(name => 'last_glicko2',server_id => $server_id);
-    if (!$lastUpdate->load(speculative => 1) || !defined($lastUpdate->value) || !defined($self->{last_glicko2}) || $self->getDuration($lastUpdate->value,$self->{last_glicko2}) >= 12*3600) {
+    if (!$lastUpdate->load(speculative => 1) || !defined($lastUpdate->value) || !defined($self->{last_glicko2}) || $self->getDuration($self->{last_glicko2} - $lastUpdate->value) >= 12*3600) {
 	# print "  Updating glicko2\n";
 	my %matches = map {
 	    $_->id => {
@@ -868,7 +882,7 @@ sub updateRankings {
 		outcomes => [ ]
 	    }
 	} @{Stats::DB::Player::Manager->get_players(query => [ server_id => $server_id ])};
-	my @scores = @{Stats::DB::Glicko2Score::Manager->get_glicko2_scores(query => [ is_new => 1, 'session.player.server_id' => $server_id ],with_objects => [ 'session', 'session.player'] )};
+	my @scores = @{Stats::DB::Glicko2Score::Manager->get_glicko2_scores(query => [ is_new => 1, 'session.player.server_id' => $server_id, 'session.player.total_time' => { ge => MIN_GLICKO2_TIME } ],with_objects => [ 'session', 'session.player'] )};
 	foreach my $score (@scores) {
 	    push @{$matches{$score->session->player_id}->{outcomes}},{
 		opponent => Glicko2::Player->new(rating     => $score->opponent_rating,
@@ -1085,7 +1099,7 @@ sub parseFile {
 sub parseTime {
     my ($self,$value) = @_;
     if ($value =~ /^(?<m>\d+)\:(?<s>\d+)$/) {
-        return DateTime::Duration->new(minutes => $1,seconds => $2);
+        return DateTime::Duration->new(minutes => $+{m},seconds => $+{s});
     } else {
         return undef;
     }

@@ -28,7 +28,7 @@ use Stats::DB::GameWeapon;
 use Stats::DB::PlayerMap;
 use Stats::DB::Clan;
 
-use Stats::Util qw/replace_all/;
+use Stats::Util qw/replace_all db_to_hashref/;
 
 use Glicko2::Player;
 
@@ -157,8 +157,8 @@ get '/server/:id/players/:offset/:limit' => sub {
     my $count = Stats::DB::PlayerRanking::Manager->get_player_rankings_count(where => $where,require_objects => [ 'player' ]);
     my @players = map {
 	+{
-	    player  => $_->player,
-	    glicko2 => $_->glicko2
+	    player  => db_to_hashref($_->player),
+	    glicko2 => db_to_hashref($_->glicko2)
 	}
     } @{Stats::DB::PlayerRanking::Manager->get_player_rankings(
 	where        => $where,
@@ -212,7 +212,15 @@ get '/server/:id/maps/:offset/:limit' => sub {
 	offset  => params->{offset},
     )};
     return {
-	maps   => \@maps,
+	maps   => [
+	    map {
+		my $map = $_;
+		+{ 
+		    (map { $_ => $map->$_ } $map->meta->column_names),
+		    url => '/map/'.$map->id
+		}
+	    } @maps
+	],
 	offset => params->{offset},
 	total  => $count
     };

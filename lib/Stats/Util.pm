@@ -4,7 +4,7 @@ use strict;
 use warnings;
 
 use base qw/Exporter/;
-our @EXPORT_OK = qw/replace_colors replace_smileys replace_all remove_all weapon_name format_duration/;
+our @EXPORT_OK = qw/replace_colors replace_smileys replace_all remove_all weapon_name format_duration db_to_hashref/;
 
 use CGI qw/escapeHTML/;
 use Stats::DB::Weapon;
@@ -88,6 +88,11 @@ sub remove_all {
 my $format = DateTime::Format::Duration->new(pattern => '%H:%M:%S',normalize => 1);
 sub format_duration {
     return $format->format_duration(DateTime::Duration->new(seconds => $_[0]));
+}
+
+sub db_to_hashref {
+    my ($obj) = @_;
+    return +{ map { $_ => $obj->$_ } $obj->meta->column_names };
 }
 
 1;
