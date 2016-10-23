@@ -62,6 +62,7 @@ create table players (
 
        total_sessions int not null default 0,
        total_rqs int not null default 0,
+       total_games int not null default 0,
 
        foreign key(server_id) references servers(id),
        unique(server_id,guid)

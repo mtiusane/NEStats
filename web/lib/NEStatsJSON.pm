@@ -67,10 +67,11 @@ get '/servers/:offset/:limit' => sub {
 };
 
 get '/games/:offset/:limit' => sub {
-
+    # TODO: Implement or remove
 };
 
 get '/maps/:offset/:limit' => sub {
+    # TODO: Implement or remove
 };
 
 get '/player/:id' => sub {
@@ -215,8 +216,8 @@ get '/server/:id/maps/:offset/:limit' => sub {
 	maps   => [
 	    map {
 		my $map = $_;
-		+{ 
-		    (map { $_ => $map->$_ } $map->meta->column_names),
+		+{
+		    %{db_to_hashref($map)},
 		    url => '/map/'.$map->id
 		}
 	    } @maps
@@ -285,21 +286,39 @@ get '/game/:id' => sub {
     };
 };
 
+get '/game/:id/events' => sub {
+    # my %weapons_by_id = map { $_->id => weapon_name($_->name) } @{Stats::DB::Weapon::Manager->get_weapons() // [ ]};
+    # my %buildings_by_id = map { $_->id => replace_all($_->name) } @{Stats::DB::Building::Manager->get_buildings() // [ ]};
+    # my @sessions = @{Stats::DB::Session::Manager->get_sessions(query => [ game_id => params->{id} ], with_objects => [ 'player' ]) // [ ]};
+    # foreach my $session (@sessions) {
+    # 	my $player = $session->player;
+
+    # 	my @events;
+    # 	push @events,@{Stats::DB::PlayerEvent::Manager->get_player_events(where => [ or => [ killer_id => $session->id, killed_id => $session->id, assist_id => $session->id ] ],sort_by => 'time') // [ ]};
+    # 	push @events,@{Stats::DB::BuildingEvent::Manager->get_building_events(where => [ session_id => $session->id ],sort_by => 'time') // [ ]};
+    # 	push @events,@{Stats::DB::TeamEvent::Manager->get_team_events(where => [ session_id => $session->id ],sort_by => 'time') // [ ]};
+
+    # 	next unless (scalar @events);
+    # }
+};
+
 get '/game/:id/sessions/:team/:offset/:limit' => sub {
     my $count = Stats::DB::Session::Manager->get_sessions_count(where => [ game_id => params->{id}, team => params->{team} ]);
     my @sessions = @{Stats::DB::Session::Manager->get_sessions(where => [ game_id => params->{id}, team => params->{team} ],with_objects => [ 'player' ],offset => params->{offset},limit => params->{limit})};
     return {
 	sessions => [ map {
 	    {
-		player => $_->player ? {
-		    id   => $_->player->id,
-		    name => replace_all($_->player->displayname)
-		} : {
-		    id   => undef,
-		    name => replace_all($_->name)
-		},
-		ping  => $_->ping,
-		score => $_->score,
+		($_->player ? (
+		    player_id   => $_->player->id,
+		    player_name => replace_all($_->player->displayname),
+		    player_url  => '/player/'.$_->player->id,
+		) : (
+		    player_id   => undef,
+		    player_name => replace_all($_->name),
+		    player_url  => undef,
+		)),
+		ping  => $_->ping // 'N/A',
+		score => $_->score // 'N/A',
 		start => $_->start,
 		end   => $_->end
 	    }

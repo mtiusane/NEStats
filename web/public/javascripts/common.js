@@ -50,7 +50,10 @@ Common = {
 		// console.log("Loading field: f_"+name, field);
 		field = $(field);
 		if (field.is('a')) {
-		    field.attr('href',value);
+		    if (value != null)
+			field.attr('href',value);
+		    else
+			field.children().unwrap();
 		} else if (field.hasClass('f__sum')) {
 		    var sum = field.data('f__sum');
 		    if (sum === undefined) sum = 0.0;
@@ -61,6 +64,8 @@ Common = {
 		    $(field).html(new Date(value).toLocaleDateString());
 		} else if (field.hasClass('f__time')) {
 		    $(field).html(new Date(value).toLocaleTimeString());
+		} else if (field.hasClass('f__duration')) {
+		    $(field).html(Common.format_duration(value));
 		} else {
 		    $(field).html(value);
 		}
@@ -91,6 +96,11 @@ Common = {
 	if (hours > 0) return hours + ':' + minutes + ':' + seconds;
 	if (minutes > 0) return minutes + ':' + seconds;
 	return seconds;
+    },
+
+    format_outcome: function(outcome)
+    {
+    	return '<span class="'+outcome+'">'+outcome+'</span>';
     },
 
     sum: function(values) {

@@ -175,6 +175,10 @@ a:hover {
     text-decoration: none;
 }
 
+a:hover span, a:visited:hover span { /* override for color codes in emoticons */
+    color: cyan !important;
+}
+
 a:active {
     color: #efefef;
     text-decoration: none;
@@ -182,6 +186,11 @@ a:active {
 
 a:visited {
     color: #efefef;
+    text-decoration: none;
+}
+
+a:visited:hover {
+    color: cyan;
     text-decoration: none;
 }
 

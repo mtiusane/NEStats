@@ -37,6 +37,7 @@ use List::Util qw/max pairs/;
 use Log::Log4perl qw/:easy/;
 
 use constant MIN_GLICKO2_TIME => 3600;
+use constant MAX_SLOTS => 1024;
 
 sub new {
     my ($class,$initializer,%params) = @_;
@@ -46,7 +47,7 @@ sub new {
         game    => undef,
         db_game => undef,
 	last_glicko2 => undef,
-        slots => [ map { undef } (0..1023) ],
+        slots => [ map { undef } (1..MAX_SLOTS) ],
         guids => {
             0 => +{
                 name          => '<world>',
@@ -62,7 +63,7 @@ sub new {
         # games => [ ],
 	in_game => 0,
     };
-    $self->{slots}->[1023] = {
+    $self->{slots}->[MAX_SLOTS-1] = {
         connect       => DateTime->now,
         guid          => 0,
         name          => '<world>',
@@ -145,16 +146,25 @@ sub loadPlayer {
 }
 
 sub beginSession {
-    my ($self,%fields) = @_;
+    my ($self,%params) = @_;
     my $result = Stats::DB::Session->new(
-	game_id   => $fields{game_id},
-	player_id => $fields{player_id},
-	name      => $fields{name},
-	ip        => $fields{ip},
-	team      => $fields{team},
-	start     => $fields{start}
-	);
+	game_id   => $params{game_id},
+	player_id => $params{player_id},
+	name      => $params{name},
+	ip        => $params{ip},
+	team      => $params{team},
+	start     => $params{start}
+    );
     $result->save;
+    if (my $db_player = $self->loadPlayer($params{player_id})) {
+	if ($params{team} =~ /^alien|humans$$/) {
+	    $db_player->total_sessions($db_player->total_sessions+1);
+	    $self->{game}->{db_players}->{$db_player->id} = $db_player;
+	} elsif ($params{is_new}) { # 'spectator'
+	    $db_player->total_rqs($db_player->total_rqs+1);
+	}
+	$db_player->save;
+    }
     return $result;
 }
 
@@ -166,10 +176,6 @@ sub endSession {
 	if (my $player = $self->loadPlayer($session->player_id)) {
 	    my $duration = $self->getDuration($end-$session->start);
 	    $player->total_time($player->total_time+$duration);
-	    my $playerMap = Stats::DB::PlayerMap->new(player_id => $player->id,map_id => $self->{db_game}->map_id);
-	    $playerMap->load(speculative => 1);
-	    $playerMap->total_time($playerMap->total_time+$duration);
-	    $playerMap->save();
 	    if ($session->team eq 'human') {
 		$player->total_rqs($player->total_rqs+1) if (!defined($self->{db_game}->end));
 		$player->total_time_h($player->total_time_h+$duration);
@@ -178,6 +184,11 @@ sub endSession {
 		$player->total_time_a($player->total_time_a+$duration);
 	    }
 	    $player->save;
+	    my $playerMap = Stats::DB::PlayerMap->new(player_id => $player->id,map_id => $self->{db_game}->map_id);
+	    $playerMap->load(speculative => 1);
+	    $playerMap->total_time($playerMap->total_time+$duration);
+	    # TODO: Might be useful to track total time for a and h in each map.
+	    $playerMap->save();
 	}
     }
 }
@@ -193,6 +204,7 @@ sub handleInitGame {
         total_deaths => [ ],
         result       => 'Draw (voted / crashed)',
         score        => [ ],
+	db_players   => { },
     };
 }
 
@@ -292,7 +304,8 @@ sub handleClientConnect
 	name      => $name,
 	ip        => $fields{ip},
 	team      => 'spectator',
-	start     => $self->parseTimeRelative($fields{time})
+	start     => $self->parseTimeRelative($fields{time}),
+	is_new    => 1
     );
     return unless (defined $self->{game});
     # my $event = Stats::DB::TeamEvent->new(
@@ -345,8 +358,8 @@ sub handleClientDisconnect {
     } else {
         $self->log->warn("ClientDisconnect(): No active db_session for slot $fields{slot} guid $fields{guid}");
     }
-    # TODO: Slot isn't reset in order to correctly parse assist messages involving disconnected player
-    # $self->{slots}->[$fields{slot}] = undef;
+    # NOTE: Slot is *not* set to undef, instead marking as disconnected. This is done
+    #       in order to correctly parse assist messages involving disconnected player
     $self->{slots}->[$fields{slot}]->{disconnected} = 1;
     --$self->{cache}->{total_players};
 }
@@ -354,11 +367,13 @@ sub handleClientDisconnect {
 sub handleAdminAuth {
     my ($self,%fields) = @_;
     return unless (defined $self->{game});
-    $self->{guids}->{$fields{guid}}->{simple_name} = $fields{authname};
-    $self->{guids}->{$fields{guid}}->{level} = $fields{level};
-    $self->{game}->{players}->{$fields{guid}}->{authenticated} = $self->{guids}->{$fields{guid}}->{authenticated} = 1;
-    $self->{game}->{players}->{$fields{guid}}->{simple_name} = $fields{simplename};
-    my $db_player = Stats::DB::Player->new(server_id => $self->{db_server}->id,guid => $fields{guid});
+    my $guid = $fields{guid};
+    
+    $self->{guids}->{$guid}->{simple_name} = $fields{authname};
+    $self->{guids}->{$guid}->{level} = $fields{level};
+    $self->{game}->{players}->{$guid}->{authenticated} = $self->{guids}->{$guid}->{authenticated} = 1;
+    $self->{game}->{players}->{$guid}->{simple_name} = $fields{simplename};
+    my $db_player = Stats::DB::Player->new(server_id => $self->{db_server}->id,guid => $guid);
     unless ($db_player->load(speculative => 1)) {
         $db_player->displayname($fields{authname});
         $db_player->name($fields{authname});
@@ -598,6 +613,9 @@ sub handleExit {
 	$map->total_games($map->total_games+1);
 	$map->total_time($map->total_time+$self->getDuration($self->{db_game}->end - $self->{db_game}->start));
 	$map->save;
+	foreach my $player (values %{$self->{game}->{db_players}}) {
+	    $player->total_games($player->total_games+1);
+	}
     }
 }
 
@@ -629,21 +647,16 @@ sub handleChangeTeam {
         return;
     }
     my $player_id = $db_session->player_id;
-    my $db_session = $self->{slots}->[$fields{slot}]->{db_session} = $self->startSession(
+    my $db_session = $self->{slots}->[$fields{slot}]->{db_session} = $self->beginSession(
+	slot      => $fields{slot},
 	game_id   => $self->{db_game}->id,
 	player_id => $player_id,
 	name      => $self->{slots}->[$fields{slot}]->{name},
         team      => $fields{team},
         ip        => $self->{slots}->[$fields{slot}]->{ip},
-        start     => $self->parseTimeRelative($fields{time})
+        start     => $self->parseTimeRelative($fields{time}),
+	is_new    => 0
     );
-    if (my $db_player = $self->loadPlayer($player_id)) {
-	$db_player->total_sessions($db_player->total_sessions+1);
-	if ($fields{team} !~ /^alien|human$/) { # 'spectator'
-	    $db_player->total_rqs($db_player->total_rqs+1);    
-	}
-	$db_player->save;
-    }
 }
 
 # TODO: (1.1)
@@ -843,26 +856,19 @@ sub updateGlicko2 {
 	    my $session_duration = $self->getDuration($session->{session}->end - $session->{session}->start);
 	    my $relative_duration = $session_duration/$game_duration;
 	    $team_duration += $relative_duration;
-	    # print "R: ".$relative_duration." -> ".$team_duration." -> ".$game_duration."\n";
 	    $comp->rating($comp->rating+$relative_duration*$session->{glicko}->rating);
 	    $comp->rd($comp->rd+$relative_duration*$session->{glicko}->rd);
 	    # $comp->volatility($comp->volatility+$session->{glicko}->volatility); # TODO: Not used for update?
 	}
 	$comp->rating($comp->rating/$team_duration);
 	$comp->rd($comp->rd/$team_duration);
-	# $comp->rating($comp->rating/scalar(@{$teams{$team}}));
-	# $comp->rd($comp->rd/scalar(@{$teams{$team}}));
-
-	# $comp->rating($comp->rating/scalar(@{$teams{$team}}));
-	# $comp->rd($comp->rd/scalar(@{$teams{$team}}));
-	# $comp->volatility($comp->volatility/scalar(@{$teams{$team}})); # TODO: Not used for update?
+	# $comp->volatility($comp->volatility/$team_duration); # TODO: Not used for update?
     }
     my %opponents = (human => $teams{alien_composite},alien => $teams{human_composite});
     foreach my $team ('human','alien') {
 	foreach my $entry (@{$teams{$team}}) {
 	    # print "Append queue: ".((defined $entry->{db}) ? $entry->{db}->id : 'null')."\n";
 	    next unless (defined $entry->{db});
-	    # queued update
 	    Stats::DB::Glicko2Score->new(glicko2_id          => $entry->{db}->id,
 					 session_id          => $entry->{session}->id,
 					 score               => $score_values->{$team},
@@ -870,12 +876,6 @@ sub updateGlicko2 {
 					 opponent_rd         => $opponents{$team}->rd,
 					 opponent_volatility => $opponents{$team}->volatility,
 					 is_new              => 1)->save;
-	    # immediate update - commented out
-	    # $entry->{glicko}->update({
-	    # 	opponent => $opponents{$team},
-	    # 	score    => $score_values->{$team}
-	    # });
-	    # $self->saveGlicko2($entry);
 	}
     }
     $self->{last_glicko2} = $game->end->clone;

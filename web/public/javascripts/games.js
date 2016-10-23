@@ -9,7 +9,7 @@ $(document).ready(function() {
 	entry.find('.game').html('<span class="name text"><a href="/game/'+element.id+'">'+element.date+' '+element.time+' '+element.outcome+'</a></span>');
 	entry.find('.map').html('<span class="name text"><a href="/map/'+element.map.id+'">'+element.map.name+'</a></span>');
 	entry.find('.players').html('<span class="number">'+element.max_players+'</span>');
-	entry.find('.outcome').html('<span>'+element.outcome+'</span>');
+	entry.find('.outcome').html(Common.format_outcome(element.outcome));
 	return entry;
     });
 });

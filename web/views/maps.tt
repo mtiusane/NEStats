@@ -5,10 +5,11 @@
     <a class="data server_id" href="<% server_id %>"></a>
     <table>
       <thead>
-      	<tr class="title"><th colspan="7"><span class="f_server_name"></span> - Maps</th></tr>
+      	<tr class="title"><th colspan="8"><span class="f_server_name"></span> - Maps</th></tr>
 	<tr class="title">
 	  <th>Name</th>
 	  <th>Games Played</th>
+	  <th>Total Play Time</th>
 	  <th>Human Wins</th>
 	  <th>Alien Wins</th>
 	  <th>Draws</th>
@@ -20,6 +21,7 @@
 	<tr class="template">
 	  <td><a class="f_url" href=""><span class="f_name"></span></a></td>
 	  <td class="f_total_games"></td>
+	  <td class="f__duration f_total_time"></td>
 	  <td class="f_human_wins"></td>
 	  <td class="f_alien_wins"></td>
 	  <td class="f_draws"></td>
