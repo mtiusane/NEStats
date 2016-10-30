@@ -350,7 +350,28 @@ create table team_events (
 
        foreign key (session_id) references sessions(id)
 );
+/***
+create table game_events (
+       id int not null primary key auto_increment,
+       game_id int not null references games(id),
+       time datetime not null,
 
+       type enum('player','build','destroy','team') not null,
+
+       weapon_id int references weapons(id),
+       killed_id int references sessions(id),
+       killer_id int references sessions(id),
+       assist_id int references sessions(id),
+
+       building_id int not null references buildings(id),
+
+       foreign key (weapon_id) references weapons(id),
+       foreign key (killed_id) references sessions(id),
+       foreign key (killer_id) references sessions(id)
+       foreign key (building_id) references buildings(id),
+       foreign key (game_id) references games(id)
+);
+***/
 create table game_status_events (
        id int not null primary key auto_increment,
        game_id int not null references games(id),

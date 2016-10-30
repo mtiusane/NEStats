@@ -5,6 +5,5 @@ $(document).ready(function() {
 	$.get('/json/game/'+game_id,function(data) {
 	   // div.find('.start').html('<span class="
 	});
-	
     });
 });

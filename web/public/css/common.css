@@ -1,31 +1,3 @@
-.container table {
-    border-top-left-radius: 6px;
-    border-top-right-radius: 0px;
-    border-bottom-left-radius: 6px;
-    border-bottom-right-radius: 0px;
-}
-
-.container {
-    display: inline-block;
-    max-height: 20em;
-    max-width: 100%;
-    overflow-x: hidden;
-    overflow-y: scroll;
-    border-top-left-radius: 6px;
-    border-top-right-radius: 0px;
-    border-bottom-left-radius: 6px;
-    border-bottom-right-radius: 0px;
-}
-
-.container.noscroll {
-    overflow-y: hidden !important;
-    border-radius: 6px;
-}
-
-.container.noscroll table {
-    border-radius: 6px;
-}
-
 .template {
     display: block;
     visibility: hidden;
@@ -41,6 +13,45 @@
     max-width: 0px;
     margin: 0px;
     padding: 0px;
+}
+
+.graph {
+    display: inline-block;
+    width: 90%;
+    min-width: 800px;
+    height: 60%;
+    min-height: 600px;
+    overflow: hidden;
+    border-radius: 6px;
+    /* border: 1px solid red; */
+}
+
+.container {
+    display: inline-block;
+    max-height: 20em;
+    max-width: 100%;
+    overflow-x: hidden;
+    overflow-y: scroll;
+    border-top-left-radius: 6px;
+    border-top-right-radius: 0px;
+    border-bottom-left-radius: 6px;
+    border-bottom-right-radius: 0px;
+}
+
+.container table {
+    border-top-left-radius: 6px;
+    border-top-right-radius: 0px;
+    border-bottom-left-radius: 6px;
+    border-bottom-right-radius: 0px;
+}
+
+.container.noscroll {
+    overflow-y: hidden !important;
+    border-radius: 6px;
+}
+
+.container.noscroll table {
+    border-radius: 6px;
 }
 
 .container table ::-webkit-scrollbar {

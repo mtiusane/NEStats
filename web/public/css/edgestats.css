@@ -822,44 +822,71 @@ ul.dropdown a {
 }
 
 /* */
-.graph_popup {
-    display: block;
-    background: gray;
+canvas {
+    -moz-user-select: none;
+    -webkit-user-select: none;
+    -ms-user-select: none;
 }
 
-.graph_popup tr:nth-child(even) {
+#chartjs-tooltip {
+    display: block;
+    border: 1px solid white;
+    border-radius: 3px;
+    background: gray; /*rgba(0.3,0.3,0.3,0.7); /* gray*/
+    position: absolute;
+    opacity: 1;
+    pointer-events: none;
+    -webkit-transition: all .1s ease;
+    transition: all .1s ease;
+    /*-webkit-transform: translate(50%,0);
+    transform: translate(50%,0);*/
+}
+
+.chartjs-tooltip-key {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+}
+/*
+#chartjs-tooltip tr:nth-child(even)
+{
     line-height: 1em;
     font-size: 1em;
     margin: 0px;
     padding: 0px;
 }
 
-.graph_popup tr:nth-child(odd) {
+#chartjs-tooltip tr:nth-child(odd) {
     line-height: 0.8em;
     font-size: 0.8em;
     margin: 0px;
     padding: 0px;
 }
 
-.graph_popup tr:first-child {
+#chartjs-tooltip tr:first-child {
     line-height: 1em;
     font-size: 1em;
     margin: 0px;
     padding: 0px;
 }
 
-.graph_popup tr th {
+#chartjs-tooltip tr th {
     text-align: left;
     color: lightgray;
 }
-.graph_popup tr td {
+#chartjs-tooltip tr td
+{
     text-align: center;
 }
-.graph_popup tr td span.info {
+
+#chartjs-tooltip tr td span.info
+{
     text-align: center;
     top: -0.5em;
 }
-.graph_popup tr.title th {
+
+#chartjs-tooltip tr.title th
+{
     text-align: center;
     padding-top: 3px;
     padding-bottom: 3px;
@@ -868,3 +895,4 @@ ul.dropdown a {
     border-bottom: 2px solid rgba(0,0,0,0.1);
     background: rgba(59,198,184,0.8);
 }
+*/
