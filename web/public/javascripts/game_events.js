@@ -244,7 +244,7 @@ $(document).ready(function() {
 				    );
 				    el.html(innerHtml.join('\n'));
 				}
-				var top = tooltip.caretY;
+				var top = $(window).scrollTop()+tooltip.caretY;
 				if (tooltip.yAlign) {
 				    if (tooltip.yAlign == 'above') {
 					top -= tooltip.caretSize+tooltip.caretPadding;
