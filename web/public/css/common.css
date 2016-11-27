@@ -17,10 +17,8 @@
 
 .graph {
     display: inline-block;
-    width: 90%;
     min-width: 800px;
-    height: 60%;
-    min-height: 600px;
+    min-height: 400px;
     overflow: hidden;
     border-radius: 6px;
     /* border: 1px solid red; */
@@ -48,6 +46,7 @@
 .container.noscroll {
     overflow-y: hidden !important;
     border-radius: 6px;
+    max-height: 100% !important;
 }
 
 .container.noscroll table {

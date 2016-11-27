@@ -1,9 +1,18 @@
 $(document).ready(function() {
-    $('#content div.game').each(function(index) {
+    $('div#game').each(function(index) {
 	var div = $(this);
-	var game_id = div.find('a.data.game_id').attr('href');
+	var anchor = div.find('a.data.game_id');
+	var game_id = anchor.attr('href');
+	anchor.remove();
+	var table = div.find('table');
+	var template = table.find('.template').detach();
+	template.removeClass('template');
+	table.data('loading',true);
 	$.get('/json/game/'+game_id,function(data) {
-	   // div.find('.start').html('<span class="
+	    var entry = template.clone();
+	    Common.load_fields_generic(entry,data.game);
+	    table.append(entry);
+	    table.data('loading',false);
 	});
     });
 });

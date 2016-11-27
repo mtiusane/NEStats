@@ -161,5 +161,68 @@ Common = {
 	result.append('<span class="overlay">'+Number(r).toFixed(2)+'</span>');
 	return result;
     },
+
+    extractColors: function(text) {
+	var parts = [ ];
+	var start=0;
+	var color='7';
+	while(start < text.length) {
+	    var next = text.indexOf('^', start);
+	    if (next != -1) {
+		if (next > start) parts.push({ color: color, text: text.substr(start, next-start) });
+		color = text.charAt(next+1);
+		start = next+2;
+	    } else {
+		parts.push({ color: color, text: text.substr(start) });
+		start = text.length;
+	    }
+	}
+	return parts;
+    },
+
+    combineTextFromColors: function(parts) {
+	return $.map(parts, function(p) { return p.text; }).join();
+    },
+
+    stripColors: function(text) {
+	return Common.combineTextFromColors(Common.extractColors(text));
+    },
+
+    mapColor: function(color) {
+	var index = (color.charCodeAt(0)-'0'.charCodeAt(0)) % 16;
+	var colors = [
+	    '#333333', '#ff0000', '#00ff00', '#ffff00',
+	    '#0000ff', '#00ffff', '#ff00ff', '#ffffff',
+	    '#ff7f00', '#7f7f7f', '#ff9919', '#007f7f',
+	    '#7f007f', '#007fff', '#7f00ff', '#3399cc'
+	];
+	return colors[index];
+    },
+    
+    generateFillStyle: function(canvas,text) {
+	var parts = Common.extractColors(text);
+	var letters = Common.combineTextFromColors(parts);
+	var ctx = $(canvas)[0].getContext("2d");
+	var width = ctx.measureText(letters).width;
+	var gradient = ctx.createLinearGradient(0,0,width,0);
+	var offset = Number(0.0);
+	for(var i=0;i<parts.length;++i) {
+	    gradient.addColorStop(offset, Common.mapColor(parts[i].color));
+	    offset += Number(parts[i].text.length)/Number(letters.length);
+	}
+	return gradient;
+    },
+
+    wrapSVG: function(text) {
+	return [].concat(
+	    '<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200">',
+	    '<foreignObject width="100%" height="100%">',
+	    '<div xmlns="http://www.w3.org/1999/xhtml" style="font-size:40px">',
+	    text,
+	    '</div>',
+	    '</foreignObject>',
+	    '</svg>'
+	);
+    }
     
 };

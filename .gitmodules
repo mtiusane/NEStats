@@ -1,3 +1,6 @@
 [submodule "externals/chartjs"]
 	path = externals/chartjs
 	url = https://github.com/chartjs/Chart.js.git
+[submodule "externals/chartjs-plugin-zoom"]
+	path = externals/chartjs-plugin-zoom
+	url = https://github.com/chartjs/chartjs-plugin-zoom.git

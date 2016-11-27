@@ -341,7 +341,7 @@ get '/session/:id/events' => sub {
 		    team    => $event->team
 		}
 	    } @{Stats::DB::TeamEvent::Manager->get_team_events(where => [ session_id => $session->id ]) // [ ]}),
-	    { time => $session->end, type => 'end' }
+	    { time => $session->end, type => 'end', team => $session->team }
 	] # )
     };
 };
@@ -421,7 +421,7 @@ get '/game/:id/events' => sub {
 
 get '/game/:id/sessions/:team/:offset/:limit' => sub {
     my $count = Stats::DB::Session::Manager->get_sessions_count(where => [ game_id => params->{id}, team => params->{team} ]);
-    my @sessions = @{Stats::DB::Session::Manager->get_sessions(where => [ game_id => params->{id}, team => params->{team} ],with_objects => [ 'player' ],offset => params->{offset},limit => params->{limit})};
+    my @sessions = @{Stats::DB::Session::Manager->get_sessions(where => [ game_id => params->{id}, team => params->{team} ],with_objects => [ 'player' ],offset => params->{offset},limit => params->{limit},sort_by => [ 'score desc' ])};
     return {
 	sessions => [ map {
 	    {
