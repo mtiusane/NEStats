@@ -1,4 +1,16 @@
 $(document).ready(function() {
+    var formatPopup = function(title,lines) {
+	return [
+	    '<div class="container noscroll">',
+	    '<table>',
+	    '<thead><tr class="title"><th>',title,'</th></tr></thead>',
+	    '<tbody>'
+	].concat($.map(lines,function(line) { return '<tr><td>'+line+'</tr></td>'; })).concat([
+	    '</tbody>',
+	    '</table>',
+	    '</div>'
+	]).join('');
+    };
     $('#content div#game_events').each(function(index) {
 	var div = $(this);
 	var game_id = div.find('a.data.game_id').attr('href');
@@ -21,72 +33,67 @@ $(document).ready(function() {
 		kill   : {
 		    value  : function(v) { return v+1; },
 		    tooltip: function(s,e) {
-			var result = eventsBySession[e.killer_id].session.name+" killed "+eventsBySession[e.killed_id].session.name;
-			result += " with "+e.weapon;
-			if (e.assist_id != null) {
-			    if (eventsBySession[e.assist_id] != null) {
-				result += " assisted by "+eventsBySession[e.assist_id].session.name;
-			    } else {
-				console.log("Strange, assist with no session data...");
-				result += " assisted by someone";
-			    }
+			if (e.assist_id != null && eventsBySession[e.assist_id] == null) {
+			    console.log("Strange, assist with no session data for assistant.");
 			}
-			return result;
+			return formatPopup('Kill',[
+			    s.name,'killed',eventsBySession[e.killed_id].session.name,
+			].concat((e.assist_id != null && eventsBySession[e.assist_id] != null) ? [
+			    'assisted by',eventsBySession[e.assist_id].session.name
+			] : [ ]));
 		    }
 		},
 		death  : {
 		    value  : function(v) { return v-0.25; },
 		    tooltip: function(s,e) {
 			if (e.killer_id != null) {
-			    var result = eventsBySession[e.killed_id].session.name+" killed by "+eventsBySession[e.killer_id].session.name;
-			    result += " with "+e.weapon;
-			    if (e.assist_id != null) {
-				if (eventsBySession[e.assist_id] != null && eventsBySession[e.assist_id].session != null) {
-				    result += " assisted by "+eventsBySession[e.assist_id].session.name;
-				} else {
-				    console.log("Strange, assisted kill with no info about assistant...");
-				    result += " assisted by someone";
-				}
+			    if (e.assist_id != null && eventsBySession[e.assist_id] == null) {
+				console.log("Strange, assisted death with no assistant.");
 			    }
+			    return formatPopup('Death',[
+				s.name,
+				'killed by',eventsBySession[e.killer_id].session.name,
+				'with',e.weapon].concat((e.assist_id != null && eventsBySession[e.assist_id] != null) ? [
+				    'assisted by',eventsBySession[e.assist_id].session.name
+				] : [ ]));
 			    return result;
 			} else {
-			    return eventsBySession[e.killed_id].session.name+" killed by "+e.weapon;
+			    return formatPopup('Death',[ s.name,'died of',e.weapon ]);
 			}
 		    }
 		},
 		assist : {
 		    value  : function(v) { return v+0.25; },
 		    tooltip: function(s,e) {
-			if (e.killer_id != null) {
-			    return "Assisted "+eventsBySession[e.killer_id].session.name;
-			} else {
-			    console.log("Strange, assist with no killer_id...");
-			    return "Assisted someone";
-			}
+			return formatPopup('Assist',[
+			    s.name,' assisted ',
+			    (e.killer_id != null ? eventsBySession[e.killer_id].session.name : '<i>world</i>'),
+			    ' vs ',eventsBySession[e.killed_id].session.name
+			]);
 		    }
 		},
 		build  : {
 		    value  : function(v) { return v+1; },
 		    tooltip: function(s,e) {
-			return "Built "+e.building;
+			return formatPopup('Build',[ s.name,'built',e.building ]);
 		    }
 		},
 		destroy: {
 		    value  : function(v) { return v+2; },
 		    tooltip: function(s,e) {
-			return "Destroyed "+e.building+" with "+e.weapon;
+			return formatPopup('Destroy',[ s.name,'destroyed',e.building,'with',e.weapon ]);
 		    }
 		},
 		team   : {
 		    value  : function(v) { return 0; },
 		    tooltip: function(s,e) {
-			return s.name+" joined "+e.team+'s';
+			return formatPopup('Team',[ s.name,'joined',e.team+'s' ]);
 		    }
 		},
 		end    : {
 		    value  : function(v) { return v; },
 		    tooltip: function(s,e) {
-			return s.name+" left "+e.team+'s';
+			return formatPopup('End',[ s.name,'left',e.team+'s' ]);
 		    }
 		}
 	    };
@@ -136,6 +143,7 @@ $(document).ready(function() {
 			title: {
 			    display: true,
 			    text: 'Game events',
+			    fontColor: 'lightgray'
 			},
 			scales: {
 			    xAxes: [

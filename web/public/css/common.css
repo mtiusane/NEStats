@@ -139,3 +139,41 @@
 .container table tbody tr td:nth-child(even) {
     background: rgba(255,255,255,0.20);
 }
+
+div#chartjs-tooltip {
+    padding: 0px;
+    margin: 0px;
+    background: transparent;
+    border: 0px none transparent;
+    border-radius: 0px;
+}
+
+div#chartjs-tooltip .container
+{
+    padding: 0px;
+    margin: 0px;
+    width: 100%;
+}
+
+div#chartjs-tooltip .container table
+{
+    padding: 0px;
+    margin: 0px;
+    width: 100%;
+    border-radius: 6px;
+    border: 0px none transparent;
+    display: inline-block;
+}
+
+div#chartjs-tooltip .container table tr td {
+    background: rgba(192, 192, 192, 0.8) !important;
+}
+
+div#chartjs-tooltip .container table tr:nth-child(odd) td {
+    font-size: 1.2em;
+}
+
+div#chartjs-tooltip .container table tr:nth-child(even) td {
+    font-size: 0.8em;
+    font-style: italic;
+}
