@@ -28,7 +28,7 @@
     display: inline-block;
     max-height: 20em;
     max-width: 100%;
-    overflow-x: hidden;
+    overflow-x: auto;
     overflow-y: scroll;
     border-top-left-radius: 6px;
     border-top-right-radius: 0px;
@@ -53,27 +53,73 @@
     border-radius: 6px;
 }
 
-.container table ::-webkit-scrollbar {
-    border-left: 2px solid rgba(0,0,0,0.25);
-    width: 12px;
-    height: 12px;
+.container::-webkit-scrollbar {
+    background: transparent;
 }
 
-.container table ::-webkit-scrollbar-track {
-    border-top-right-radius: 0px;
+.container::-webkit-scrollbar:vertical {
+    border-left: 2px solid rgba(0,0,0,0.25);
+    border-top-left-radius: 0px;
+    border-bottom-left-radius: 0px;
+    border-top-right-radius: 6px;
+    border-bottom-right-radius: 6px;
+    width: 12px;
+}
+
+.container::-webkit-scrollbar-track:vertical {
+    border-top-left-radius: 0px;
+    border-bottom-left-radius: 0px;
+    border-top-right-radius: 6px;
     border-bottom-right-radius: 6px;
     background: rgba(255,255,255,0.15);
 }
 
-.container table ::-webkit-scrollbar-thumb {
+.container::-webkit-scrollbar-thumb:vertical {
+    border-top-left-radius: 0px;
+    border-bottom-left-radius: 0px;
     border-top-right-radius: 6px;
     border-bottom-right-radius: 6px;
     border-left: 2px solid rgba(0,0,0,0.35);
     background: rgba(255,255,255,0.25);
 }
 
-.container table ::-webkit-scrollbar-thumb:hover {
+.container::-webkit-scrollbar-thumb:vertical:hover {
     background: rgba(59,198,184,0.5);
+}
+
+.container::-webkit-scrollbar:horizontal {
+    border-top-left-radius: 0px;
+    border-top-right-radius: 0px;
+    border-bottom-left-radius: 6px;
+    border-bottom-right-radius: 6px;
+    border-top: 2px solid rgba(0,0,0,0.25);
+    height: 12px;
+}
+
+.container::-webkit-scrollbar-track:horizontal {
+    border-top-left-radius: 0px;
+    border-top-right-radius: 0px;
+    border-bottom-left-radius: 6px;
+    border-bottom-right-radius: 6px;
+    background: rgba(255,255,255,0.15);
+}
+
+.container::-webkit-scrollbar-thumb:horizontal {
+    border-top-left-radius: 0px;
+    border-top-right-radius: 0px;
+    border-bottom-left-radius: 6px;
+    border-bottom-right-radius: 6px;
+    border-left: 2px solid rgba(0,0,0,0.35);
+    background: rgba(255,255,255,0.25);
+}
+
+.container::-webkit-scrollbar-thumb:horizontal:hover {
+    background: rgba(59,198,184,0.5);
+}
+
+.container::-webkit-scrollbar-corner
+{
+    background: transparent;
 }
 
 .container table,

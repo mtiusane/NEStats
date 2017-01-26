@@ -637,20 +637,18 @@ table.jqplot-table-legend tr td {
 }
 
 ::-webkit-scrollbar {
-    border-left: 2px solid rgba(0,0,0,0.25);
+    background: transparent;
     width: 12px;
     height: 12px;
 }
 
 ::-webkit-scrollbar-track {
-    border-top-right-radius: 6px;
-    border-bottom-right-radius: 6px;
+    border-radius: 0px;
     background: rgba(255,255,255,0.15);
 }
 
 ::-webkit-scrollbar-thumb {
-    border-top-right-radius: 6px;
-    border-bottom-right-radius: 6px;
+    border-radius: 6px;
     border-left: 2px solid rgba(0,0,0,0.35);
     background: rgba(255,255,255,0.25);
 }
