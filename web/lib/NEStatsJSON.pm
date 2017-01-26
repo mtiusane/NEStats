@@ -186,11 +186,12 @@ get '/server/:id/games/:offset/:limit' => sub {
 	outcome     => $_->outcome // 'draw',
 	date        => $_->start->dmy,
 	time        => $_->start->hms,
-	max_players => $_->max_players,
+	max_players => $_->max_players
     },@{Stats::DB::Game::Manager->get_games(
 	where => [
 	    server_id   => params->{id},
 	    max_players => { gt => 1 },
+	    total_kills => { gt => 0 },
 	],
 	sort_by => 'start desc',
 	limit => max(25,params->{limit}),
@@ -315,9 +316,9 @@ get '/session/:id/events' => sub {
 		my $event = $_;
 		{
 		    time      => $event->time,
-		    type      => (($event->killer_id == $session->id) && "kill") ||
-		                 (($event->killed_id == $session->id) && "death") ||
-		                 (($event->assist_id == $session->id) && "assist"),
+		    type      => ((defined($event->killer_id) && $event->killer_id == $session->id) && "kill") ||
+		                 ((defined($event->killed_id) && $event->killed_id == $session->id) && "death") ||
+		                 ((defined($event->assist_id) && $event->assist_id == $session->id) && "assist"),
 		    weapon    => $weapons_by_id{$event->weapon_id},
 		    killer_id => $event->killer_id,
 		    killed_id => $event->killed_id,
