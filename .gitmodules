@@ -4,3 +4,6 @@
 [submodule "externals/chartjs-plugin-zoom"]
 	path = externals/chartjs-plugin-zoom
 	url = https://github.com/chartjs/chartjs-plugin-zoom.git
+[submodule "externals/mysqltuner"]
+	path = externals/mysqltuner
+	url = https://github.com/major/MySQLTuner-perl
