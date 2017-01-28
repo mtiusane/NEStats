@@ -36,7 +36,8 @@ use List::Util qw/max pairs/;
 
 use Log::Log4perl qw/:easy/;
 
-use constant MIN_GLICKO2_TIME => 3600;
+use constant MIN_GLICKO2_TIME  => 3600;
+use constant MIN_GLICKO2_GAMES => 10;
 use constant MAX_SLOTS => 1024;
 
 sub new {
@@ -421,6 +422,11 @@ sub handleDie {
 	if (my $assist = $self->loadPlayer($assist_session->player_id)) {
 	    $assist->total_assists($assist->total_assists+1);
 	    $assist->save;
+
+	    my $assistMap = Stats::DB::PlayerMap->new(player_id => $assist->id,map_id => $map->id);
+	    $assistMap->load(speculative => 1);
+	    $assistMap->total_assists($assistMap->total_assists+1);
+	    $assistMap->save();
 	}
     }
     if (defined($killer_session)) {
@@ -510,10 +516,18 @@ sub handleConstruct {
         building_id => $building->id
     );
     $event->save;
-   
+
     my $player = $self->loadPlayer($session->player_id);
-    $player->total_built($player->total_built+1);
-    $player->save;
+    if ($player) {
+	$player->total_built($player->total_built+1);
+	$player->save;
+
+	my $map = $self->{cache}->{map};
+	my $playerMap = Stats::DB::PlayerMap->new(player_id => $player->id,map_id => $map->id);
+	$playerMap->load(speculative => 1);
+	$playerMap->total_built($playerMap->total_built+1);
+	$playerMap->save();
+    }
 }
 
 sub handleDeconstruct {
@@ -615,6 +629,7 @@ sub handleExit {
 	$map->save;
 	foreach my $player (values %{$self->{game}->{db_players}}) {
 	    $player->total_games($player->total_games+1);
+	    $player->save;
 	}
     }
 }
@@ -895,7 +910,7 @@ sub updateRankings {
 		outcomes => [ ]
 	    }
 	} @{Stats::DB::Player::Manager->get_players(query => [ server_id => $server_id ])};
-	my @scores = @{Stats::DB::Glicko2Score::Manager->get_glicko2_scores(query => [ is_new => 1, 'session.player.server_id' => $server_id, 'session.player.total_time' => { ge => MIN_GLICKO2_TIME } ],with_objects => [ 'session', 'session.player'] )};
+	my @scores = @{Stats::DB::Glicko2Score::Manager->get_glicko2_scores(query => [ is_new => 1, 'session.player.server_id' => $server_id, 'session.player.total_time' => { ge => MIN_GLICKO2_TIME }, 'session.player.total_games' => { ge => MIN_GLICKO2_GAMES } ],with_objects => [ 'session', 'session.player'] )};
 	foreach my $score (@scores) {
 	    push @{$matches{$score->session->player_id}->{outcomes}},{
 		opponent => Glicko2::Player->new(rating     => $score->opponent_rating,

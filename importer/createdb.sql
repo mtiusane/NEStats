@@ -355,21 +355,21 @@ create table game_events (
        id int not null primary key auto_increment,
        game_id int not null references games(id),
        time datetime not null,
+       
+       type enum('kill','death','assist','build','destroy','team') not null,
+       team enum('human','alien','spectator') not null,
 
-       type enum('player','build','destroy','team') not null,
+       player_id int references sessions(id) not null,
+       target_id int references sessions(id),
 
        weapon_id int references weapons(id),
-       killed_id int references sessions(id),
-       killer_id int references sessions(id),
-       assist_id int references sessions(id),
-
        building_id int not null references buildings(id),
 
+       foreign key (player_id) references players(id),
+       foreign key (target_id) references players(id),
+
        foreign key (weapon_id) references weapons(id),
-       foreign key (killed_id) references sessions(id),
-       foreign key (killer_id) references sessions(id)
-       foreign key (building_id) references buildings(id),
-       foreign key (game_id) references games(id)
+       foreign key (building_id) references buildings(id)
 );
 ***/
 create table game_status_events (
@@ -405,8 +405,10 @@ create table player_maps (
 
        total_kills int not null default 0,
        total_bkills int not null default 0,
+       total_assists int not null default 0,
        total_deaths int not null default 0,
        total_bdeaths int not null default 0,
+       total_built int not null default 0,
 
        foreign key (player_id) references players(id),
        foreign key (map_id) references maps(id),

@@ -99,8 +99,8 @@ get '/player/:id/deaths_by_weapon/:offset/:limit' => sub {
 		my $death = $_;
 		+{
 		    weapon_displayname => replace_all($death->weapon->displayname),
-		    (map { 'weapon_'.$_ => $death->weapon->$_ } grep { !/^id|displayname$/ } keys(%{$death->weapon})),
-		    (map { $_ => $death->{$_} } grep { !/^displayname|weapon$/ } keys(%$death))
+		    (map { 'weapon_'.$_ => $death->weapon->$_ } grep { !/^id|displayname$/ } $death->weapon->meta->column_names),
+		    (map { $_ => $death->{$_} } grep { !/^displayname|weapon$/ } $death->meta->column_names)
 		}
 	    } @deaths
 	],
@@ -119,8 +119,8 @@ get '/player/:id/kills_by_weapon/:offset/:limit' => sub {
 		my $kill = $_;
 		+{
 		    weapon_displayname => replace_all($kill->weapon->displayname),
-		    (map { 'weapon_'.$_ => $kill->weapon->$_ } grep { !/^id|displayname$/ } keys(%{$kill->weapon})),
-		    (map { $_ => $kill->{$_} } grep { !/^displayname|weapon$/ } keys(%$kill))
+		    (map { 'weapon_'.$_ => $kill->weapon->$_ } grep { !/^id|displayname$/ } $kill->weapon->meta->column_names),
+		    (map { $_ => $kill->{$_} } grep { !/^displayname|weapon$/ } $kill->meta->column_names)
 		}
 	    } @kills
 	],
@@ -186,7 +186,9 @@ get '/server/:id/games/:offset/:limit' => sub {
 	outcome     => $_->outcome // 'draw',
 	date        => $_->start->dmy,
 	time        => $_->start->hms,
-	max_players => $_->max_players
+	max_players => $_->max_players,
+	start       => $_->start,
+	end         => $_->end
     },@{Stats::DB::Game::Manager->get_games(
 	where => [
 	    server_id   => params->{id},
@@ -455,30 +457,35 @@ get '/map/:id' => sub {
     }
     return {
 	displayname => replace_all($map->name),
-	(map { $_ => $map->{$_} } grep { !/^_/ } keys(%$map))
+	(map { $_ => $map->{$_} } grep { !/^_/ } $map->meta->column_names)
     }
 };
 
-get '/map/:id/top_killers/:offset/:limit' => sub {
+get '/map/:id/players/:offset/:limit' => sub {
     my $map = Stats::DB::Map->new(id => params->{id});
-    my $count = Stats::DB::Game::Manager->get_games_count(where => [ map_id => $map->id ]); # , max_players => { gt => 0 }
-    my @top_killers = @{Stats::DB::PlayerMap::Manager->get_player_maps(where => [ map_id => $map->id, total_kills => { gt => 0 } ],with_objects => [ 'player' ],sort_by => 'total_kills desc',offset => params->{offset},limit => params->{limit})};
+    my $where = [ map_id => $map->id, total_kills => { gt => 0 } ];
+    my $count = Stats::DB::Game::Manager->get_games_count(where => $where);
+    my @players = map {
+	my $killer = $_;
+	my %player = map { $_ => $killer->player->$_ } $killer->player->meta->column_names;
+	foreach my $override (grep { defined($player{$_}) } $killer->meta->column_names) {
+	    $player{$override} = $killer->$override;
+	}
+	my $glicko2 = Stats::DB::Glicko2->new(player_id => $killer->player->id);
+	$glicko2 = undef unless ($glicko2->load(speculative => 1));
+	{
+	    player  => \%player,
+	    glicko2 => { map { $_ => $glicko2->$_ } $glicko2->meta->column_names }
+	}
+    } @{Stats::DB::PlayerMap::Manager->get_player_maps(where => $where,with_objects => [ 'player' ],sort_by => 'total_kills desc',offset => params->{offset},limit => params->{limit})};
     return {
-	top_killers => [
-	    map {
-		my $killer = $_;
-		{
-		    player_displayname => replace_all($killer->player->displayname),
-		    (map { $_ => $killer->{$_} } grep { !/^_/ } grep { !/^player$/ } keys(%$killer)),
-		}
-	    } @top_killers
-	],
+	players => \@players,
 	offset => params->{offset},
 	total  => $count
     };
 };
 
-get '/map/:id/recent_games/:offset/:limit' => sub {
+get '/map/:id/games/:offset/:limit' => sub {
     my $map = Stats::DB::Map->new(id => params->{id});
     unless ($map->load(speculative => 1)) {
 	return {
@@ -486,17 +493,21 @@ get '/map/:id/recent_games/:offset/:limit' => sub {
 	}
     }
     my $count = Stats::DB::Game::Manager->get_games_count(where => [ max_players => { gt => 1 }, map_id => $map->id ]);
-    my @games = @{Stats::DB::Game::Manager->get_games(where => [ max_players => { gt => 1 }, map_id => $map->id ],sort_by => 'start desc',limit => params->{limit},offset => params->{offset})};
+    my @games = map {
+	id          => $_->id,
+	map         => {
+	    id   => $map->id,
+	    name => replace_all($map->name)
+	},
+	outcome     => $_->outcome // 'draw',
+	date        => $_->start->dmy,
+	time        => $_->start->hms,
+	max_players => $_->max_players,
+	start       => $_->start,
+	end         => $_->end
+    },@{Stats::DB::Game::Manager->get_games(where => [ max_players => { gt => 1 }, map_id => $map->id ],sort_by => 'start desc',limit => params->{limit},offset => params->{offset})};
     return {
-	recent_games => [
-	    map {
-		my $game = $_;
-		+{
-		    # map_displayname => replace_all($map->name),
-		    (map { $_ => $game->$_ } $game->meta->column_names),
-		}
-	    } @games
-	],
+	games => \@games,
 	offset => params->{offset},
 	total  => $count
     };
