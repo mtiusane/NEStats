@@ -401,6 +401,7 @@ create table player_maps (
        
        total_games int not null default 0,
        total_sessions int not null default 0,
+       total_rqs int not null default 0,
        total_time int not null default 0,
 
        total_kills int not null default 0,

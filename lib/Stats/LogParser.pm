@@ -158,13 +158,19 @@ sub beginSession {
     );
     $result->save;
     if (my $db_player = $self->loadPlayer($params{player_id})) {
+	my $map = $self->{cache}->{map};
+	my $playerMap = Stats::DB::PlayerMap->new(player_id => $db_player->id,map_id => $map->id);
+	$playerMap->load(speculative => 1);
 	if ($params{team} =~ /^alien|humans$$/) {
 	    $db_player->total_sessions($db_player->total_sessions+1);
+	    $playerMap->total_sessions($playerMap->total_sessions+1);
 	    $self->{game}->{db_players}->{$db_player->id} = $db_player;
 	} elsif ($params{is_new}) { # 'spectator'
 	    $db_player->total_rqs($db_player->total_rqs+1);
+	    $playerMap->total_rqs($playerMap->total_rqs+1);
 	}
 	$db_player->save;
+	$playerMap->save();
     }
     return $result;
 }
@@ -451,13 +457,13 @@ sub handleDie {
 	    $killerMap->load(speculative => 1);
 	    $killerMap->total_kills($killerMap->total_kills+1);
 	    $killerMap->save();
-	    
+
 	    my $killerWeapon = Stats::DB::PlayerWeapon->new(player_id => $killer->id,weapon_id => $weapon->id);
 	    $killerWeapon->load(speculative => 1);
 	    $killerWeapon->total_kills($killerWeapon->total_kills+1);
 	    $killerWeapon->save();
 	}
-	    
+
         if (my $killed = $self->loadPlayer($killed_session->player_id)) {
 	    $killed->total_deaths($killed->total_deaths+1);
 	    $killed->save;
@@ -466,7 +472,7 @@ sub handleDie {
 	    $killedMap->load(speculative => 1);
 	    $killedMap->total_deaths($killedMap->total_deaths+1);
 	    $killedMap->save();
-	    
+
 	    my $killedWeapon = Stats::DB::PlayerWeapon->new(player_id => $killed->id,weapon_id => $weapon->id);
 	    $killedWeapon->load(speculative => 1);
 	    $killedWeapon->total_deaths($killedWeapon->total_deaths+1);
@@ -630,6 +636,11 @@ sub handleExit {
 	foreach my $player (values %{$self->{game}->{db_players}}) {
 	    $player->total_games($player->total_games+1);
 	    $player->save;
+
+	    my $playerMap = Stats::DB::PlayerMap->new(player_id => $player->id,map_id => $map->id);
+	    $playerMap->load(speculative => 1);
+	    $playerMap->total_games($playerMap->total_games+1);
+	    $playerMap->save;
 	}
     }
 }

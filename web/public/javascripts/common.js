@@ -73,6 +73,19 @@ Common = {
 	});
     },
 
+    scroll_table_multi: function(container,selectors,elements,line) {
+	$(container).each(function(div_index,div) {
+	    for(var selector in selectors) {
+		var field_id = $(div).find(selector);
+		if (field_id.length) {
+		    var url = selectors[selector](field_id.attr('href'));
+		    Common.scroll_table(div,url,elements,line);
+		    return;
+		}
+	    }
+	});
+    },
+
     scroll_table_generic: function(container,link,elements) {
     	Common.scroll_table(container,link,elements,function(template,data,index) {
 	    var entry = template.clone();
