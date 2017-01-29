@@ -403,6 +403,8 @@ create table player_maps (
        total_sessions int not null default 0,
        total_rqs int not null default 0,
        total_time int not null default 0,
+       total_time_a int not null default 0,
+       total_time_h int not null default 0,
 
        total_kills int not null default 0,
        total_bkills int not null default 0,

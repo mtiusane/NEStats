@@ -181,21 +181,26 @@ sub endSession {
     $session->save;
     if ($session->team =~ /^human|alien$/) {
 	if (my $player = $self->loadPlayer($session->player_id)) {
-	    my $duration = $self->getDuration($end-$session->start);
-	    $player->total_time($player->total_time+$duration);
-	    if ($session->team eq 'human') {
-		$player->total_rqs($player->total_rqs+1) if (!defined($self->{db_game}->end));
-		$player->total_time_h($player->total_time_h+$duration);
-	    } elsif ($session->team eq 'alien') {
-		$player->total_rqs($player->total_rqs+1) if (!defined($self->{db_game}->end));
-		$player->total_time_a($player->total_time_a+$duration);
-	    }
-	    $player->save;
 	    my $playerMap = Stats::DB::PlayerMap->new(player_id => $player->id,map_id => $self->{db_game}->map_id);
 	    $playerMap->load(speculative => 1);
+	    my $duration = $self->getDuration($end-$session->start);
+	    $player->total_time($player->total_time+$duration);
+	    if ($session->team =~ /^human|alien$/) {
+		if (!defined($self->{db_game}->end)) {
+		    $player->total_rqs($player->total_rqs+1);
+		    $playerMap->total_rqs($playerMap->total_rqs+1);
+		}
+		if ($session->team eq 'human') {
+		    $player->total_time_h($player->total_time_h+$duration);
+		    $playerMap->total_time_h($playerMap->total_time_h+$duration);
+		} elsif ($session->team eq 'alien') {
+		    $player->total_time_a($player->total_time_a+$duration);
+		    $playerMap->total_time_a($playerMap->total_time_a+$duration);
+		}
+	    }
 	    $playerMap->total_time($playerMap->total_time+$duration);
-	    # TODO: Might be useful to track total time for a and h in each map.
 	    $playerMap->save();
+	    $player->save;
 	}
     }
 }
