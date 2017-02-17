@@ -175,6 +175,17 @@ Common = {
 	return result;
     },
 
+    extractIcons: function(text, color) {
+	/*
+	var parts = [ ];
+	var start = 0;
+	while(start < text.length) {
+	    var next = text.indexOf('[', start);
+	    var 
+	}
+*/
+    },
+
     extractColors: function(text) {
 	var parts = [ ];
 	var start=0;
@@ -239,3 +250,10 @@ Common = {
     }
     
 };
+/*
+$(document).ready(function() {
+    $('.fullheight').each(function(index) {
+	$(this).height($(this).parent().height()+'px');
+    });
+});
+*/

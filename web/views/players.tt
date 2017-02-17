@@ -1,7 +1,7 @@
 <div id="content">
   <script src="/javascripts/common.js"></script>
   <script src="/javascripts/players.js"></script>
-  <div id="players" class="container">
+  <div id="players" class="container fullheight">
     <a class="data server_id" href="<% server_id %>"></a>
     <table>
       <thead>

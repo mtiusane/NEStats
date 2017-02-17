@@ -2,7 +2,7 @@ $(document).ready(function() {
     Common.scroll_table_multi('#content div#players',{
 	'a.data.server_id': function(href) {
 	    $.get('/json/server/'+href,function(data) {
-		$(div).find('.f_server_name').html(data.name);
+		$('#content div#players').find('.f_server_name').html(data.name);
 	    });
 	    return function(offset,limit) {
 		return '/json/server/'+href+'/players/'+offset+'/'+limit;
@@ -20,7 +20,7 @@ $(document).ready(function() {
 	var entry = template.clone();
 	entry.find('.f_index').html('<span class="number">'+(1+index)+'</span>');
 	entry.find('.f_rank').html(Common.rating(data.glicko2.rating,data.glicko2.rd));
-	entry.find('.f_name').html('<span class="name text"><a href="/player/'+player.id+'">'+player.name+'</a></span>');
+	entry.find('.f_name').html('<span class="name text"><a href="/player/'+player.id+'">'+player.displayname+'</a></span>');
 	entry.find('.f_total_games').html('<span class="number">'+player.total_games+' ('+player.total_sessions+')</span>');
 	entry.find('.f_total_playtime').html('<span class="number">'+Common.format_duration(player.total_time)+'</span>');
 	entry.find('.f_kills').html(Common.bar(player.total_kills,Common.sum([player.total_kills,player.total_deaths,player.total_bdeaths]),null,player.total_kills,Common.sum([player.total_deaths,player.total_bdeaths])));

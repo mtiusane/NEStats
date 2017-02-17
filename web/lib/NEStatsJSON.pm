@@ -163,7 +163,7 @@ get '/server/:id/players/:offset/:limit' => sub {
 	}
     } @{Stats::DB::PlayerRanking::Manager->get_player_rankings(
 	where        => $where,
-	sort_by      => 'by_glicko2 asc',
+	sort_by      => 'by_glicko2 asc, by_kills asc',
 	limit        => params->{limit},
 	offset       => params->{offset},
 	with_objects => [ 'player', 'glicko2' ],
