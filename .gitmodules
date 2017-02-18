@@ -7,3 +7,6 @@
 [submodule "externals/mysqltuner"]
 	path = externals/mysqltuner
 	url = https://github.com/major/MySQLTuner-perl
+[submodule "externals/libglicko"]
+	path = externals/libglicko
+	url = https://bitbucket.org/coh/libglicko.git
