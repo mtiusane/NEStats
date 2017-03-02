@@ -19,7 +19,7 @@
       </thead>
       <tbody>
 	<tr class="template">
-	  <td><a class="f_url" href=""><span class="f_name"></span></a></td>
+	  <td><a class="f_url" href=""><span class="f_name f__text"></span></a></td>
 	  <td class="f_total_games"></td>
 	  <td class="f__duration f_total_time"></td>
 	  <td class="f_human_wins"></td>

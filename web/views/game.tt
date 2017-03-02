@@ -63,7 +63,7 @@
       <tbody>
         <tr class="template">
 	  <td><span class="number f__index"></span></td>
-	  <td><a class="f_player_url"><span class="name text f_player_name"></span></a></td>
+	  <td><a class="f_player_url"><span class="name text f__text f_player_name"></span></a></td>
 	  <td><span class="f__time f_start"></span></td>
 	  <td><span class="f__time f_end"></span></td>
 	  <td><span class="number f_ping"></span></td>
@@ -87,7 +87,7 @@
       </thead>
       <tbody>
         <tr class="template">
-	  <td><a class="f_player_url"><span class="name text f_player_name"></span></a></td>
+	  <td><a class="f_player_url"><span class="name text f__text f_player_name"></span></a></td>
 	</tr>
       </tbody>
     </table>

@@ -66,6 +66,8 @@ Common = {
 		    $(field).html(new Date(value).toLocaleTimeString());
 		} else if (field.hasClass('f__duration')) {
 		    $(field).html(Common.format_duration(value));
+		} else if (field.hasClass('f__text')) {
+		    $(field).html(Common.format_text(value));
 		} else {
 		    $(field).html(value);
 		}
@@ -111,8 +113,16 @@ Common = {
 	return seconds;
     },
 
-    format_outcome: function(outcome)
-    {
+    format_text: function(text) {
+	return text
+	    .replace(/\[(\S+?)\]/g,'<span class="smiley smiley_$1"></span>')
+	    .replace(/\^(.)([^\^]*)/gi,function(match,color,content) {
+		var n = (color.charCodeAt(0)-'0'.charCodeAt(0)) % 16;
+		return '<span class="color'+n+'">'+content+'</span>';
+	    });
+    },
+
+    format_outcome: function(outcome) {
     	return '<span class="'+outcome+'">'+outcome+'</span>';
     },
 
@@ -205,7 +215,7 @@ Common = {
     },
 
     combineTextFromColors: function(parts) {
-	return $.map(parts, function(p) { return p.text; }).join();
+	return $.map(parts, function(p) { return p.text; }).join('');
     },
 
     stripColors: function(text) {
@@ -247,8 +257,8 @@ Common = {
 	    '</foreignObject>',
 	    '</svg>'
 	);
-    }
-    
+    },
+   
 };
 /*
 $(document).ready(function() {

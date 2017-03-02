@@ -920,30 +920,32 @@ sub updateRankings {
     my $lastUpdate = Stats::DB::TimeStamp->new(name => 'last_glicko2',server_id => $server_id);
     if (!$lastUpdate->load(speculative => 1) || !defined($lastUpdate->value) || !defined($self->{last_glicko2}) || $self->getDuration($self->{last_glicko2} - $lastUpdate->value) >= 12*3600) {
 	# print "  Updating glicko2\n";
-	my %matches = map {
-	    $_->id => {
-		glicko2  => $self->loadGlicko2($_->id),
-		outcomes => [ ]
-	    }
-	} @{Stats::DB::Player::Manager->get_players(query => [ server_id => $server_id ])};
 	my @scores = @{Stats::DB::Glicko2Score::Manager->get_glicko2_scores(query => [ is_new => 1, 'session.player.server_id' => $server_id, 'session.player.total_time' => { ge => MIN_GLICKO2_TIME }, 'session.player.total_games' => { ge => MIN_GLICKO2_GAMES } ],with_objects => [ 'session', 'session.player'] )};
-	foreach my $score (@scores) {
-	    push @{$matches{$score->session->player_id}->{outcomes}},{
-		opponent => Glicko2::Player->new(rating     => $score->opponent_rating,
-						 rd         => $score->opponent_rd,
-						 volatility => $score->opponent_volatility),
-		score    => $score->score
-	    };
-	    $score->is_new(0);
-	    $score->save;
+	if (scalar(@scores)) {
+	    my %matches = map {
+		$_->id => {
+		    glicko2  => $self->loadGlicko2($_->id),
+		    outcomes => [ ]
+		}
+	    } @{Stats::DB::Player::Manager->get_players(query => [ server_id => $server_id ])};
+	    foreach my $score (@scores) {
+		push @{$matches{$score->session->player_id}->{outcomes}},{
+		    opponent => Glicko2::Player->new(rating     => $score->opponent_rating,
+						     rd         => $score->opponent_rd,
+						     volatility => $score->opponent_volatility),
+		    score    => $score->score
+		};
+		$score->is_new(0);
+		$score->save;
+	    }
+	    foreach my $match (values %matches) {
+		# print "Outcomes: ".scalar(@{$match->{outcomes}})."\n";
+		$match->{glicko2}->{glicko}->update(@{$match->{outcomes}});
+		$self->saveGlicko2($match->{glicko2});
+	    }
+	    $lastUpdate->value($self->{last_glicko2});
+	    $lastUpdate->save;
 	}
-	foreach my $match (values %matches) {
-	    # print "Outcomes: ".scalar(@{$match->{outcomes}})."\n";
-	    $match->{glicko2}->{glicko}->update(@{$match->{outcomes}});
-	    $self->saveGlicko2($match->{glicko2});
-	}
-	$lastUpdate->value($self->{last_glicko2});
-	$lastUpdate->save;
     }
     my @statements = (
         # TODO: Done as part of import, verify that it works (also replace total_rqs with a direct dependability score?)

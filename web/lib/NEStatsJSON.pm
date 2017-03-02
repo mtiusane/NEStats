@@ -132,15 +132,29 @@ get '/player/:id/kills_by_weapon/:offset/:limit' => sub {
 get '/player/:id/favorite_maps/:offset/:limit' => sub {
     my $player = Stats::DB::Player->new(id => params->{id});
     my $count = Stats::DB::PlayerMap::Manager->get_player_maps_count(where => [ player_id => $player->id,total_kills => { gt => 0 } ],require_objects => => [ 'map' ]);
-    my @maps = map {
-	displayname => replace_all($_->map->name),
-	total_kills => $_->total_kills
-    },@{Stats::DB::PlayerMap::Manager->get_player_maps(where => [ player_id => $player->id, total_kills => { gt => 0 } ],sort_by => 'total_kills desc',with_objects => [ 'map' ],offset => params->{offset},limit => max(25,params->{limit}))};
+    my @maps = #map {
+	#displayname => replace_all($_->map->name),
+	#total_kills => $_->total_kills
+	#},
+	@{Stats::DB::PlayerMap::Manager->get_player_maps(where => [ player_id => $player->id, total_kills => { gt => 0 } ],sort_by => 'total_kills desc',with_objects => [ 'map' ],offset => params->{offset},limit => max(25,params->{limit}))};
     return {
-	maps   => \@maps,
+	maps   => [
+	    map {
+		my $map = $_;
+		+{
+		    %{db_to_hashref($map)},
+		    url => '/map/'.$map->id
+		}
+	    } @maps
+	],
 	offset => params->{offset},
 	total  => $count
-    };
+    }
+    #return {
+#	maps   => \@maps,
+#	offset => params->{offset},
+#	total  => $count
+ #   };
 };
 
 get '/server/:id' => sub {
@@ -367,7 +381,9 @@ get '/game/:id/events' => sub {
 	$_->id => $_->player
     } @sessions;
     my %names_by_session_id = map {
-	$_->id => replace_all($_->name); # defined($players_by_session_id{$_->id}) ? $players_by_session_id{$_->id}->displayname : $_->name),
+	$_->id => #replace_all(
+	    $_->name
+	#); # defined($players_by_session_id{$_->id}) ? $players_by_session_id{$_->id}->displayname : $_->name),
     } @sessions;
     my @events = map {
 	my $session = $_;
