@@ -36,213 +36,213 @@ span.color_n { margin: 0px; padding: 0px; color: #ffffbf; }
 span.color_o { margin: 0px; padding: 0px; color: #ffff7f; }
 
 /* Default smiley (used when no real definition found) */
-span.smiley { margin-left: 0px; margin-right: 0px; margin-top: 0px; margin-bottom: -2px; display: inline-block; width: 1em; height: 1em; background-color: transparent; }
+span.smiley { margin-left: 0px; margin-right: 0px; margin-top: 0px; margin-bottom: -4px; padding-bottom: 0px; padding-left: 0px; padding-right: 0px; padding-top: 0px; display: inline-block; width: 1em; height: 1em; background-color: transparent; background-origin: content-box; background-repeat: no-repeat; background-size: contain; }
 
 /* Tremulous smileys */
-span.smiley_acidtube { display: inline-block; background-image: url("/images/emoticons/acidtube.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_advbasilisk { display: inline-block; background-image: url("/images/emoticons/advbasilisk.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_advdragoon { display: inline-block; background-image: url("/images/emoticons/advdragoon.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_advgranger { display: inline-block; background-image: url("/images/emoticons/advgranger.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_advmarauder { display: inline-block; background-image: url("/images/emoticons/advmarauder.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_armoury { display: inline-block; background-image: url("/images/emoticons/armoury.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_barricade { display: inline-block; background-image: url("/images/emoticons/barricade.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_basilisk { display: inline-block; background-image: url("/images/emoticons/basilisk.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_blaster { display: inline-block; background-image: url("/images/emoticons/blaster.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_booster { display: inline-block; background-image: url("/images/emoticons/booster.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_bsuit { display: inline-block; background-image: url("/images/emoticons/bsuit.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_chaingun { display: inline-block; background-image: url("/images/emoticons/chaingun.png"); background-size: contain; background-color: transparent; width: 2em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_ckit { display: inline-block; background-image: url("/images/emoticons/ckit.png"); background-size: contain; background-color: transparent; width: 2em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_defcomp { display: inline-block; background-image: url("/images/emoticons/defcomp.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_dev { display: inline-block; background-image: url("/images/emoticons/dev.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_dragoon { display: inline-block; background-image: url("/images/emoticons/dragoon.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_dretch { display: inline-block; background-image: url("/images/emoticons/dretch.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_egg { display: inline-block; background-image: url("/images/emoticons/egg.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_featured { display: inline-block; background-image: url("/images/emoticons/featured.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_flamer { display: inline-block; background-image: url("/images/emoticons/flamer.png"); background-size: contain; background-color: transparent; width: 2em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_granger { display: inline-block; background-image: url("/images/emoticons/granger.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_grenade { display: inline-block; background-image: url("/images/emoticons/grenade.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_hive { display: inline-block; background-image: url("/images/emoticons/hive.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_hovel { display: inline-block; background-image: url("/images/emoticons/hovel.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_human { display: inline-block; background-image: url("/images/emoticons/human.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_lasgun { display: inline-block; background-image: url("/images/emoticons/lasgun.png"); background-size: contain; background-color: transparent; width: 2em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_lcannon { display: inline-block; background-image: url("/images/emoticons/lcannon.png"); background-size: contain; background-color: transparent; width: 2em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_marauder { display: inline-block; background-image: url("/images/emoticons/marauder.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_mdriver { display: inline-block; background-image: url("/images/emoticons/mdriver.png"); background-size: contain; background-color: transparent; width: 2em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_medstat { display: inline-block; background-image: url("/images/emoticons/medstat.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_official { display: inline-block; background-image: url("/images/emoticons/official.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_overmind { display: inline-block; background-image: url("/images/emoticons/overmind.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_painsaw { display: inline-block; background-image: url("/images/emoticons/painsaw.png"); background-size: contain; background-color: transparent; width: 2em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_prifle { display: inline-block; background-image: url("/images/emoticons/prifle.png"); background-size: contain; background-color: transparent; width: 2em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_reactor { display: inline-block; background-image: url("/images/emoticons/reactor.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_repeater { display: inline-block; background-image: url("/images/emoticons/repeater.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_rifle { display: inline-block; background-image: url("/images/emoticons/rifle.png"); background-size: contain; background-color: transparent; width: 2em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_shotgun { display: inline-block; background-image: url("/images/emoticons/shotgun.png"); background-size: contain; background-color: transparent; width: 2em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_telenode { display: inline-block; background-image: url("/images/emoticons/telenode.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_tent { display: inline-block; background-image: url("/images/emoticons/tent.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_tesla { display: inline-block; background-image: url("/images/emoticons/tesla.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_trapper { display: inline-block; background-image: url("/images/emoticons/trapper.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_turret { display: inline-block; background-image: url("/images/emoticons/turret.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_tyrant { display: inline-block; background-image: url("/images/emoticons/tyrant.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_xyedge { display: inline-block; background-image: url("/images/emoticons/xyedge.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_ye2 { display: inline-block; background-image: url("/images/emoticons/ye2.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_ye { display: inline-block; background-image: url("/images/emoticons/ye.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_yeaim { display: inline-block; background-image: url("/images/emoticons/yeaim.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_yeal { display: inline-block; background-image: url("/images/emoticons/yeal.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_yeammo { display: inline-block; background-image: url("/images/emoticons/yeammo.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_yeawin { display: inline-block; background-image: url("/images/emoticons/yeawin.png"); background-size: contain; background-color: transparent; width: 3em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_yebat { display: inline-block; background-image: url("/images/emoticons/yebat.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_yebiok { display: inline-block; background-image: url("/images/emoticons/yebiok.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_yec { display: inline-block; background-image: url("/images/emoticons/yec.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_yecloa { display: inline-block; background-image: url("/images/emoticons/yecloa.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_yedge { display: inline-block; background-image: url("/images/emoticons/yedge.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_yeemo { display: inline-block; background-image: url("/images/emoticons/yeemo.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_yeequ { display: inline-block; background-image: url("/images/emoticons/yeequ.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_yeewin { display: inline-block; background-image: url("/images/emoticons/yeewin.png"); background-size: contain; background-color: transparent; width: 3em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_yefanta { display: inline-block; background-image: url("/images/emoticons/yefanta.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_yefargentina { display: inline-block; background-image: url("/images/emoticons/yefargentina.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_yefarms { display: inline-block; background-image: url("/images/emoticons/yefarms.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_yefaustralia { display: inline-block; background-image: url("/images/emoticons/yefaustralia.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_yefaustria { display: inline-block; background-image: url("/images/emoticons/yefaustria.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_yefbelgium { display: inline-block; background-image: url("/images/emoticons/yefbelgium.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_yefbrasil { display: inline-block; background-image: url("/images/emoticons/yefbrasil.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_yefcana { display: inline-block; background-image: url("/images/emoticons/yefcana.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_yefchile { display: inline-block; background-image: url("/images/emoticons/yefchile.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_yefchina { display: inline-block; background-image: url("/images/emoticons/yefchina.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_yefcisland { display: inline-block; background-image: url("/images/emoticons/yefcisland.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_yefcroat { display: inline-block; background-image: url("/images/emoticons/yefcroat.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_yefcuba { display: inline-block; background-image: url("/images/emoticons/yefcuba.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_yefcz { display: inline-block; background-image: url("/images/emoticons/yefcz.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_yefde { display: inline-block; background-image: url("/images/emoticons/yefde.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_yefden { display: inline-block; background-image: url("/images/emoticons/yefden.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_yefegyp { display: inline-block; background-image: url("/images/emoticons/yefegyp.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_yeffin { display: inline-block; background-image: url("/images/emoticons/yeffin.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_yeffrance { display: inline-block; background-image: url("/images/emoticons/yeffrance.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_yefgb { display: inline-block; background-image: url("/images/emoticons/yefgb.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_yefgree { display: inline-block; background-image: url("/images/emoticons/yefgree.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_yefhong { display: inline-block; background-image: url("/images/emoticons/yefhong.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_yefhu { display: inline-block; background-image: url("/images/emoticons/yefhu.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_yefindia { display: inline-block; background-image: url("/images/emoticons/yefindia.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_yefindon { display: inline-block; background-image: url("/images/emoticons/yefindon.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_yefiran { display: inline-block; background-image: url("/images/emoticons/yefiran.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_yefiraq { display: inline-block; background-image: url("/images/emoticons/yefiraq.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_yefire { display: inline-block; background-image: url("/images/emoticons/yefire.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_yefisra { display: inline-block; background-image: url("/images/emoticons/yefisra.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_yefita { display: inline-block; background-image: url("/images/emoticons/yefita.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_yefjp { display: inline-block; background-image: url("/images/emoticons/yefjp.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_yeflag { display: inline-block; background-image: url("/images/emoticons/yeflag.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_yefmex { display: inline-block; background-image: url("/images/emoticons/yefmex.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_yefnether { display: inline-block; background-image: url("/images/emoticons/yefnether.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_yefnorw { display: inline-block; background-image: url("/images/emoticons/yefnorw.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_yefphil { display: inline-block; background-image: url("/images/emoticons/yefphil.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_yefpo { display: inline-block; background-image: url("/images/emoticons/yefpo.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_yefport { display: inline-block; background-image: url("/images/emoticons/yefport.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_yefroma { display: inline-block; background-image: url("/images/emoticons/yefroma.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_yefrus { display: inline-block; background-image: url("/images/emoticons/yefrus.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_yefsinga { display: inline-block; background-image: url("/images/emoticons/yefsinga.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_yefslo { display: inline-block; background-image: url("/images/emoticons/yefslo.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_yefsloven { display: inline-block; background-image: url("/images/emoticons/yefsloven.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_yefspain { display: inline-block; background-image: url("/images/emoticons/yefspain.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_yefswe { display: inline-block; background-image: url("/images/emoticons/yefswe.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_yefswitz { display: inline-block; background-image: url("/images/emoticons/yefswitz.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_yefsyr { display: inline-block; background-image: url("/images/emoticons/yefsyr.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_yeftur { display: inline-block; background-image: url("/images/emoticons/yeftur.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_yefukr { display: inline-block; background-image: url("/images/emoticons/yefukr.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_yefusa { display: inline-block; background-image: url("/images/emoticons/yefusa.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_yegg { display: inline-block; background-image: url("/images/emoticons/yegg.png"); background-size: contain; background-color: transparent; width: 3em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_yehwin { display: inline-block; background-image: url("/images/emoticons/yehwin.png"); background-size: contain; background-color: transparent; width: 3em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_yei { display: inline-block; background-image: url("/images/emoticons/yei.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_yejet { display: inline-block; background-image: url("/images/emoticons/yejet.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_yekey { display: inline-block; background-image: url("/images/emoticons/yekey.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_yemed { display: inline-block; background-image: url("/images/emoticons/yemed.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_yemf { display: inline-block; background-image: url("/images/emoticons/yemf.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_yenade { display: inline-block; background-image: url("/images/emoticons/yenade.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_yesangry { display: inline-block; background-image: url("/images/emoticons/yesangry.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_yesasscry { display: inline-block; background-image: url("/images/emoticons/yesasscry.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_yesawesome2 { display: inline-block; background-image: url("/images/emoticons/yesawesome2.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_yesawesome { display: inline-block; background-image: url("/images/emoticons/yesawesome.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_yesaww { display: inline-block; background-image: url("/images/emoticons/yesaww.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_yesawwcute { display: inline-block; background-image: url("/images/emoticons/yesawwcute.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_yesawww { display: inline-block; background-image: url("/images/emoticons/yesawww.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_yesba { display: inline-block; background-image: url("/images/emoticons/yesba.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_yesbat { display: inline-block; background-image: url("/images/emoticons/yesbat.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_yesbignose { display: inline-block; background-image: url("/images/emoticons/yesbignose.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_yesbruce { display: inline-block; background-image: url("/images/emoticons/yesbruce.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_yesbuild { display: inline-block; background-image: url("/images/emoticons/yesbuild.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_yeschuck { display: inline-block; background-image: url("/images/emoticons/yeschuck.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_yescrack { display: inline-block; background-image: url("/images/emoticons/yescrack.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_yescrazy { display: inline-block; background-image: url("/images/emoticons/yescrazy.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_yescreepguy { display: inline-block; background-image: url("/images/emoticons/yescreepguy.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_yescry { display: inline-block; background-image: url("/images/emoticons/yescry.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_yescute { display: inline-block; background-image: url("/images/emoticons/yescute.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_yescuty { display: inline-block; background-image: url("/images/emoticons/yescuty.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_yesdafuq { display: inline-block; background-image: url("/images/emoticons/yesdafuq.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_yesdoge { display: inline-block; background-image: url("/images/emoticons/yesdoge.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_yesdrug { display: inline-block; background-image: url("/images/emoticons/yesdrug.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_yesepictroll { display: inline-block; background-image: url("/images/emoticons/yesepictroll.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_yesevil { display: inline-block; background-image: url("/images/emoticons/yesevil.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_yesfrown { display: inline-block; background-image: url("/images/emoticons/yesfrown.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_yesgege { display: inline-block; background-image: url("/images/emoticons/yesgege.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_yesgs { display: inline-block; background-image: url("/images/emoticons/yesgs.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_yeshaha { display: inline-block; background-image: url("/images/emoticons/yeshaha.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_yeshappy { display: inline-block; background-image: url("/images/emoticons/yeshappy.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_yeshdog { display: inline-block; background-image: url("/images/emoticons/yeshdog.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_yeshello { display: inline-block; background-image: url("/images/emoticons/yeshello.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_yeshield { display: inline-block; background-image: url("/images/emoticons/yeshield.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_yeship { display: inline-block; background-image: url("/images/emoticons/yeship.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_yeshitler { display: inline-block; background-image: url("/images/emoticons/yeshitler.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_yeshmm { display: inline-block; background-image: url("/images/emoticons/yeshmm.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_yesinsane { display: inline-block; background-image: url("/images/emoticons/yesinsane.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_yesjack { display: inline-block; background-image: url("/images/emoticons/yesjack.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_yesjoker { display: inline-block; background-image: url("/images/emoticons/yesjoker.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_yesjoy { display: inline-block; background-image: url("/images/emoticons/yesjoy.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_yeskid { display: inline-block; background-image: url("/images/emoticons/yeskid.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_yeslal { display: inline-block; background-image: url("/images/emoticons/yeslal.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_yeslawl { display: inline-block; background-image: url("/images/emoticons/yeslawl.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_yeslessretard { display: inline-block; background-image: url("/images/emoticons/yeslessretard.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_yesmad { display: inline-block; background-image: url("/images/emoticons/yesmad.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_yesmadbro { display: inline-block; background-image: url("/images/emoticons/yesmadbro.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_yesmadd { display: inline-block; background-image: url("/images/emoticons/yesmadd.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_yesmegusta { display: inline-block; background-image: url("/images/emoticons/yesmegusta.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_yesmindfuck { display: inline-block; background-image: url("/images/emoticons/yesmindfuck.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_yesmouth { display: inline-block; background-image: url("/images/emoticons/yesmouth.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_yesmp { display: inline-block; background-image: url("/images/emoticons/yesmp.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_yesmustage { display: inline-block; background-image: url("/images/emoticons/yesmustage.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_yesnerd { display: inline-block; background-image: url("/images/emoticons/yesnerd.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_yesnigga { display: inline-block; background-image: url("/images/emoticons/yesnigga.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_yesninja { display: inline-block; background-image: url("/images/emoticons/yesninja.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_yesno { display: inline-block; background-image: url("/images/emoticons/yesno.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_yesohh { display: inline-block; background-image: url("/images/emoticons/yesohh.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_yesohshit { display: inline-block; background-image: url("/images/emoticons/yesohshit.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_yesomg { display: inline-block; background-image: url("/images/emoticons/yesomg.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_yesosama { display: inline-block; background-image: url("/images/emoticons/yesosama.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_yespedo { display: inline-block; background-image: url("/images/emoticons/yespedo.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_yesrage { display: inline-block; background-image: url("/images/emoticons/yesrage.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_yesrainbow { display: inline-block; background-image: url("/images/emoticons/yesrainbow.png"); background-size: contain; background-color: transparent; width: 3em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_yesretard { display: inline-block; background-image: url("/images/emoticons/yesretard.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_yesretarded { display: inline-block; background-image: url("/images/emoticons/yesretarded.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_yessad { display: inline-block; background-image: url("/images/emoticons/yessad.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_yessarca { display: inline-block; background-image: url("/images/emoticons/yessarca.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_yesscept { display: inline-block; background-image: url("/images/emoticons/yesscept.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_yesserious { display: inline-block; background-image: url("/images/emoticons/yesserious.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_yesshock { display: inline-block; background-image: url("/images/emoticons/yesshock.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_yessmile { display: inline-block; background-image: url("/images/emoticons/yessmile.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_yessnake { display: inline-block; background-image: url("/images/emoticons/yessnake.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_yessniper { display: inline-block; background-image: url("/images/emoticons/yessniper.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_yesspok { display: inline-block; background-image: url("/images/emoticons/yesspok.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_yesstar { display: inline-block; background-image: url("/images/emoticons/yesstar.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_yesstoned { display: inline-block; background-image: url("/images/emoticons/yesstoned.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_yesstupid { display: inline-block; background-image: url("/images/emoticons/yesstupid.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_yestard { display: inline-block; background-image: url("/images/emoticons/yestard.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_yestong { display: inline-block; background-image: url("/images/emoticons/yestong.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_yestroll { display: inline-block; background-image: url("/images/emoticons/yestroll.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_yestrylol { display: inline-block; background-image: url("/images/emoticons/yestrylol.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_yesugauga { display: inline-block; background-image: url("/images/emoticons/yesugauga.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_yesupset { display: inline-block; background-image: url("/images/emoticons/yesupset.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_yesvamp { display: inline-block; background-image: url("/images/emoticons/yesvamp.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_yesweirdo { display: inline-block; background-image: url("/images/emoticons/yesweirdo.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_yeswell { display: inline-block; background-image: url("/images/emoticons/yeswell.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_yeswhat { display: inline-block; background-image: url("/images/emoticons/yeswhat.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_yeswhine { display: inline-block; background-image: url("/images/emoticons/yeswhine.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_yeswsmile { display: inline-block; background-image: url("/images/emoticons/yeswsmile.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_yetool { display: inline-block; background-image: url("/images/emoticons/yetool.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
-span.smiley_z { display: inline-block; background-image: url("/images/emoticons/z.png"); background-size: contain; background-color: transparent; width: 1em; height: 1em; margin: 0px; padding: 0px; }
+span.smiley_acidtube { display: inline-block; background-image: url("/images/emoticons/acidtube.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_advbasilisk { display: inline-block; background-image: url("/images/emoticons/advbasilisk.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_advdragoon { display: inline-block; background-image: url("/images/emoticons/advdragoon.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_advgranger { display: inline-block; background-image: url("/images/emoticons/advgranger.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_advmarauder { display: inline-block; background-image: url("/images/emoticons/advmarauder.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_armoury { display: inline-block; background-image: url("/images/emoticons/armoury.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_barricade { display: inline-block; background-image: url("/images/emoticons/barricade.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_basilisk { display: inline-block; background-image: url("/images/emoticons/basilisk.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_blaster { display: inline-block; background-image: url("/images/emoticons/blaster.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_booster { display: inline-block; background-image: url("/images/emoticons/booster.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_bsuit { display: inline-block; background-image: url("/images/emoticons/bsuit.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_chaingun { display: inline-block; background-image: url("/images/emoticons/chaingun.png"); background-color: transparent; width: 2em; height: 1em; }
+span.smiley_ckit { display: inline-block; background-image: url("/images/emoticons/ckit.png"); background-color: transparent; width: 2em; height: 1em; }
+span.smiley_defcomp { display: inline-block; background-image: url("/images/emoticons/defcomp.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_dev { display: inline-block; background-image: url("/images/emoticons/dev.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_dragoon { display: inline-block; background-image: url("/images/emoticons/dragoon.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_dretch { display: inline-block; background-image: url("/images/emoticons/dretch.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_egg { display: inline-block; background-image: url("/images/emoticons/egg.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_featured { display: inline-block; background-image: url("/images/emoticons/featured.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_flamer { display: inline-block; background-image: url("/images/emoticons/flamer.png"); background-color: transparent; width: 2em; height: 1em; }
+span.smiley_granger { display: inline-block; background-image: url("/images/emoticons/granger.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_grenade { display: inline-block; background-image: url("/images/emoticons/grenade.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_hive { display: inline-block; background-image: url("/images/emoticons/hive.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_hovel { display: inline-block; background-image: url("/images/emoticons/hovel.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_human { display: inline-block; background-image: url("/images/emoticons/human.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_lasgun { display: inline-block; background-image: url("/images/emoticons/lasgun.png"); background-color: transparent; width: 2em; height: 1em; }
+span.smiley_lcannon { display: inline-block; background-image: url("/images/emoticons/lcannon.png"); background-color: transparent; width: 2em; height: 1em; }
+span.smiley_marauder { display: inline-block; background-image: url("/images/emoticons/marauder.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_mdriver { display: inline-block; background-image: url("/images/emoticons/mdriver.png"); background-color: transparent; width: 2em; height: 1em; }
+span.smiley_medstat { display: inline-block; background-image: url("/images/emoticons/medstat.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_official { display: inline-block; background-image: url("/images/emoticons/official.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_overmind { display: inline-block; background-image: url("/images/emoticons/overmind.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_painsaw { display: inline-block; background-image: url("/images/emoticons/painsaw.png"); background-color: transparent; width: 2em; height: 1em; }
+span.smiley_prifle { display: inline-block; background-image: url("/images/emoticons/prifle.png"); background-color: transparent; width: 2em; height: 1em; }
+span.smiley_reactor { display: inline-block; background-image: url("/images/emoticons/reactor.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_repeater { display: inline-block; background-image: url("/images/emoticons/repeater.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_rifle { display: inline-block; background-image: url("/images/emoticons/rifle.png"); background-color: transparent; width: 2em; height: 1em; }
+span.smiley_shotgun { display: inline-block; background-image: url("/images/emoticons/shotgun.png"); background-color: transparent; width: 2em; height: 1em; }
+span.smiley_telenode { display: inline-block; background-image: url("/images/emoticons/telenode.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_tent { display: inline-block; background-image: url("/images/emoticons/tent.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_tesla { display: inline-block; background-image: url("/images/emoticons/tesla.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_trapper { display: inline-block; background-image: url("/images/emoticons/trapper.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_turret { display: inline-block; background-image: url("/images/emoticons/turret.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_tyrant { display: inline-block; background-image: url("/images/emoticons/tyrant.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_xyedge { display: inline-block; background-image: url("/images/emoticons/xyedge.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_ye2 { display: inline-block; background-image: url("/images/emoticons/ye2.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_ye { display: inline-block; background-image: url("/images/emoticons/ye.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_yeaim { display: inline-block; background-image: url("/images/emoticons/yeaim.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_yeal { display: inline-block; background-image: url("/images/emoticons/yeal.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_yeammo { display: inline-block; background-image: url("/images/emoticons/yeammo.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_yeawin { display: inline-block; background-image: url("/images/emoticons/yeawin.png"); background-color: transparent; width: 3em; height: 1em; }
+span.smiley_yebat { display: inline-block; background-image: url("/images/emoticons/yebat.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_yebiok { display: inline-block; background-image: url("/images/emoticons/yebiok.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_yec { display: inline-block; background-image: url("/images/emoticons/yec.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_yecloa { display: inline-block; background-image: url("/images/emoticons/yecloa.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_yedge { display: inline-block; background-image: url("/images/emoticons/yedge.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_yeemo { display: inline-block; background-image: url("/images/emoticons/yeemo.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_yeequ { display: inline-block; background-image: url("/images/emoticons/yeequ.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_yeewin { display: inline-block; background-image: url("/images/emoticons/yeewin.png"); background-color: transparent; width: 3em; height: 1em; }
+span.smiley_yefanta { display: inline-block; background-image: url("/images/emoticons/yefanta.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_yefargentina { display: inline-block; background-image: url("/images/emoticons/yefargentina.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_yefarms { display: inline-block; background-image: url("/images/emoticons/yefarms.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_yefaustralia { display: inline-block; background-image: url("/images/emoticons/yefaustralia.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_yefaustria { display: inline-block; background-image: url("/images/emoticons/yefaustria.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_yefbelgium { display: inline-block; background-image: url("/images/emoticons/yefbelgium.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_yefbrasil { display: inline-block; background-image: url("/images/emoticons/yefbrasil.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_yefcana { display: inline-block; background-image: url("/images/emoticons/yefcana.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_yefchile { display: inline-block; background-image: url("/images/emoticons/yefchile.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_yefchina { display: inline-block; background-image: url("/images/emoticons/yefchina.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_yefcisland { display: inline-block; background-image: url("/images/emoticons/yefcisland.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_yefcroat { display: inline-block; background-image: url("/images/emoticons/yefcroat.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_yefcuba { display: inline-block; background-image: url("/images/emoticons/yefcuba.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_yefcz { display: inline-block; background-image: url("/images/emoticons/yefcz.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_yefde { display: inline-block; background-image: url("/images/emoticons/yefde.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_yefden { display: inline-block; background-image: url("/images/emoticons/yefden.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_yefegyp { display: inline-block; background-image: url("/images/emoticons/yefegyp.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_yeffin { display: inline-block; background-image: url("/images/emoticons/yeffin.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_yeffrance { display: inline-block; background-image: url("/images/emoticons/yeffrance.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_yefgb { display: inline-block; background-image: url("/images/emoticons/yefgb.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_yefgree { display: inline-block; background-image: url("/images/emoticons/yefgree.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_yefhong { display: inline-block; background-image: url("/images/emoticons/yefhong.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_yefhu { display: inline-block; background-image: url("/images/emoticons/yefhu.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_yefindia { display: inline-block; background-image: url("/images/emoticons/yefindia.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_yefindon { display: inline-block; background-image: url("/images/emoticons/yefindon.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_yefiran { display: inline-block; background-image: url("/images/emoticons/yefiran.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_yefiraq { display: inline-block; background-image: url("/images/emoticons/yefiraq.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_yefire { display: inline-block; background-image: url("/images/emoticons/yefire.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_yefisra { display: inline-block; background-image: url("/images/emoticons/yefisra.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_yefita { display: inline-block; background-image: url("/images/emoticons/yefita.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_yefjp { display: inline-block; background-image: url("/images/emoticons/yefjp.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_yeflag { display: inline-block; background-image: url("/images/emoticons/yeflag.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_yefmex { display: inline-block; background-image: url("/images/emoticons/yefmex.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_yefnether { display: inline-block; background-image: url("/images/emoticons/yefnether.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_yefnorw { display: inline-block; background-image: url("/images/emoticons/yefnorw.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_yefphil { display: inline-block; background-image: url("/images/emoticons/yefphil.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_yefpo { display: inline-block; background-image: url("/images/emoticons/yefpo.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_yefport { display: inline-block; background-image: url("/images/emoticons/yefport.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_yefroma { display: inline-block; background-image: url("/images/emoticons/yefroma.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_yefrus { display: inline-block; background-image: url("/images/emoticons/yefrus.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_yefsinga { display: inline-block; background-image: url("/images/emoticons/yefsinga.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_yefslo { display: inline-block; background-image: url("/images/emoticons/yefslo.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_yefsloven { display: inline-block; background-image: url("/images/emoticons/yefsloven.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_yefspain { display: inline-block; background-image: url("/images/emoticons/yefspain.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_yefswe { display: inline-block; background-image: url("/images/emoticons/yefswe.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_yefswitz { display: inline-block; background-image: url("/images/emoticons/yefswitz.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_yefsyr { display: inline-block; background-image: url("/images/emoticons/yefsyr.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_yeftur { display: inline-block; background-image: url("/images/emoticons/yeftur.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_yefukr { display: inline-block; background-image: url("/images/emoticons/yefukr.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_yefusa { display: inline-block; background-image: url("/images/emoticons/yefusa.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_yegg { display: inline-block; background-image: url("/images/emoticons/yegg.png"); background-color: transparent; width: 3em; height: 1em; }
+span.smiley_yehwin { display: inline-block; background-image: url("/images/emoticons/yehwin.png"); background-color: transparent; width: 3em; height: 1em; }
+span.smiley_yei { display: inline-block; background-image: url("/images/emoticons/yei.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_yejet { display: inline-block; background-image: url("/images/emoticons/yejet.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_yekey { display: inline-block; background-image: url("/images/emoticons/yekey.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_yemed { display: inline-block; background-image: url("/images/emoticons/yemed.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_yemf { display: inline-block; background-image: url("/images/emoticons/yemf.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_yenade { display: inline-block; background-image: url("/images/emoticons/yenade.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_yesangry { display: inline-block; background-image: url("/images/emoticons/yesangry.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_yesasscry { display: inline-block; background-image: url("/images/emoticons/yesasscry.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_yesawesome2 { display: inline-block; background-image: url("/images/emoticons/yesawesome2.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_yesawesome { display: inline-block; background-image: url("/images/emoticons/yesawesome.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_yesaww { display: inline-block; background-image: url("/images/emoticons/yesaww.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_yesawwcute { display: inline-block; background-image: url("/images/emoticons/yesawwcute.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_yesawww { display: inline-block; background-image: url("/images/emoticons/yesawww.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_yesba { display: inline-block; background-image: url("/images/emoticons/yesba.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_yesbat { display: inline-block; background-image: url("/images/emoticons/yesbat.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_yesbignose { display: inline-block; background-image: url("/images/emoticons/yesbignose.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_yesbruce { display: inline-block; background-image: url("/images/emoticons/yesbruce.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_yesbuild { display: inline-block; background-image: url("/images/emoticons/yesbuild.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_yeschuck { display: inline-block; background-image: url("/images/emoticons/yeschuck.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_yescrack { display: inline-block; background-image: url("/images/emoticons/yescrack.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_yescrazy { display: inline-block; background-image: url("/images/emoticons/yescrazy.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_yescreepguy { display: inline-block; background-image: url("/images/emoticons/yescreepguy.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_yescry { display: inline-block; background-image: url("/images/emoticons/yescry.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_yescute { display: inline-block; background-image: url("/images/emoticons/yescute.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_yescuty { display: inline-block; background-image: url("/images/emoticons/yescuty.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_yesdafuq { display: inline-block; background-image: url("/images/emoticons/yesdafuq.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_yesdoge { display: inline-block; background-image: url("/images/emoticons/yesdoge.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_yesdrug { display: inline-block; background-image: url("/images/emoticons/yesdrug.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_yesepictroll { display: inline-block; background-image: url("/images/emoticons/yesepictroll.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_yesevil { display: inline-block; background-image: url("/images/emoticons/yesevil.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_yesfrown { display: inline-block; background-image: url("/images/emoticons/yesfrown.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_yesgege { display: inline-block; background-image: url("/images/emoticons/yesgege.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_yesgs { display: inline-block; background-image: url("/images/emoticons/yesgs.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_yeshaha { display: inline-block; background-image: url("/images/emoticons/yeshaha.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_yeshappy { display: inline-block; background-image: url("/images/emoticons/yeshappy.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_yeshdog { display: inline-block; background-image: url("/images/emoticons/yeshdog.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_yeshello { display: inline-block; background-image: url("/images/emoticons/yeshello.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_yeshield { display: inline-block; background-image: url("/images/emoticons/yeshield.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_yeship { display: inline-block; background-image: url("/images/emoticons/yeship.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_yeshitler { display: inline-block; background-image: url("/images/emoticons/yeshitler.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_yeshmm { display: inline-block; background-image: url("/images/emoticons/yeshmm.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_yesinsane { display: inline-block; background-image: url("/images/emoticons/yesinsane.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_yesjack { display: inline-block; background-image: url("/images/emoticons/yesjack.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_yesjoker { display: inline-block; background-image: url("/images/emoticons/yesjoker.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_yesjoy { display: inline-block; background-image: url("/images/emoticons/yesjoy.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_yeskid { display: inline-block; background-image: url("/images/emoticons/yeskid.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_yeslal { display: inline-block; background-image: url("/images/emoticons/yeslal.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_yeslawl { display: inline-block; background-image: url("/images/emoticons/yeslawl.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_yeslessretard { display: inline-block; background-image: url("/images/emoticons/yeslessretard.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_yesmad { display: inline-block; background-image: url("/images/emoticons/yesmad.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_yesmadbro { display: inline-block; background-image: url("/images/emoticons/yesmadbro.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_yesmadd { display: inline-block; background-image: url("/images/emoticons/yesmadd.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_yesmegusta { display: inline-block; background-image: url("/images/emoticons/yesmegusta.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_yesmindfuck { display: inline-block; background-image: url("/images/emoticons/yesmindfuck.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_yesmouth { display: inline-block; background-image: url("/images/emoticons/yesmouth.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_yesmp { display: inline-block; background-image: url("/images/emoticons/yesmp.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_yesmustage { display: inline-block; background-image: url("/images/emoticons/yesmustage.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_yesnerd { display: inline-block; background-image: url("/images/emoticons/yesnerd.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_yesnigga { display: inline-block; background-image: url("/images/emoticons/yesnigga.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_yesninja { display: inline-block; background-image: url("/images/emoticons/yesninja.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_yesno { display: inline-block; background-image: url("/images/emoticons/yesno.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_yesohh { display: inline-block; background-image: url("/images/emoticons/yesohh.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_yesohshit { display: inline-block; background-image: url("/images/emoticons/yesohshit.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_yesomg { display: inline-block; background-image: url("/images/emoticons/yesomg.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_yesosama { display: inline-block; background-image: url("/images/emoticons/yesosama.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_yespedo { display: inline-block; background-image: url("/images/emoticons/yespedo.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_yesrage { display: inline-block; background-image: url("/images/emoticons/yesrage.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_yesrainbow { display: inline-block; background-image: url("/images/emoticons/yesrainbow.png"); background-color: transparent; width: 3em; height: 1em; }
+span.smiley_yesretard { display: inline-block; background-image: url("/images/emoticons/yesretard.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_yesretarded { display: inline-block; background-image: url("/images/emoticons/yesretarded.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_yessad { display: inline-block; background-image: url("/images/emoticons/yessad.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_yessarca { display: inline-block; background-image: url("/images/emoticons/yessarca.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_yesscept { display: inline-block; background-image: url("/images/emoticons/yesscept.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_yesserious { display: inline-block; background-image: url("/images/emoticons/yesserious.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_yesshock { display: inline-block; background-image: url("/images/emoticons/yesshock.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_yessmile { display: inline-block; background-image: url("/images/emoticons/yessmile.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_yessnake { display: inline-block; background-image: url("/images/emoticons/yessnake.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_yessniper { display: inline-block; background-image: url("/images/emoticons/yessniper.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_yesspok { display: inline-block; background-image: url("/images/emoticons/yesspok.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_yesstar { display: inline-block; background-image: url("/images/emoticons/yesstar.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_yesstoned { display: inline-block; background-image: url("/images/emoticons/yesstoned.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_yesstupid { display: inline-block; background-image: url("/images/emoticons/yesstupid.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_yestard { display: inline-block; background-image: url("/images/emoticons/yestard.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_yestong { display: inline-block; background-image: url("/images/emoticons/yestong.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_yestroll { display: inline-block; background-image: url("/images/emoticons/yestroll.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_yestrylol { display: inline-block; background-image: url("/images/emoticons/yestrylol.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_yesugauga { display: inline-block; background-image: url("/images/emoticons/yesugauga.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_yesupset { display: inline-block; background-image: url("/images/emoticons/yesupset.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_yesvamp { display: inline-block; background-image: url("/images/emoticons/yesvamp.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_yesweirdo { display: inline-block; background-image: url("/images/emoticons/yesweirdo.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_yeswell { display: inline-block; background-image: url("/images/emoticons/yeswell.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_yeswhat { display: inline-block; background-image: url("/images/emoticons/yeswhat.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_yeswhine { display: inline-block; background-image: url("/images/emoticons/yeswhine.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_yeswsmile { display: inline-block; background-image: url("/images/emoticons/yeswsmile.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_yetool { display: inline-block; background-image: url("/images/emoticons/yetool.png"); background-color: transparent; width: 1em; height: 1em; }
+span.smiley_z { display: inline-block; background-image: url("/images/emoticons/z.png"); background-color: transparent; width: 1em; height: 1em; }

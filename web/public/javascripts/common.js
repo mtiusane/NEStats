@@ -114,12 +114,12 @@ Common = {
     },
 
     format_text: function(text) {
-	return text
+	return '<span class="color7">'+text
 	    .replace(/\[(\S+?)\]/g,'<span class="smiley smiley_$1"></span>')
 	    .replace(/\^(.)([^\^]*)/gi,function(match,color,content) {
 		var n = (color.charCodeAt(0)-'0'.charCodeAt(0)) % 16;
 		return '<span class="color'+n+'">'+content+'</span>';
-	    });
+	    })+'</span>';
     },
 
     format_outcome: function(outcome) {

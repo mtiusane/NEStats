@@ -889,11 +889,11 @@ sub updateGlicko2 {
 	    $team_duration += $relative_duration;
 	    $comp->rating($comp->rating+$relative_duration*$session->{glicko}->rating);
 	    $comp->rd($comp->rd+$relative_duration*$session->{glicko}->rd);
-	    # $comp->volatility($comp->volatility+$session->{glicko}->volatility); # TODO: Not used for update?
+	    $comp->volatility($comp->volatility+$session->{glicko}->volatility);
 	}
 	$comp->rating($comp->rating/$team_duration);
 	$comp->rd($comp->rd/$team_duration);
-	# $comp->volatility($comp->volatility/$team_duration); # TODO: Not used for update?
+	$comp->volatility($comp->volatility/$team_duration);
     }
     my %opponents = (human => $teams{alien_composite},alien => $teams{human_composite});
     foreach my $team ('human','alien') {

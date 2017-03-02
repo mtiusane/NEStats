@@ -176,8 +176,17 @@ a:hover {
     text-decoration: none;
 }
 
-a:hover span, a:visited:hover span { /* override for color codes in emoticons */
-    color: cyan !important;
+
+a:hover span,
+a:visited:hover span { /* override for color codes in emoticons */
+    text-decoration: none;
+    border-bottom: 1px solid cyan;
+}
+
+a:hover span.smiley,
+a:visited:hover span.smiley {
+    text-decoration: none;
+    border-bottom: none !important;
 }
 
 a:active {
