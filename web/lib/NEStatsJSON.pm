@@ -446,11 +446,11 @@ get '/game/:id/sessions/:team/:offset/:limit' => sub {
 	    {
 		($_->player ? (
 		    player_id   => $_->player->id,
-		    player_name => replace_all($_->player->displayname),
+		    player_name => $_->player->displayname,
 		    player_url  => '/player/'.$_->player->id,
 		) : (
 		    player_id   => undef,
-		    player_name => replace_all($_->name),
+		    player_name => $_->name,
 		    player_url  => undef,
 		)),
 		ping  => $_->ping // 'N/A',
