@@ -194,6 +194,8 @@ create table games (
        connects int not null default 0,
        disconnects int not null default 0,
 
+       import_complete boolean not null default 0,
+
        foreign key(map_id) references maps(id),
        foreign key(server_id) references servers(id),
 

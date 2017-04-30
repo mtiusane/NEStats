@@ -24,22 +24,24 @@ sub handleRealTime {
 
 sub handleShutdownGame {
     my ($self,%fields) = @_;
-    # TODO: Hardcoded file path for now....
-    my $filename = $self->sourcePath;
-    $filename =~ s|^(.+)/(.+?)$|$1/stats/gameplay/|;
-    $filename .= $self->{game}->{realtime}->strftime('%Y%m%d_%H%M%S_').$self->{game}->{map}.'.log';
-    if (open FI,'<',$filename) {
-	eval {
-	    while(my $line = <FI>) {
-		chomp($line);
-		$self->unvParseLine($line);
+    unless ($self->shouldSkipCurrentGame()) {
+	# TODO: Hardcoded file path for now....
+	my $filename = $self->sourcePath;
+	$filename =~ s|^(.+)/(.+?)$|$1/stats/gameplay/|;
+	$filename .= $self->{game}->{realtime}->strftime('%Y%m%d_%H%M%S_').$self->{game}->{map}.'.log';
+	if (open FI,'<',$filename) {
+	    eval {
+		while(my $line = <FI>) {
+		    chomp($line);
+		    $self->unvParseLine($line);
+		}
+		close FI;
+	    };
+	    if ($@) {
+		$self->log->warn("Error parsing game log: $filename");
 	    }
-	    close FI;
-	};
-	if ($@) {
-            $self->log->warn("Error parsing game log: $filename");
-	}
-    } else { $self->log->warn("Failed to open game log: $filename"); }
+	} else { $self->log->warn("Failed to open game log: $filename"); }
+    }
     $self->SUPER::handleShutdownGame(%fields);
 }
 

@@ -54,11 +54,11 @@ while (1) {
     };
     if ($@) {
 	if ($retry_count < 3) {
-	    $log->info("Importer error: $@, retrying($retry_count)...\n");
+	    $log->error("Importer error: $@, retrying($retry_count)...\n");
 	    $parser = $importers{$importer}->(server_name => $server_name,server_ip => $server_ip,server_url => $server_url);
 	    ++$retry_count;
 	} else {
-	    $log->error("Too many consecutive errors in import.");
+	    $log->error("Importer error: $@, too many consecutive errors in import.\n");
 	    die "Too many consecutive errors in import.";
 	}
     } else { $retry_count = 0; }

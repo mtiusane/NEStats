@@ -36,9 +36,9 @@ use List::Util qw/max pairs/;
 
 use Log::Log4perl qw/:easy/;
 
-use constant MIN_GLICKO2_TIME  => 3600;
+use constant MIN_GLICKO2_TIME  => 10 * 1800;
 use constant MIN_GLICKO2_GAMES => 10;
-use constant MAX_SLOTS => 1024;
+use constant MAX_SLOTS         => 64;
 
 sub new {
     my ($class,$initializer,%params) = @_;
@@ -78,7 +78,7 @@ sub new {
     }
     # TODO: Not the prettiest way of implementing this but will have to do for now...
     $initializer->($self->{db_server});
-    # my $db_world = $slots[1023]->{db_player} = Stats::DB::Player->new(server_id => $self->{db_server}->id,guid => '0',name => '<world>');
+    # my $db_world = $slots[MAX_SLOTS-1]->{db_player} = Stats::DB::Player->new(server_id => $self->{db_server}->id,guid => '0',name => '<world>');
     # $db_world->load(speculative => 1) || $db_world->save;
     bless($self,$class);
 }
@@ -89,6 +89,7 @@ sub slots { $_[0]->{slots} }
 sub guids { $_[0]->{guids} }
 # sub games { @{$_[0]->{games}} }
 sub db_game { $_[0]->{db_game} }
+sub shouldSkipCurrentGame { $_[0]->{skip_game} }
 
 sub loadCached {
     my ($self,$cacheName,$class,$initializer,$keys) = @_;
@@ -224,7 +225,6 @@ sub handleRealTime {
     my ($self,%fields) = @_;
     return unless (defined $self->{game});
     $self->{game}->{realtime} = DateTime->new(time_zone => '+0000',%fields);
-    $self->log->info(sprintf('Importing game: %s %s',$self->{game}->{map},$self->{game}->{realtime}));
     my $map = Stats::DB::Map->new(server_id => $self->{db_server}->id,name => $self->{game}->{map});
     $map->load(speculative => 1) || $map->save;
     # TODO: if ($self->{cache}->{total_players} > 0) -- perhaps at some point
@@ -232,16 +232,26 @@ sub handleRealTime {
     $self->{cache}->{map} = $map;
     $self->{cache}->{total_players} = 0;
     $self->{db_game} = Stats::DB::Game->new(
-        map_id      => $map->id,
-        server_id   => $self->{db_server}->id,
-        start       => $self->{game}->{realtime},
+        map_id          => $map->id,
+        server_id       => $self->{db_server}->id,
+        start           => $self->{game}->{realtime},
+	import_complete => 0,
     );
     if ($self->{db_game}->load(speculative => 1)) {
-        # Re-importing an existing game entry - remove all event data first
-        deleteGameEntries($self->{db_game}->id);
+	unless ($self->{db_game}->import_complete) {
+	    $self->log->info(sprintf('Reimporting game: %s %s',$self->{game}->{map},$self->{game}->{realtime}));
+	    # Re-importing an existing game entry - remove all event data first
+	    deleteGameEntries($self->{db_game}->id);
+	    $self->{skip_game} = 0;
+	} else {
+	    $self->log->info(sprintf('Skipping fully imported game: %s %s',$self->{game}->{map},$self->{game}->{realtime}));
+	    $self->{skip_game} = 1;
+	}
     } else {
+	$self->log->info(sprintf('Importing game: %s %s',$self->{game}->{map},$self->{game}->{realtime}));
         $self->{db_game}->max_players(0);
         $self->{db_game}->save;
+	$self->{skip_game} = 0;
     }
 }
 
@@ -872,28 +882,33 @@ sub updateGlicko2 {
     }
     unless (defined $score_values) {
 	$self->log->warn("Unrecognized outcome: '".$game->outcome."' skipping rankings update.");
-	next;
+	return 0;
     }
     my %teams = (human => [ ],alien => [ ]);
     foreach my $session (@{Stats::DB::Session::Manager->get_sessions(where => [ game_id => $game->id,team => [ 'human', 'alien' ]])}) {
 	push @{$teams{$session->team}},$self->loadGlicko2($session->player_id,session => $session);
     }
-    next unless(scalar(@{$teams{human}}) && scalar(@{$teams{alien}}));
+    return 0 unless(scalar(@{$teams{human}}) && scalar(@{$teams{alien}}));
     my $game_duration = $self->getDuration($game->end - $game->start);
     foreach my $team ('human','alien') {
 	my $comp = $teams{$team.'_composite'} = Glicko2::Player->new(rating => 0,rd => 0,volatility => 0);
 	my $team_duration = 0.0;
 	foreach my $session (@{$teams{$team}}) {
 	    my $session_duration = $self->getDuration($session->{session}->end - $session->{session}->start);
-	    my $relative_duration = $session_duration/$game_duration;
+	    my $relative_duration = max(1.0, $session_duration/$game_duration);
 	    $team_duration += $relative_duration;
-	    $comp->rating($comp->rating+$relative_duration*$session->{glicko}->rating);
-	    $comp->rd($comp->rd+$relative_duration*$session->{glicko}->rd);
+	    $comp->rating($comp->rating+$session->{glicko}->rating);
+	    $comp->rd($comp->rd+$session->{glicko}->rd);
 	    $comp->volatility($comp->volatility+$session->{glicko}->volatility);
 	}
-	$comp->rating($comp->rating/$team_duration);
-	$comp->rd($comp->rd/$team_duration);
-	$comp->volatility($comp->volatility/$team_duration);
+	if ($team_duration < 0.95) {
+	    $self->log->warn("One team with less than 95 percent game time, skipping rankings update.");
+	    return 0;
+	}
+	my $team_count = scalar(@{$teams{$team}});
+	$comp->rating($comp->rating/$team_count);
+	$comp->rd($comp->rd/$team_count);
+	$comp->volatility($comp->volatility/$team_count);
     }
     my %opponents = (human => $teams{alien_composite},alien => $teams{human_composite});
     foreach my $team ('human','alien') {
@@ -1022,13 +1037,16 @@ sub parseLine {
 		my %data = split /\\/,$+{rawdata};
 		$self->handleInitGame(%+,%data);
 		$self->{in_game} = 1;
+		$self->{skip_game} = 0;
 	    } else {
 		$self->log->warn("Unrecognized line: $line");
 		return;
 	    }
 	} elsif ($line =~ /^\s*(?<time>\d+:\d+)\s*ShutdownGame:\s*$/) {
             $self->handleShutdownGame(%+);
-	    $self->{in_game} = 0;
+	    $self->{in_game} = $self->{skip_game} = 0;
+	} elsif ($self->{skip_game}) {
+	    # Nothing to do, current game already imported, shutdowngame required for next match
 	} elsif ($line =~ /^\s*(?:\d+:\d+)\s*RealTime:\s+(?<year>\d{4})[\/-](?<month>\d{2})[\/-](?<day>\d{2})\s+(?<hour>\d{2}):(?<minute>\d{2}):(?<second>\d{2})(?:(\s+(?<time_zone>[A-Z]+)))?\s*$/) { # TODO: optional time_zone added for unv
             $self->handleRealTime(%+);
         } elsif ($line =~ /^\s*(?<time>\d+:\d+)\s*Beginning\s*Sudden\s*Death\s*$/) {
