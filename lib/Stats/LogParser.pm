@@ -234,8 +234,7 @@ sub handleRealTime {
     $self->{db_game} = Stats::DB::Game->new(
         map_id          => $map->id,
         server_id       => $self->{db_server}->id,
-        start           => $self->{game}->{realtime},
-	import_complete => 0,
+        start           => $self->{game}->{realtime}
     );
     if ($self->{db_game}->load(speculative => 1)) {
 	unless ($self->{db_game}->import_complete) {
@@ -250,6 +249,7 @@ sub handleRealTime {
     } else {
 	$self->log->info(sprintf('Importing game: %s %s',$self->{game}->{map},$self->{game}->{realtime}));
         $self->{db_game}->max_players(0);
+	$self->{db_game}->import_complete(0);
         $self->{db_game}->save;
 	$self->{skip_game} = 0;
     }
@@ -268,10 +268,13 @@ sub handleShutdownGame {
     foreach my $player (values %{$self->{cache}->{players}}) { $player->save; }
     foreach my $cache (qw/map players player_weapons session_weapons game_weapons/) { $self->dropCache($cache); }
 
-    $self->log->info(sprintf("\tGame import completed, max players: %d"));
+    $self->log->info(sprintf("\tGame import completed, max players: %d", $self->{db_game}->max_players));
 
     my $updateNeeded = $hadPlayers;
     $updateNeeded = 1 if ($self->updateGlicko2());
+
+    $self->{db_game}->import_complete(1);
+    $self->{db_game}->save;
 
     undef $self->{game};
     undef $self->{db_game};
@@ -636,7 +639,6 @@ sub handleExit {
     } else {
 	$self->{db_game}->outcome($fields{reason});
     }
-    $self->{db_game}->import_complete(1);
     $self->{db_game}->save;
     if ($self->{db_game}->max_players >= 2) {
 	my $outcome = $self->{db_game}->outcome;
