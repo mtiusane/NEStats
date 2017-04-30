@@ -268,6 +268,8 @@ sub handleShutdownGame {
     foreach my $player (values %{$self->{cache}->{players}}) { $player->save; }
     foreach my $cache (qw/map players player_weapons session_weapons game_weapons/) { $self->dropCache($cache); }
 
+    $self->log->info(sprintf("\tGame import completed, max players: %d"));
+
     my $updateNeeded = $hadPlayers;
     $updateNeeded = 1 if ($self->updateGlicko2());
 
@@ -634,6 +636,7 @@ sub handleExit {
     } else {
 	$self->{db_game}->outcome($fields{reason});
     }
+    $self->{db_game}->import_complete(1);
     $self->{db_game}->save;
     if ($self->{db_game}->max_players >= 2) {
 	my $outcome = $self->{db_game}->outcome;
