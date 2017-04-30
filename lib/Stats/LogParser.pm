@@ -258,11 +258,18 @@ sub handleRealTime {
 sub handleShutdownGame {
     my ($self,%fields) = @_;
     return unless (defined $self->{game});
+    if ($self->shouldSkipCurrentGame) {
+	undef $self->{db_game};
+	return;
+    }
     foreach my $slot (0..63) {
         next unless defined $self->{slots}->[$slot];
 	next if $self->{slots}->[$slot]->{disconnected};
         $self->handleClientDisconnect(time => $fields{time},guid => $self->{slots}->[$slot]->{guid},slot => $slot);
     }
+    $self->{db_game}->import_complete(1);
+    $self->{db_game}->save;
+
     my $hadPlayers = $self->{db_game}->max_players > 0;
   
     foreach my $player (values %{$self->{cache}->{players}}) { $player->save; }
@@ -272,9 +279,6 @@ sub handleShutdownGame {
 
     my $updateNeeded = $hadPlayers;
     $updateNeeded = 1 if ($self->updateGlicko2());
-
-    $self->{db_game}->import_complete(1);
-    $self->{db_game}->save;
 
     undef $self->{game};
     undef $self->{db_game};
