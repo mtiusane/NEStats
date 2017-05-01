@@ -48,14 +48,20 @@ my $log = Log::Log4perl->get_logger("logstats.pl");
 $log->info("Starting import: $importer $logfile $server_name $server_url $server_ip");
 my $parser = $importers{$importer}->(server_name => $server_name,server_ip => $server_ip,server_url => $server_url);
 my $retry_count = 0;
+open FI,'<',$logfile or die "Unable to read file: $logfile";
+$parser->sourcePath($logfile);
 while (1) {
+    my $line = <FI>;
+    last unless (defined $line);
+    chomp($line);
     eval {
-	$parser->parseFile($logfile);
+	$parser->parseLine($line);
     };
     if ($@) {
 	if ($retry_count < 3) {
 	    $log->error("Importer error: $@, retrying($retry_count)...\n");
 	    $parser = $importers{$importer}->(server_name => $server_name,server_ip => $server_ip,server_url => $server_url);
+	    $parser->sourcePath($logfile);
 	    ++$retry_count;
 	} else {
 	    $log->error("Importer error: $@, too many consecutive errors in import.\n");
@@ -63,4 +69,5 @@ while (1) {
 	}
     } else { $retry_count = 0; }
 }
+close FI;
 $log->info("Import finished.");

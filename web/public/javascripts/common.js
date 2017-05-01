@@ -66,6 +66,8 @@ Common = {
 		    $(field).html(new Date(value).toLocaleTimeString());
 		} else if (field.hasClass('f__duration')) {
 		    $(field).html(Common.format_duration(value));
+		} else if (field.hasClass('f__duration_minutes')) {
+		    $(field).html(Common.format_duration_minutes(value));
 		} else if (field.hasClass('f__text')) {
 		    $(field).html(Common.format_text(value));
 		} else {
@@ -108,9 +110,14 @@ Common = {
 	var minutes = Math.floor(seconds / 60.0);
 	seconds -= 60.0 * minutes;
 	seconds = Math.floor(seconds);
-	if (hours > 0) return hours + ':' + minutes + ':' + seconds;
-	if (minutes > 0) return minutes + ':' + seconds;
-	return seconds;
+	seconds = (seconds > 0) ? ((minutes > 0) ? ' ' : '') + seconds + 's' : '';
+	minutes = (minutes > 0) ? ((hours > 0) ? ' ' : '') + minutes + 'min' : '';
+	hours = (hours > 0) ? hours + 'h' : '';
+	return hours + minutes + seconds;
+    },
+
+    format_duration_minutes: function(seconds) {
+	return Common.format_duration(Math.ceil(Number(seconds) / 60.0) * 60.0);
     },
 
     format_text: function(text) {

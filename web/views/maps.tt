@@ -21,7 +21,7 @@
 	<tr class="template">
 	  <td><a class="f_url" href=""><span class="f_name f__text"></span></a></td>
 	  <td class="f_total_games"></td>
-	  <td class="f__duration f_total_time"></td>
+	  <td class="f__duration_minutes f_total_time"></td>
 	  <td class="f_human_wins"></td>
 	  <td class="f_alien_wins"></td>
 	  <td class="f_draws"></td>

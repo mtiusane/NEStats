@@ -36,8 +36,8 @@ use List::Util qw/max pairs/;
 
 use Log::Log4perl qw/:easy/;
 
-use constant MIN_GLICKO2_TIME  => 10 * 1800;
-use constant MIN_GLICKO2_GAMES => 10;
+use constant MIN_GLICKO2_TIME  => 18000;
+use constant MIN_GLICKO2_GAMES => 2;
 use constant MAX_SLOTS         => 64;
 
 sub new {
@@ -972,16 +972,14 @@ sub updateRankings {
 	}
     }
     my @statements = (
-        # TODO: Done as part of import, verify that it works (also replace total_rqs with a direct dependability score?)
-        # "update players p set total_sessions = (select count(*) from sessions s where s.player_id = p.id and s.end is not null and s.team != 'spectator')",
-        # "update players p set total_rqs = (select count(*) from sessions s,games g where s.player_id = p.id and s.game_id = g.id and s.end is not null and s.team != 'spectator' and s.end < g.end and p.total_sessions >= 10)",
         # Update player rankings - needed for player name searches with nearby player rankings display
         "delete from player_rankings where server_id = $server_id",
         "set \@rownum=-1",
 	"insert into player_rankings (player_id,server_id,glicko2_id,by_glicko2) select p.id as player_id,$server_id,g.id as glicko2_id,\@rownum:=\@rownum+1 as by_glicko2 from players p,player_glicko2 g where server_id = $server_id and g.player_id = p.id order by g.rating desc",
 	# TODO: For some reason the above insert wont get players in correct order so we're rearranging them on the next two lines
         "set \@rownum=-1",
-	"update player_rankings r left join (select p.id,\@rownum:=\@rownum+1 as value from players p,player_glicko2 g where server_id = $server_id and g.player_id = p.id order by g.rating desc) as q on r.player_id = q.id set by_glicko2 = value",
+	"update player_rankings r left join (select p.id,\@rownum:=\@rownum+1 as value,p.total_games,p.total_time from players p,player_glicko2 g where server_id = $server_id and g.player_id = p.id and p.total_games >= ".MIN_GLICKO2_GAMES." and p.total_time >= ".MIN_GLICKO2_TIME." order by g.rating desc) as q on r.player_id = q.id set by_glicko2 = value where q.total_games >= ".MIN_GLICKO2_GAMES." and q.total_time >= ".MIN_GLICKO2_TIME,
+	"update player_rankings r left join (select p.id,\@rownum:=\@rownum+1 as value,p.total_games,p.total_time from players p,player_glicko2 g where server_id = $server_id and g.player_id = p.id and p.total_games < ".MIN_GLICKO2_GAMES." and p.total_time < ".MIN_GLICKO2_TIME." order by p.total_kills desc, p.total_time desc) as q on r.player_id = q.id set by_glicko2 = value where (q.total_games < ".MIN_GLICKO2_GAMES." or q.total_time < ".MIN_GLICKO2_TIME.")",
 	"set \@rownum=-1",
 	"update player_rankings r left join (select id,\@rownum:=\@rownum+1 as value from players where server_id = $server_id order by total_kills desc) as p on r.player_id = p.id set by_kills = value",
         "set \@rownum=-1",

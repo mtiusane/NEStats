@@ -193,6 +193,7 @@ create table games (
        max_players int not null default 0,
        connects int not null default 0,
        disconnects int not null default 0,
+       -- TODO: max_players_a and max_players_h
 
        import_complete boolean not null default 0,
 
