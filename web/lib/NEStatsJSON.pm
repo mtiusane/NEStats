@@ -136,8 +136,11 @@ get '/player/:id/favorite_maps/:offset/:limit' => sub {
     my @maps = map {
 	url         => '/map/'.$_->map->id,
 	displayname => replace_all($_->map->name),
-	total_kills => $_->total_kills
-    }, @{Stats::DB::PlayerMap::Manager->get_player_maps(where => [ player_id => $player->id, total_kills => { gt => 0 } ],sort_by => 'total_kills desc',with_objects => [ 'map' ],offset => params->{offset},limit => max(25,params->{limit}))};
+	total_games => $_->total_games,
+	total_kills => $_->total_kills,
+	total_kills_a => $_->total_kills_a,
+	total_kills_h => $_->total_kills_h
+    }, @{Stats::DB::PlayerMap::Manager->get_player_maps(where => [ player_id => $player->id, total_kills => { gt => 0 } ],sort_by => 'total_games desc',with_objects => [ 'map' ],offset => params->{offset},limit => max(25,params->{limit}))};
     return {
 	maps   => \@maps,
 	offset => params->{offset},

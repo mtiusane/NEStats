@@ -417,6 +417,20 @@ create table player_maps (
        total_bdeaths int not null default 0,
        total_built int not null default 0,
 
+       total_kills_a int not null default 0,
+       total_bkills_a int not null default 0,
+       total_assists_a int not null default 0,
+       total_deaths_a int not null default 0,
+       total_bdeaths_a int not null default 0,
+       total_built_a int not null default 0,
+
+       total_kills_h int not null default 0,
+       total_bkills_h int not null default 0,
+       total_assists_h int not null default 0,
+       total_deaths_h int not null default 0,
+       total_bdeaths_h int not null default 0,
+       total_built_h int not null default 0,
+
        foreign key (player_id) references players(id),
        foreign key (map_id) references maps(id),
 

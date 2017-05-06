@@ -471,6 +471,14 @@ sub handleDie {
 	    my $assistMap = Stats::DB::PlayerMap->new(player_id => $assist->id,map_id => $map->id);
 	    $assistMap->load(speculative => 1);
 	    $assistMap->total_assists($assistMap->total_assists+1);
+	    if ($assist_session->team eq 'alien') {
+		$assistMap->total_assists_a($assistMap->total_assists_a+1);
+	    } elsif ($assist_session->team eq 'human') {
+		$assistMap->total_assists_h($assistMap->total_assists_h+1);
+	    } else {
+		$self->log->warn("Assist by a spectator. Might need to track previous team as well.");
+	    }
+
 	    $assistMap->save;
 	}
     }
@@ -496,6 +504,13 @@ sub handleDie {
 	    my $killerMap = Stats::DB::PlayerMap->new(player_id => $killer->id,map_id => $map->id);
 	    $killerMap->load(speculative => 1);
 	    $killerMap->total_kills($killerMap->total_kills+1);
+	    if ($killer_session->team eq 'alien') {
+		$killerMap->total_kills_a($killerMap->total_kills_a+1);
+	    } elsif ($killer_session->team eq 'human') {
+		$killerMap->total_kills_h($killerMap->total_kills_h+1);
+	    } else {
+		$self->log->warn("Kill by a spectator. Might need to track previous team as well.");
+	    }
 	    $killerMap->save();
 
 	    my $killerWeapon = Stats::DB::PlayerWeapon->new(player_id => $killer->id,weapon_id => $weapon->id);
@@ -512,6 +527,13 @@ sub handleDie {
 	    my $killedMap = Stats::DB::PlayerMap->new(player_id => $killed->id,map_id => $map->id);
 	    $killedMap->load(speculative => 1);
 	    $killedMap->total_deaths($killedMap->total_deaths+1);
+	    if ($killed_session->team eq 'alien') {
+		$killedMap->total_deaths_a($killedMap->total_deaths_a+1);
+	    } elsif ($killed_session->team eq 'human') {
+		$killedMap->total_deaths_h($killedMap->total_deaths_h+1);
+	    } else {
+		$self->log->warn("Killed by a spectator. Might need to track previous team as well.");
+	    }
 	    $killedMap->save();
 
 	    my $killedWeapon = Stats::DB::PlayerWeapon->new(player_id => $killed->id,weapon_id => $weapon->id);
@@ -547,6 +569,13 @@ sub handleDie {
 	    my $killedMap = Stats::DB::PlayerMap->new(player_id => $killed->id,map_id => $map->id);
 	    $killedMap->load(speculative => 1);
 	    $killedMap->total_bdeaths($killedMap->total_bdeaths+1);
+	    if ($killed_session->team eq 'alien') {
+		$killedMap->total_bdeaths_a($killedMap->total_bdeaths_a+1);
+	    } elsif ($killed_session->team eq 'human') {
+		$killedMap->total_bdeaths_h($killedMap->total_bdeaths_h+1);
+	    } else {
+		$self->log->warn("Kill by a spectator. Might need to track previous team as well.");
+	    }
 	    $killedMap->save();
 
 	    my $killedWeapon = Stats::DB::PlayerWeapon->new(player_id => $killed->id,weapon_id => $weapon->id);
@@ -587,6 +616,13 @@ sub handleConstruct {
 	my $playerMap = Stats::DB::PlayerMap->new(player_id => $player->id,map_id => $map->id);
 	$playerMap->load(speculative => 1);
 	$playerMap->total_built($playerMap->total_built+1);
+	if ($session->team eq 'alien') {
+	    $playerMap->total_built_a($playerMap->total_built_a+1);
+	} elsif ($session->team eq 'human') {
+	    $playerMap->total_built_h($playerMap->total_built_h+1);
+	} else {
+	    $self->log->warn("Build by a spectator. Might need to track previous team as well.");
+	}
 	$playerMap->save();
     }
 }

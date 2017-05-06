@@ -101,10 +101,11 @@
     <div id="player_maps" class="container">
       <table>
 	<thead>
-	  <tr class="title"><th colspan="3">Favorite Maps</th></tr>
+	  <tr class="title"><th colspan="4">Favorite Maps</th></tr>
 	  <tr class="title">
 	    <th>Index</th>
 	    <th>Map</th>
+	    <th>Total Games</th>
 	    <th>Total Kills</th>
 	  </tr>
 	</thead>
@@ -112,7 +113,13 @@
 	  <tr class="template">
 	    <td class="f__index"></td>
 	    <td><a class="f_url"><span class="name text f__text f_displayname"></span></a></td>
-	    <td class="f_total_kills"></td>
+	    <td class="f_total_games"></td>
+	    <td class="f__bar">
+	      <span class="bar_value f_total_kills_h"></span>
+	      <span class="bar_total f_total_kills"></span>
+	      <span class="bar_prefix f__text"><span class="f_total_kills_h"></span> [bsuit]</span>
+	      <span class="bar_suffix f__text">[tyrant] <span class="f_total_kills_a"></span></span>
+	    </td>
 	  </tr>
 	</tbody>
       </table>
@@ -134,9 +141,8 @@
 	    <td class="f__bar">
 	      <span class="bar_value f_total_kills_h"></span>
 	      <span class="bar_total f_total_kills"></span>
-	      <span class="bar_text f_total_kills"></span>
-	      <span class="bar_prefix f__text">[bsuit]</span>
-	      <span class="bar_suffix f__text">[tyrant]</span>
+	      <span class="bar_prefix f__text"><span class="f_total_kills_h"></span> [bsuit]</span>
+	      <span class="bar_suffix f__text">[tyrant] <span class="f_total_kills_a"></span></span>
 	    </td>
 	  </tr>
 	</tbody>
@@ -159,9 +165,8 @@
 	    <td class="f__bar">
 	      <span class="bar_value f_total_kills_h"></span>
 	      <span class="bar_total f_total_kills"></span>
-	      <span class="bar_text f_total_kills"></span>
-	      <span class="bar_prefix f__text">[bsuit]</span>
-	      <span class="bar_suffix f__text">[tyrant]</span>
+	      <span class="bar_prefix f__text"><span class="f_total_kills_h"></span> [bsuit]</span>
+	      <span class="bar_suffix f__text">[tyrant] <span class="f_total_kills_a"></span></span>
 	    </td>
 	  </tr>
 	</tbody>

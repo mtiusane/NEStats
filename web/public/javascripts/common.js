@@ -184,7 +184,7 @@ Common = {
 	if (Common.isDefined(prefix))
 	    result.append('<span class="prefix">'+prefix+'</span>');	
 	if (Common.isDefined(suffix))
-	    result.append('<span class="suffix">'+suffix+'</span>');	
+	    result.append('<span class="suffix">'+suffix+'</span>');
 	return result;
     },
 
