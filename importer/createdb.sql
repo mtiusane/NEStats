@@ -10,6 +10,7 @@ use stats;
 -- grant all privileges on stats.* to 'stats'@'localhost';
 -- flush privileges;
 
+drop table if exists player_kills;
 drop table if exists player_rankings;
 drop table if exists timestamps;
 drop table if exists glicko2_scores;
@@ -420,6 +421,29 @@ create table player_maps (
        foreign key (map_id) references maps(id),
 
        primary key (player_id,map_id)      
+);
+
+create table player_kills (
+       player_id int not null references players(id),
+       target_id int not null references players(id),
+       -- weapon_id int not null references weapons(id),
+
+       total_games int not null default 0,
+       total_sessions int not null default 0,
+
+       total_kills int not null default 0,
+       total_kills_a int not null default 0,
+       total_kills_h int not null default 0,
+
+       total_assists int not null default 0,
+       total_assists_a int not null default 0,
+       total_assists_h int not null default 0,
+
+       foreign key (player_id) references players(id),
+       foreign key (target_id) references players(id),
+       -- foreign key (weapon_id) references weapons(id),
+
+       primary key (player_id,target_id) -- ,weapon_id
 );
 
 -- Glicko2 ratings

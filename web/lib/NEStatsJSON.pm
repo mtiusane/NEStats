@@ -27,6 +27,7 @@ use Stats::DB::SessionWeapon;
 use Stats::DB::GameWeapon;
 use Stats::DB::PlayerMap;
 use Stats::DB::Clan;
+use Stats::DB::PlayerKill;
 
 use Stats::Util qw/replace_all db_to_hashref/;
 
@@ -81,7 +82,7 @@ get '/player/:id' => sub {
 	$glicko2 = Glicko2::Player->new unless($glicko2->load(speculative => 1));
 	return {
 	    (map { $_ => $player->{$_} } (qw/id total_time total_time_h total_time_a total_kills total_deaths total_assists total_bkills total_bdeaths total_built total_sessions total_rqs/)),
-	    (map { 'glicko2_'.$_ => $glicko2->{$_} } (qw/rating rd volatility/)),
+	    (map { 'glicko2_'.$_ => sprintf('%.02f',$glicko2->{$_}) } (qw/rating rd volatility/)),
 	    displayname => replace_all($player->{displayname})
 	}
     } else {
@@ -131,7 +132,7 @@ get '/player/:id/kills_by_weapon/:offset/:limit' => sub {
 
 get '/player/:id/favorite_maps/:offset/:limit' => sub {
     my $player = Stats::DB::Player->new(id => params->{id});
-    my $count = Stats::DB::PlayerMap::Manager->get_player_maps_count(where => [ player_id => $player->id,total_kills => { gt => 0 } ],require_objects => => [ 'map' ]);
+    my $count = Stats::DB::PlayerMap::Manager->get_player_maps_count(where => [ player_id => $player->id,total_kills => { gt => 0 } ],require_objects => [ 'map' ]);
     my @maps = map {
 	url         => '/map/'.$_->map->id,
 	displayname => replace_all($_->map->name),
@@ -139,6 +140,46 @@ get '/player/:id/favorite_maps/:offset/:limit' => sub {
     }, @{Stats::DB::PlayerMap::Manager->get_player_maps(where => [ player_id => $player->id, total_kills => { gt => 0 } ],sort_by => 'total_kills desc',with_objects => [ 'map' ],offset => params->{offset},limit => max(25,params->{limit}))};
     return {
 	maps   => \@maps,
+	offset => params->{offset},
+	total  => $count
+    }
+};
+
+get '/player/:id/most_kills/:offset/:limit' => sub {
+    my $player = Stats::DB::Player->new(id => params->{id});
+    my $count = Stats::DB::PlayerKill::Manager->get_player_kills_count(where => [ player_id => $player->id,total_kills => { gt => 0 } ],require_objects => [ 'player', 'target' ]);
+    my @kills = map {
+	url             => '/player/'.$_->target->id,
+	name            => $_->target->displayname,
+	total_kills     => $_->total_kills,
+	total_kills_a   => $_->total_kills_a,
+	total_kills_h   => $_->total_kills_h,
+	total_assists   => $_->total_assists,
+	total_assists_a => $_->total_assists_a,
+	total_assists_h => $_->total_assists_h
+    }, @{Stats::DB::PlayerKill::Manager->get_player_kills(where => [ player_id => $player->id, total_kills => { gt => 0 } ],sort_by => 'total_kills desc',with_objects => [ 'player', 'target' ],offset => params->{offset},limit => max(25,params->{limit}))};
+    return {
+	kills  => \@kills,
+	offset => params->{offset},
+	total  => $count
+    }
+};
+
+get '/player/:id/most_deaths/:offset/:limit' => sub {
+    my $player = Stats::DB::Player->new(id => params->{id});
+    my $count = Stats::DB::PlayerKill::Manager->get_player_kills_count(where => [ target_id => $player->id,total_kills => { gt => 0 } ],require_objects => [ 'player', 'target' ]);
+    my @kills = map {
+	url             => '/player/'.$_->player->id,
+	name            => $_->player->displayname,
+	total_kills     => $_->total_kills,
+	total_kills_a   => $_->total_kills_a,
+	total_kills_h   => $_->total_kills_h,
+	total_assists   => $_->total_assists,
+	total_assists_a => $_->total_assists_a,
+	total_assists_h => $_->total_assists_h
+    }, @{Stats::DB::PlayerKill::Manager->get_player_kills(where => [ target_id => $player->id, total_kills => { gt => 0 } ],sort_by => 'total_kills desc',with_objects => [ 'player', 'target' ],offset => params->{offset},limit => max(25,params->{limit}))};
+    return {
+	kills  => \@kills,
 	offset => params->{offset},
 	total  => $count
     }

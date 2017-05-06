@@ -26,6 +26,7 @@ use Stats::DB::GameClanMember;
 use Stats::DB::Glicko2;
 use Stats::DB::Glicko2Score;
 use Stats::DB::TimeStamp;
+use Stats::DB::PlayerKill;
 
 use Glicko2::Player;
 
@@ -453,10 +454,24 @@ sub handleDie {
 	    $assist->total_assists($assist->total_assists+1);
 	    $assist->save;
 
+	    if ($killed_session->player_id) {
+		my $kill = Stats::DB::PlayerKill->new(player_id => $assist_session->player_id,target_id => $killed_session->player_id);
+		$kill->load(speculative => 1);
+		$kill->total_assists($kill->total_assists+1);
+		if ($assist_session->team eq 'alien') {
+		    $kill->total_assists_a($kill->total_assists_a+1);
+		} elsif ($assist_session->team eq 'human') {
+		    $kill->total_assists_h($kill->total_assists_h+1);
+		} else {
+		    $self->log->warn("Assisted by a spectator. Might need to track previous team as well.");
+		}
+		$kill->save;
+	    }
+
 	    my $assistMap = Stats::DB::PlayerMap->new(player_id => $assist->id,map_id => $map->id);
 	    $assistMap->load(speculative => 1);
 	    $assistMap->total_assists($assistMap->total_assists+1);
-	    $assistMap->save();
+	    $assistMap->save;
 	}
     }
     if (defined($killer_session)) {
@@ -473,7 +488,8 @@ sub handleDie {
         $map->total_kills($map->total_kills+1);
         $map->total_deaths($map->total_deaths+1);
 
-        if (my $killer = $self->loadPlayer($killer_session->player_id)) {
+        my $killer = $self->loadPlayer($killer_session->player_id);
+	if ($killer) {
 	    $killer->total_kills($killer->total_kills+1);
 	    $killer->save;
 
@@ -485,10 +501,11 @@ sub handleDie {
 	    my $killerWeapon = Stats::DB::PlayerWeapon->new(player_id => $killer->id,weapon_id => $weapon->id);
 	    $killerWeapon->load(speculative => 1);
 	    $killerWeapon->total_kills($killerWeapon->total_kills+1);
-	    $killerWeapon->save();
+	    $killerWeapon->save();    
 	}
 
-        if (my $killed = $self->loadPlayer($killed_session->player_id)) {
+        my $killed = $self->loadPlayer($killed_session->player_id);
+	if ($killed) {
 	    $killed->total_deaths($killed->total_deaths+1);
 	    $killed->save;
 
@@ -501,6 +518,20 @@ sub handleDie {
 	    $killedWeapon->load(speculative => 1);
 	    $killedWeapon->total_deaths($killedWeapon->total_deaths+1);
 	    $killedWeapon->save();
+	}
+
+	if ($killer && $killed) {
+	    my $kill = Stats::DB::PlayerKill->new(player_id => $killer->id,target_id => $killed->id);
+	    $kill->load(speculative => 1);
+	    $kill->total_kills($kill->total_kills+1);
+	    if ($killer_session->team eq 'alien') {
+		$kill->total_kills_a($kill->total_kills_a+1);
+	    } elsif ($killer_session->team eq 'human') {
+		$kill->total_kills_h($kill->total_kills_h+1);
+	    } else {
+		$self->log->warn("Killed by a spectator. Might need to track previous team as well.");
+	    }
+	    $kill->save;
 	}
     } else {
         $self->{db_game}->total_bdeaths($self->{db_game}->total_bdeaths+1);
@@ -979,7 +1010,7 @@ sub updateRankings {
 	# TODO: For some reason the above insert wont get players in correct order so we're rearranging them on the next two lines
         "set \@rownum=-1",
 	"update player_rankings r left join (select p.id,\@rownum:=\@rownum+1 as value,p.total_games,p.total_time from players p,player_glicko2 g where server_id = $server_id and g.player_id = p.id and p.total_games >= ".MIN_GLICKO2_GAMES." and p.total_time >= ".MIN_GLICKO2_TIME." order by g.rating desc) as q on r.player_id = q.id set by_glicko2 = value where q.total_games >= ".MIN_GLICKO2_GAMES." and q.total_time >= ".MIN_GLICKO2_TIME,
-	"update player_rankings r left join (select p.id,\@rownum:=\@rownum+1 as value,p.total_games,p.total_time from players p,player_glicko2 g where server_id = $server_id and g.player_id = p.id and p.total_games < ".MIN_GLICKO2_GAMES." and p.total_time < ".MIN_GLICKO2_TIME." order by p.total_kills desc, p.total_time desc) as q on r.player_id = q.id set by_glicko2 = value where (q.total_games < ".MIN_GLICKO2_GAMES." or q.total_time < ".MIN_GLICKO2_TIME.")",
+	"update player_rankings r left join (select p.id,\@rownum:=\@rownum+1 as value,p.total_games,p.total_time from players p,player_glicko2 g where server_id = $server_id and g.player_id = p.id and (p.total_games < ".MIN_GLICKO2_GAMES." or p.total_time < ".MIN_GLICKO2_TIME.") order by p.total_kills desc, p.total_time desc) as q on r.player_id = q.id set by_glicko2 = value where (q.total_games < ".MIN_GLICKO2_GAMES." or q.total_time < ".MIN_GLICKO2_TIME.")",
 	"set \@rownum=-1",
 	"update player_rankings r left join (select id,\@rownum:=\@rownum+1 as value from players where server_id = $server_id order by total_kills desc) as p on r.player_id = p.id set by_kills = value",
         "set \@rownum=-1",

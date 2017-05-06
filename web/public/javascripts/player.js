@@ -19,4 +19,15 @@ $(document).ready(function() {
     },function(data) {
 	return data.maps;
     });
+    Common.scroll_table_generic('#content div#player_top_kills',function(offset,limit) {
+	return '/json/player/'+player_id+'/most_kills/'+offset+'/'+limit;
+    },function(data) {
+	return data.kills;
+    });
+    Common.scroll_table_generic('#content div#player_top_killers',function(offset,limit) {
+	return '/json/player/'+player_id+'/most_deaths/'+offset+'/'+limit;
+    },function(data) {
+	return data.kills;
+    });
+
 });

@@ -35,7 +35,7 @@ Common = {
     scroll_table: function(container,link,elements,line) {
 	Common.scroll_container($(container),$(container).find('table'),link,elements,line);
     },
-
+   
     load_fields_generic: function(selector,data) {
 	// $.each(selector.find('a.data.field'),function(field_index,field) {
 	//     var name = field.attr('href');
@@ -60,20 +60,35 @@ Common = {
 		    sum += Number(value);
 		    field.data('f__sum',sum);
 		    field.html(sum);
-		} else if (field.hasClass('f__date')) {
-		    $(field).html(new Date(value).toLocaleDateString());
-		} else if (field.hasClass('f__time')) {
-		    $(field).html(new Date(value).toLocaleTimeString());
-		} else if (field.hasClass('f__duration')) {
-		    $(field).html(Common.format_duration(value));
-		} else if (field.hasClass('f__duration_minutes')) {
-		    $(field).html(Common.format_duration_minutes(value));
-		} else if (field.hasClass('f__text')) {
-		    $(field).html(Common.format_text(value));
 		} else {
 		    $(field).html(value);
 		}
 	    });
+	});
+	selector.find('.f__date').each(function(field_index,field) {
+	    $(field).html(new Date($(field).text()).toLocaleDateString());
+	});
+	selector.find('.f__time').each(function(field_index,field) {
+	    $(field).html(new Date($(field).text()).toLocaleTimeString());
+	});
+	selector.find('.f__duration').each(function(field_index,field) {
+	    $(field).html(Common.format_duration($(field).text()));
+	});
+	selector.find('.f__duration_minutes').each(function(field_index,field) {
+	    $(field).html(Common.format_duration_minutes($(field).text()));
+	});
+	selector.find('.f__text').each(function(field_index,field) {
+	    $(field).html(Common.format_text($(field).text()));
+	});
+	selector.find('.f__bar').each(function(field_index,field) {
+	    field = $(field);
+	    $(field).html(Common.bar(
+		field.find('.bar_value').text(),
+		field.find('.bar_total').text(),
+		field.find('.bar_text').html(),
+		field.find('.bar_prefix').html(),
+		field.find('.bar_suffix').html()
+	    ));
 	});
     },
 
@@ -148,7 +163,7 @@ Common = {
 	    return "N/A";
     },
 
-    bar: function(value,total,text,prefix,suffix) {	
+    bar: function(value,total,text,prefix,suffix) {
 	var result = $('<div class="bar"></div>');
 	if (total > 0.0) {
 	    var fill_color = '#3355ff';
