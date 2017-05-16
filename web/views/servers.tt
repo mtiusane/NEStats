@@ -1,5 +1,4 @@
 <div id="content">
-  <script src="/javascripts/common.js"></script>
   <script src="/javascripts/servers.js"></script>
   <div id="servers" class="container">
     <table>

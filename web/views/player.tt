@@ -1,5 +1,4 @@
 <div id="content">
-  <script src="/javascripts/common.js"></script>
   <script src="/javascripts/player.js"></script>
   <div id="player">
     <a class="data player_id" href="<% player_id %>"></a>

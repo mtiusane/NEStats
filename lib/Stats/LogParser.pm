@@ -934,6 +934,7 @@ sub saveGlicko2 {
 	$db->rating($glicko2->{glicko}->rating);
 	$db->rd($glicko2->{glicko}->rd);
 	$db->volatility($glicko2->{glicko}->volatility);
+	$db->update_count($db->update_count+1);
 	$db->save;
     }
 }

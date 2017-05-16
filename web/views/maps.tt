@@ -1,5 +1,4 @@
 <div id="content">
-  <script src="/javascripts/common.js"></script>
   <script src="/javascripts/maps.js"></script>
   <div id="maps" class="container">
     <a class="data server_id" href="<% server_id %>"></a>

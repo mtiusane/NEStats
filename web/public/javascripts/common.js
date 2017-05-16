@@ -3,37 +3,67 @@ Common = {
     scroll_container: function(container,table,link,elements,line) {
 	container = $(container);
 	table = $(table);
+	var scroll = container.jScrollPane({
+	    autoReinitialise: false,
+	    showArrows: false,
+	    maintainPosition: true,
+	    verticalGutter: 0,
+	    horizontalGutter: 0,
+	    contentWidth: '100%'
+	}).data('jsp');
 	var template = table.find('.template').detach();
 	template.removeClass('template');
+	var thead = table.find('thead');
+	var tbody = table.find('tbody');
 	var loadPage = function(callback) {
 	    var offset = table.data('offset');
 	    var total = table.data('total');
 	    var limit = table.data('limit');
+	    var lastLoad = table.data('lastLoad');
 	    table.data('loading',true);
 	    $.get(link(offset,limit),function(data) {
 		var lines = elements(data);
 		$.each(lines,function(index,element) {
-		    table.append(line(template,element,offset+index));
+		    tbody.append(line(template,element,offset+index));
 		});
 		table.data('total',data.total);
 		table.data('offset',table.data('offset')+lines.length);
 		table.data('loading',false);
+		table.data('lastLoad',(new Date()).getTime());
+		var oldWidth = table.width();
+		scroll.reinitialise();
+		table.width(oldWidth); /* TODO: Without this the table keeps getting +10px at every new content row if scrolled to the rightmost position. */
 		if (callback) callback();
 	    });
 	};
 	table.data('offset',0);
 	table.data('total',0);
 	table.data('limit',25);
-	loadPage(function() {
-	    container.scroll(function() {
-		if (table.data('offset') < table.data('total') && !table.data('loading') &&
-		    $(this).scrollTop()+$(this).innerHeight() >= $(this)[0].scrollHeight-$(this).height()/4) loadPage();
+	table.data('lastLoad',(new Date()).getTime());
+	container.bind('jsp-scroll-y',function(event,top,isAtTop,isAtBottom) {
+	    var timeSinceLastLoad = (new Date()).getTime() - table.data('lastLoad');
+	    if (table.data('offset') < table.data('total') && !table.data('loading') &&
+		timeSinceLastLoad >= 500 && isAtBottom) {
+		loadPage();
+	    }
+	    /*
+	    thead.css({
+		position: 'absolute',
+		top: top
 	    });
+	    tbody.css({
+		position: 'absolute',
+		top: thead.height(),
+		width: '100%'
+	    });
+	    */
 	});
+	loadPage();
     },
     
     scroll_table: function(container,link,elements,line) {
-	Common.scroll_container($(container),$(container).find('table'),link,elements,line);
+	container = $(container);
+	Common.scroll_container(container,container.find('table'),link,elements,line);
     },
    
     load_fields_generic: function(selector,data) {
@@ -188,23 +218,27 @@ Common = {
 	return result;
     },
 
-    rating: function(r,rd) {
-	var fill_color = '#ff5533';
-	var empty_color = '#3355ff';
-	var stroke_color = fill_color;
-	var cw = 160;
-	var ch = 16;
-	var rd_fill_left = cw * ( 0.5*r - 2.0 * rd ) / r;
-	var rd_fill_width = cw * ( 4.0 * rd ) / r;
-	var x0 =       rd_fill_width /  4.0,x1 = 3.0*rd_fill_width / 10.0,x2 = rd_fill_width / 2.0;
-	var x3 = 2.0 * rd_fill_width / 10.0,x4 =     rd_fill_width /  4.0,x5 = rd_fill_width / 2.0;
-	var move = 'm '+$.each([ rd_fill_left, ch ], function(i,v) { return Number(v).toFixed(2); }).reduce(function(a,b) { return a + ' ' + b; });
-	var curve = 'c '+$.each([ x0, 0.0, x1, -ch, x2, -ch, x3, 0, x4, ch, x5, ch ], function(i,v) { return Number(v).toFixed(2); }).reduce(function(a,b) { return a + ' ' + b; });
-	var result = $('<div class="rating"></div>');
-	var svg = $('<svg style="width: '+cw+'px; height: '+ch+'px; background: '+empty_color+'"><path d="'+move+' '+curve+'" fill="'+fill_color+'" stroke="'+stroke_color+'" stroke-width="1">');
-	result.append(svg);
-	result.append('<span class="overlay">'+Number(r).toFixed(2)+'</span>');
-	return result;
+    rating: function(g) {
+	if (g.update_count > 0) {
+	    var r = Number(g.rating);
+	    var rd = Number(g.rd);
+	    var fill_color = '#ff5533';
+	    var empty_color = '#3355ff';
+	    var stroke_color = fill_color;
+	    var cw = 160;
+	    var ch = 16;
+	    var rd_fill_left = cw * ( 0.5*r - 2.0 * rd ) / r;
+	    var rd_fill_width = cw * ( 4.0 * rd ) / r;
+	    var x0 =       rd_fill_width /  4.0,x1 = 3.0*rd_fill_width / 10.0,x2 = rd_fill_width / 2.0;
+	    var x3 = 2.0 * rd_fill_width / 10.0,x4 =     rd_fill_width /  4.0,x5 = rd_fill_width / 2.0;
+	    var move = 'm '+$.each([ rd_fill_left, ch ], function(i,v) { return Number(v).toFixed(2); }).reduce(function(a,b) { return a + ' ' + b; });
+	    var curve = 'c '+$.each([ x0, 0.0, x1, -ch, x2, -ch, x3, 0, x4, ch, x5, ch ], function(i,v) { return Number(v).toFixed(2); }).reduce(function(a,b) { return a + ' ' + b; });
+	    var result = $('<div class="rating"></div>');
+	    var svg = $('<svg style="width: '+cw+'px; height: '+ch+'px; background: '+empty_color+'"><path d="'+move+' '+curve+'" fill="'+fill_color+'" stroke="'+stroke_color+'" stroke-width="1">');
+	    result.append(svg);
+	    result.append('<span class="overlay">'+Number(r).toFixed(2)+'</span>');
+	    return result;
+	} else return $('<div class="rating">N/A</div>');
     },
 
     extractIcons: function(text, color) {
@@ -280,12 +314,56 @@ Common = {
 	    '</svg>'
 	);
     },
+
+    updateFullSize: function() {
+	$('.fullheight, .fullHeight .jspContainer').each(function(index,field) {
+	    $(field).height($(window).height()); // $(field).height($(field).parent().height());
+	});
+	$('.fullwidth, .fullWidth .jspContainer').each(function(index,field) {
+	    $(field).width($(window).width());// $(field).width($(field).parent().width());
+	});
+	$('.container.fullwidth .jspPane table').each(function(index,field) {
+	    $(field).width($(field).parent().width());
+	});
+	$('.fullwidth.jspScrollable, .fullheight.jspScrollable').each(function(index,field) {
+	    var jsp = $(field).data('jsp');
+	    if (jsp !== undefined) {
+		/* $(field).width($(field).parent().width()); */
+		jsp.reinitialise();
+	    }
+	});
+	$('.container.fullwidth .jspPane table').each(function(index,field) {
+	    $(field).width($(field).parent().width());
+	});
+    }
    
 };
-/*
+
 $(document).ready(function() {
-    $('.fullheight').each(function(index) {
-	$(this).height($(this).parent().height()+'px');
-    });
+    Common.updateFullSize();
+    var win = $(window);
+    var menu =  $('#menu');
+    var isResizing = false;
+    win.bind('resize',function() {
+	var content = $('#content_wrapper');
+	if (!isResizing) {
+	    isResizing = true;
+	    var container = content;
+	    container.css({'width':1,'height':1});
+	    container.css({
+		width:  win.width(),
+		height: win.height() - menu.position().top - menu.height(),
+		top:    menu.position().top + menu.height()
+	    });
+	    isResizing = false;
+	    container.jScrollPane({'showArrows':true});
+	    Common.updateFullSize();
+	}
+    }).trigger('resize');
+    $('body').css('overflow','hidden');
+    /* IE fix, retrigger due to incorrect initial size */
+    var content = $('#content_wrapper');
+    if (content.width() != win.width()) {
+	win.trigger('resize');
+    }
 });
-*/

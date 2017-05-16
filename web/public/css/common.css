@@ -26,8 +26,17 @@
 
 .container {
     display: inline-block;
-    max-height: 20em;
+    min-width: 800px;
+    min-height: 400px;
+    /*width: 100%;
+    min-width: 30%;
     max-width: 100%;
+    min-height: 25em;*/
+    margin: 0px;
+    padding-left: 0px;
+    padding-right: 0px;
+    padding-top: 0px;
+    padding-bottom: 0px;
     overflow-x: auto;
     overflow-y: scroll;
     border-top-left-radius: 6px;
@@ -37,6 +46,10 @@
 }
 
 .container table {
+    padding: 0px;
+    margin: 0px;
+    left: 0px;
+    right: 0px;
     border-top-left-radius: 6px;
     border-top-right-radius: 0px;
     border-bottom-left-radius: 6px;
@@ -46,80 +59,13 @@
 .container.noscroll {
     overflow-y: hidden !important;
     border-radius: 6px;
+    min-width: 20% !important;
+    min-height: 3em !important;
     max-height: 100% !important;
 }
 
 .container.noscroll table {
     border-radius: 6px;
-}
-
-.container::-webkit-scrollbar {
-    background: transparent;
-}
-
-.container::-webkit-scrollbar:vertical {
-    border-left: 2px solid rgba(0,0,0,0.25);
-    border-top-left-radius: 0px;
-    border-bottom-left-radius: 0px;
-    border-top-right-radius: 6px;
-    border-bottom-right-radius: 6px;
-    width: 12px;
-}
-
-.container::-webkit-scrollbar-track:vertical {
-    border-top-left-radius: 0px;
-    border-bottom-left-radius: 0px;
-    border-top-right-radius: 6px;
-    border-bottom-right-radius: 6px;
-    background: rgba(255,255,255,0.15);
-}
-
-.container::-webkit-scrollbar-thumb:vertical {
-    border-top-left-radius: 0px;
-    border-bottom-left-radius: 0px;
-    border-top-right-radius: 6px;
-    border-bottom-right-radius: 6px;
-    border-left: 2px solid rgba(0,0,0,0.35);
-    background: rgba(255,255,255,0.25);
-}
-
-.container::-webkit-scrollbar-thumb:vertical:hover {
-    background: rgba(59,198,184,0.5);
-}
-
-.container::-webkit-scrollbar:horizontal {
-    border-top-left-radius: 0px;
-    border-top-right-radius: 0px;
-    border-bottom-left-radius: 6px;
-    border-bottom-right-radius: 6px;
-    border-top: 2px solid rgba(0,0,0,0.25);
-    height: 12px;
-}
-
-.container::-webkit-scrollbar-track:horizontal {
-    border-top-left-radius: 0px;
-    border-top-right-radius: 0px;
-    border-bottom-left-radius: 6px;
-    border-bottom-right-radius: 6px;
-    background: rgba(255,255,255,0.15);
-}
-
-.container::-webkit-scrollbar-thumb:horizontal {
-    border-top-left-radius: 0px;
-    border-top-right-radius: 0px;
-    border-bottom-left-radius: 6px;
-    border-bottom-right-radius: 6px;
-    border-left: 2px solid rgba(0,0,0,0.35);
-    background: rgba(255,255,255,0.25);
-}
-
-.container::-webkit-scrollbar-thumb:horizontal:hover {
-    background: rgba(59,198,184,0.5);
-}
-
-.container::-webkit-scrollbar-corner
-{
-    background: transparent;
 }
 
 .container table,
@@ -131,7 +77,7 @@
 
 .container table {
     width: 100%;
-    max-height: 240px;
+    /* max-height: 240px; */
     border-spacing: 0px;
     overflow: hidden;
 }
@@ -139,7 +85,7 @@
 .container table thead {
     left: 0px;
     top: 0px;
-    height: 20px;
+    min-height: 1em;
     width: 100%;
     background: rgba(59,198,184,0.8);
     border-bottom: 2px solid rgba(0,0,0,0.1);
@@ -186,6 +132,8 @@
     background: rgba(255,255,255,0.20);
 }
 
+/* chartjs-tooltip */
+
 div#chartjs-tooltip {
     padding: 0px;
     margin: 0px;
@@ -222,4 +170,185 @@ div#chartjs-tooltip .container table tr:nth-child(odd) td {
 div#chartjs-tooltip .container table tr:nth-child(even) td {
     font-size: 0.8em;
     font-style: italic;
+}
+
+/* jquery.jScrollPane style overrides - content_wrapper */
+
+#content_wrapper > .jspContainer {
+    border-radius: 0px;
+}
+
+#content_wrapper > .jspContainer > .jspVerticalBar {
+    background: transparent;
+    border-radius: 0px;
+    width: 12px;
+}
+
+#content_wrapper > .jspContainer > .jspVerticalBar .jspTrack {
+    background: rgba(255,255,255,0.25);
+    border-radius: 0px;
+}
+
+#content_wrapper > .jspContainer > .jspVerticalBar .jspDrag {
+    background: rgba(255,255,255,0.25);    
+    border-top-left-radius: 6px;
+    border-bottom-left-radius: 6px;
+    border-top-right-radius: 0px;
+    border-bottom-right-radius: 0px;
+}
+
+#content_wrapper > .jspContainer > .jspVerticalBar .jspDrag:hover,
+#content_wrapper > .jspContainer > .jspVerticalBar .jspDrag.jspActive {
+    background: rgba(59,198,184,0.5);
+}
+
+#content_wrapper > .jspContainer > .jspVerticalBar .jspCapTop {
+}
+
+#content_wrapper > .jspContainer > .jspVerticalBar .jspCapBottom {
+}
+
+#content_wrapper > .jspContainer > .jspHorizontalBar {
+    background: transparent;
+    border-radius: 0px;
+    height: 12px;
+}
+
+#content_wrapper > .jspContainer > .jspHorizontalBar .jspTrack {
+    background: rgba(255,255,255,0.25);
+    border-radius: 0px;
+}
+
+#content_wrapper > .jspContainer > .jspHorizontalBar .jspDrag {
+    background: rgba(255,255,255,0.25);
+    border-top-left-radius: 6px;
+    border-top-right-radius: 6px;
+    border-bottom-left-radius: 0px;
+    border-bottom-right-radius: 0px;
+}
+
+#content_wrapper > .jspContainer > .jspHorizontalBar .jspDrag:hover,
+#content_wrapper > .jspContainer > .jspHorizontalBar .jspDrag.jspActive {
+    background: rgba(59,198,184,0.5);
+}
+
+#content_wrapper > .jspContainer > .jspHorizontalBar .jspCapLeft {
+}
+
+#content_wrapper > .jspContainer > .jspHorizontalBar .jspCapRight {
+}
+
+#content_wrapper > .jspContainer > .jspVerticalBar .jspCorner,
+#content_wrapper > .jspContainer > .jspHorizontalBar .jspCorner {
+    background: rgba(255,255,255,0.25);
+    border-top-left-radius: 0px;
+    border-top-right-radius: 0px;
+    border-bottom-left-radius: 0px;
+    border-bottom-right-radius: 6px;
+}
+
+#content_wrapper > .jspContainer .jspArrowUp,
+#content_wrapper > .jspContainer .jspArrowDown,
+#content_wrapper > .jspContainer .jspArrowLeft,
+#content_wrapper > .jspContainer .jspArrowRight {
+    background: rgba(255,255,255,0.5);
+    border-radius: 0px;
+    height: 12px;
+}
+
+#content_wrapper > .jspContainer .jspArrowUp.jspDisabled,
+#content_wrapper > .jspContainer .jspArrowDown.jspDisabled,
+#content_wrapper > .jspContainer .jspArrowLeft.jspDisabled,
+#content_wrapper > .jspContainer .jspArrowRight.jspDisabled {
+    background: rgba(255,255,255,0.25);
+    border-radius: 0px;
+    height: 12px;
+}
+
+/* jquery.jScrollPane style overrides - container */
+
+.container .jspContainer {
+    border-radius: 6px;
+}
+
+.container .jspVerticalBar {
+    background: transparent;
+    border-left: 2px solid rgba(0,0,0,0.25);
+    border-top-left-radius: 0px;
+    border-bottom-left-radius: 0px;
+    border-top-right-radius: 6px;
+    border-bottom-right-radius: 6px;
+    width: 12px;
+}
+
+.container .jspVerticalBar .jspTrack {
+    background: rgba(255,255,255,0.25);
+    border-top-left-radius: 0px;
+    border-bottom-left-radius: 0px;
+    border-top-right-radius: 6px;
+    border-bottom-right-radius: 0px;
+}
+
+.container .jspVerticalBar .jspDrag {
+    background: rgba(255,255,255,0.25);    
+    border-top-left-radius: 0px;
+    border-bottom-left-radius: 0px;
+    border-top-right-radius: 6px;
+    border-bottom-right-radius: 6px;
+}
+
+.container .jspVerticalBar .jspDrag:hover,
+.container .jspVerticalBar .jspDrag.jspActive {
+    background: rgba(59,198,184,0.5);
+}
+
+.container .jspCapTop {
+}
+
+.container .jspCapBottom {
+}
+
+.container .jspHorizontalBar {
+    background: transparent;
+    border-top-left-radius: 0px;
+    border-top-right-radius: 0px;
+    border-bottom-left-radius: 6px;
+    border-bottom-right-radius: 6px;
+    border-top: 2px solid rgba(0,0,0,0.25);
+    height: 12px;
+}
+
+.container .jspHorizontalBar .jspTrack {
+    background: rgba(255,255,255,0.25);
+    border-top-left-radius: 0px;
+    border-top-right-radius: 0px;
+    border-bottom-left-radius: 6px;
+    border-bottom-right-radius: 0px;
+}
+
+.container .jspHorizontalBar .jspDrag {
+    background: rgba(255,255,255,0.25);
+    border-top-left-radius: 0px;
+    border-top-right-radius: 0px;
+    border-bottom-left-radius: 6px;
+    border-bottom-right-radius: 6px;
+}
+
+.container .jspHorizontalBar .jspDrag:hover,
+.container .jspHorizontalBar .jspDrag.jspActive {
+    background: rgba(59,198,184,0.5);
+}
+
+.container .jspCapLeft {
+}
+
+.container .jspCapRight {
+}
+
+.container .jspCorner {
+    background: rgba(255,255,255,0.25);
+    border-top-left-radius: 0px;
+    border-top-right-radius: 0px;
+    border-bottom-left-radius: 0px;
+    border-bottom-right-radius: 6px;
 }

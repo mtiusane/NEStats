@@ -504,7 +504,7 @@ div#menu > ul > li > a:active {
     color: cyan;
 }
 
-div#content {
+div#content_wrapper {
     display: block;
     margin: 1em;
     padding: 0px;
@@ -514,7 +514,35 @@ div#content {
     top: 245px;
     left: 0px;
     right: 0px;
+    bottom: 0px;
     z-index: 0;
+    font-size: 1.25em;
+}
+
+div#content_wrapper {
+    display: block;
+    margin: 0px;
+    padding: 0px;
+    position: absolute;
+    overflow: hidden;
+    background: transparent;
+    top: 245px;
+    left: 0px;
+    right: 0px;
+    bottom: 0px;
+    z-index: 0;
+}
+    
+div#content {
+    display: block;
+    margin: 1em;
+    padding: 0px;
+    background: transparent;
+    top: 0px;
+    left: 0px;
+    right: 0px;
+    bottom: 0px;
+    z-index: 1;
     font-size: 1.25em;
 }
 
@@ -732,7 +760,7 @@ input[type="text"]:active, input[type="text"]:focus {
 }
 
 .fullheight {
-    max-height: 34em !important;
+    /* max-height: 34em !important; */
 }
 
 .fullheight_limit {

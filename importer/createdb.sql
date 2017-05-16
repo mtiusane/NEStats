@@ -469,6 +469,7 @@ create table player_glicko2 (
        rating float not null default 1500,
        rd float not null default 350,
        volatility float not null default 0.06,
+       update_count int not null default 0,
 
        unique index (player_id),
        foreign key (player_id) references players(id)

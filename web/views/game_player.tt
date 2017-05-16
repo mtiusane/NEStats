@@ -1,5 +1,4 @@
 <div id="content">
-  <script src="/javascripts/common.js"></script>
   <!-- TODO: Could list the player's recent sessions with info about servers player...
   <% FOREACH team IN [ 'human' 'alien' 'spectator' ] %>
     <div id="sessions" class="container">

@@ -3,16 +3,20 @@
   <head>
     <meta http-equiv="Content-type" content="text/html; charset=<% settings.charset %>">
     <title>New Edge Stats</title>
+    <link rel="stylesheet" href="<% request.uri_base %>/css/jquery.jscrollpane.css">
     <link rel="stylesheet" href="<% request.uri_base %>/css/edgestats.css">
     <link rel="stylesheet" href="<% request.uri_base %>/css/common.css">
     <link rel="stylesheet" href="<% request.uri_base %>/css/tables.css">
     <link rel="stylesheet" href="<% request.uri_base %>/css/emoticons.css">
     <!-- Grab jQuery from a CDN, fall back to local if necessary -->
-    <script src="//code.jquery.com/jquery-1.11.0.min.js"></script>
+    <script src="//code.jquery.com/jquery-3.2.1.min.js"></script>
     <script type="text/javascript">/* <![CDATA[ */
-    !window.jQuery && document.write('<script type="text/javascript" src="<% request.uri_base %>/javascripts/jquery.min.js"><\/script>')
+    !window.jQuery && document.write('<script type="text/javascript" src="<% request.uri_base %>/javascripts/jquery-3.2.1.min.js"><\/script>')
     /* ]]> */</script>
+    <script src="/javascripts/jquery.mousewheel.min.js"></script>
+    <script src="/javascripts/jquery.jscrollpane.min.js"></script>
     <script src="/javascripts/underscore-min.js"></script>
+    <script src="/javascripts/common.js"></script>
   </head>
   <body>
     <div id="logo">
@@ -38,14 +42,16 @@
 	</li>
       </ul>
     </div>
-    <% content %>
+    <div id="content_wrapper">
+      <% content %>
+    </div>
     <!--   
     <div id="loading">
       <p class="loading">Loading...</p>
     </div>
     -->
     <div id="footer">
-      (&copy;) 2016 <a href="http://www.new-edge.org">New EDGE</a>
+      (&copy;) 2017 <a href="http://www.new-edge.org">New EDGE</a>
     </div>
   </body>
 </html>

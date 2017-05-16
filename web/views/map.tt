@@ -1,5 +1,4 @@
 <div id="content">
-  <script src="/javascripts/common.js"></script>
   <script src="/javascripts/map.js"></script>
   <script src="/javascripts/players.js"></script>
   <script src="/javascripts/games.js"></script>
