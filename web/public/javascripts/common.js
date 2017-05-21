@@ -315,55 +315,104 @@ Common = {
 	);
     },
 
-    updateFullSize: function() {
-	$('.fullheight, .fullHeight .jspContainer').each(function(index,field) {
-	    $(field).height($(window).height()); // $(field).height($(field).parent().height());
+    disableScroll: function() {
+	var content = $('#content_wrapper.jspScrollable:first');
+	var container = content.find('.jspContainer');
+	var jsp = content.data('jsp');
+	if (jsp !== undefined) {
+	    jsp.disableMouseWheel();
+	}
+    },
+    
+    enableScroll: function() {
+	var content = $('#content_wrapper.jspScrollable:first');
+	var jsp = content.data('jsp');
+	if (jsp !== undefined) {
+	    jsp.enableMouseWheel();
+	}
+    },  
+
+    updateFullSize: function(menu,page) {
+	/*
+	var win = $(window);
+	menu.outerWidth(win.width());
+	page.outerWidth(win.width());
+	page.outerHeight(win.height() - page.css('top'));
+	*/
+	$('.fullheight').each(function(index,field) {
+	    field = $(field);
+	    field.outerHeight(page.innerHeight());
+	    field.find('table:first-child').each(function(childIndex,child) {
+		$(child).outerHeight(field.innerHeight());
+	    });
 	});
-	$('.fullwidth, .fullWidth .jspContainer').each(function(index,field) {
-	    $(field).width($(window).width());// $(field).width($(field).parent().width());
+	$('.fullwidth').each(function(index,field) {
+	    field = $(field);
+	    field.outerWidth(page.innerWidth());
+	    field.find('table:first-child').each(function(childIndex,child) {
+		$(child).outerWidth(field.innerWidth());
+	    });
 	});
-	$('.container.fullwidth .jspPane table').each(function(index,field) {
-	    $(field).width($(field).parent().width());
+
+	$('.jspScrollable').each(function(index,field) {
+	    field = $(field);
+	    var jsp = field.data('jsp');
+	    if (jsp !== undefined) {
+		// field.outerHeight(field.parent().innerHeight());
+		// field.outerWidth(field.parent().innerWidth());
+		jsp.reinitialise();
+	    }
+	});
+	/*
+	$('.fullHeight > .jspContainer').each(function(index,field) {
+	    $(field).height($(field).parent().innerHeight());
+	});
+	$('.fullwidth, .fullWidth > .jspContainer').each(function(index,field) {
+	    $(field).outerWidth($(field).parent().innerWidth());
+	});
+	$('.fullwidth > .jspContainer').each(function(index,field) {
+	    $(field).width($(field).parent().innerWidth());
+	});
+	$('.container fullwidth > .jspPane, .container.fullwidth > .jspPane > table').each(function(index,field) {
+	    $(field).outerWidth($(field).parent().innerWidth());
+	});
+	$('.container fullheight > .jspPane, .container.fullheight > .jspPane > table').each(function(index,field) {
+	    $(field).outerHeight($(field).parent().innerHeight());
 	});
 	$('.fullwidth.jspScrollable, .fullheight.jspScrollable').each(function(index,field) {
 	    var jsp = $(field).data('jsp');
 	    if (jsp !== undefined) {
-		/* $(field).width($(field).parent().width()); */
+		// $(field).width($(field).parent().width());
 		jsp.reinitialise();
 	    }
 	});
 	$('.container.fullwidth .jspPane table').each(function(index,field) {
-	    $(field).width($(field).parent().width());
+	    $(field).outerWidth($(field).parent().innerWidth());
 	});
+	*/
     }
    
 };
 
 $(document).ready(function() {
-    Common.updateFullSize();
     var win = $(window);
-    var menu =  $('#menu');
+    var menu = $('#menu');
+    var page = $('#page');
+    var content = $('#content_wrapper');
     var isResizing = false;
     win.bind('resize',function() {
-	var content = $('#content_wrapper');
 	if (!isResizing) {
 	    isResizing = true;
-	    var container = content;
-	    container.css({'width':1,'height':1});
-	    container.css({
-		width:  win.width(),
-		height: win.height() - menu.position().top - menu.height(),
-		top:    menu.position().top + menu.height()
-	    });
+	    content.css({ width: 1, height: 1 });
+	    content.css({ width: page.width(), height: page.height() });
 	    isResizing = false;
-	    container.jScrollPane({'showArrows':true});
-	    Common.updateFullSize();
+	    content.jScrollPane({ showArrows: true });
+	    // Common.updateFullSize(menu,page);
 	}
     }).trigger('resize');
-    $('body').css('overflow','hidden');
+    page.css('overflow','hidden');
     /* IE fix, retrigger due to incorrect initial size */
-    var content = $('#content_wrapper');
-    if (content.width() != win.width()) {
+    if (content.width() != page.width()) {
 	win.trigger('resize');
     }
 });

@@ -293,6 +293,14 @@ $(document).ready(function() {
 			}
 		    }
 		});
+		
+		canvas.hover(function() {
+		    Common.disableScroll();
+		    canvas.on('game_events.mousewheel',false);
+		},function() {
+		    Common.enableScroll();
+		    canvas.off('game_events.mousewheel');
+		});
 	    });
 	});
     });

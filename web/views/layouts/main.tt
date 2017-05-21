@@ -14,7 +14,7 @@
     !window.jQuery && document.write('<script type="text/javascript" src="<% request.uri_base %>/javascripts/jquery-3.2.1.min.js"><\/script>')
     /* ]]> */</script>
     <script src="/javascripts/jquery.mousewheel.min.js"></script>
-    <script src="/javascripts/jquery.jscrollpane.min.js"></script>
+    <script src="/javascripts/jquery.jscrollpane.js"></script> <!-- TODO: .min but needs update-->
     <script src="/javascripts/underscore-min.js"></script>
     <script src="/javascripts/common.js"></script>
   </head>
@@ -42,8 +42,10 @@
 	</li>
       </ul>
     </div>
-    <div id="content_wrapper">
-      <% content %>
+    <div id="page">
+      <div id="content_wrapper">
+	<% content %>
+      </div>
     </div>
     <!--   
     <div id="loading">

@@ -26,12 +26,14 @@
 
 .container {
     display: inline-block;
-    min-width: 800px;
-    min-height: 400px;
+    /*min-width: 800px;*/
+    /*min-height: 400px;*/
     /*width: 100%;
     min-width: 30%;
     max-width: 100%;
     min-height: 25em;*/
+    min-height: 12em;
+    min-width: 46%;
     margin: 0px;
     padding-left: 0px;
     padding-right: 0px;
@@ -40,9 +42,9 @@
     overflow-x: auto;
     overflow-y: scroll;
     border-top-left-radius: 6px;
-    border-top-right-radius: 0px;
+    border-top-right-radius: 6px;
     border-bottom-left-radius: 6px;
-    border-bottom-right-radius: 0px;
+    border-bottom-right-radius: 6px;
 }
 
 .container table {
@@ -50,10 +52,12 @@
     margin: 0px;
     left: 0px;
     right: 0px;
+    min-height: 100%;
+    min-width: 100%;
     border-top-left-radius: 6px;
-    border-top-right-radius: 0px;
+    border-top-right-radius: 6px;
     border-bottom-left-radius: 6px;
-    border-bottom-right-radius: 0px;
+    border-bottom-right-radius: 6px;
 }
 
 .container.noscroll {
@@ -77,6 +81,7 @@
 
 .container table {
     width: 100%;
+    margin-right: 12px;
     /* max-height: 240px; */
     border-spacing: 0px;
     overflow: hidden;
@@ -124,13 +129,22 @@
     padding: 0px;
 }
 
-.container table tbody tr td:nth-child(odd) {
+.container table:not(.rows) tbody tr td:nth-child(odd) {
     background: rgba(255,255,255,0.25);
 }
 
-.container table tbody tr td:nth-child(even) {
+.container table:not(.rows) tbody tr td:nth-child(even) {
     background: rgba(255,255,255,0.20);
 }
+
+.container table.rows tbody tr:nth-child(odd) {
+    background: rgba(255,255,255,0.25);
+}
+
+.container table.rows tbody tr:nth-child(even) {
+    background: rgba(255,255,255,0.20);
+}
+
 
 /* chartjs-tooltip */
 
@@ -186,7 +200,10 @@ div#chartjs-tooltip .container table tr:nth-child(even) td {
 
 #content_wrapper > .jspContainer > .jspVerticalBar .jspTrack {
     background: rgba(255,255,255,0.25);
-    border-radius: 0px;
+    border-top-left-radius: 6px;
+    border-bottom-left-radius: 6px;
+    border-top-right-radius: 0px;
+    border-bottom-right-radius: 0px;
 }
 
 #content_wrapper > .jspContainer > .jspVerticalBar .jspDrag {
@@ -202,10 +219,12 @@ div#chartjs-tooltip .container table tr:nth-child(even) td {
     background: rgba(59,198,184,0.5);
 }
 
-#content_wrapper > .jspContainer > .jspVerticalBar .jspCapTop {
+#content_wrapper > .jspContainer > .jspVerticalBar .jspCapTop,
+#content_wrapper > .jspContainer > .jspVerticalBar .jspCapBottom {
 }
 
-#content_wrapper > .jspContainer > .jspVerticalBar .jspCapBottom {
+#content_wrapper > .jspContainer > .jspVerticalBar .jspArrow:not(.jspDisabled):hover {
+    background: rgba(59,198,184,0.5);
 }
 
 #content_wrapper > .jspContainer > .jspHorizontalBar {
@@ -216,7 +235,10 @@ div#chartjs-tooltip .container table tr:nth-child(even) td {
 
 #content_wrapper > .jspContainer > .jspHorizontalBar .jspTrack {
     background: rgba(255,255,255,0.25);
-    border-radius: 0px;
+    border-top-left-radius: 6px;
+    border-top-right-radius: 6px;
+    border-bottom-left-radius: 0px;
+    border-bottom-right-radius: 0px;
 }
 
 #content_wrapper > .jspContainer > .jspHorizontalBar .jspDrag {
@@ -232,10 +254,12 @@ div#chartjs-tooltip .container table tr:nth-child(even) td {
     background: rgba(59,198,184,0.5);
 }
 
-#content_wrapper > .jspContainer > .jspHorizontalBar .jspCapLeft {
+#content_wrapper > .jspContainer > .jspHorizontalBar .jspCapLeft,
+#content_wrapper > .jspContainer > .jspHorizontalBar .jspCapRight {
 }
 
-#content_wrapper > .jspContainer > .jspHorizontalBar .jspCapRight {
+#content_wrapper > .jspContainer > .jspHorizontalBar .jspArrow:not(.jspDisabled):hover {
+    background: rgba(59,198,184,0.5);
 }
 
 #content_wrapper > .jspContainer > .jspVerticalBar .jspCorner,
@@ -247,22 +271,84 @@ div#chartjs-tooltip .container table tr:nth-child(even) td {
     border-bottom-right-radius: 6px;
 }
 
-#content_wrapper > .jspContainer .jspArrowUp,
-#content_wrapper > .jspContainer .jspArrowDown,
-#content_wrapper > .jspContainer .jspArrowLeft,
-#content_wrapper > .jspContainer .jspArrowRight {
+#content_wrapper > .jspContainer .jspArrowUp {
     background: rgba(255,255,255,0.5);
-    border-radius: 0px;
+    width: 12px;
     height: 12px;
+    border-top-left-radius: 0px;
+    border-top-right-radius: 0px;
+    border-bottom-left-radius: 6px;
+    border-bottom-right-radius: 0px;
 }
 
-#content_wrapper > .jspContainer .jspArrowUp.jspDisabled,
-#content_wrapper > .jspContainer .jspArrowDown.jspDisabled,
-#content_wrapper > .jspContainer .jspArrowLeft.jspDisabled,
+#content_wrapper > .jspContainer .jspArrowDown {
+    background: rgba(255,255,255,0.5);
+    width: 12px;
+    height: 12px;
+    border-top-left-radius: 6px;
+    border-top-right-radius: 0px;
+    border-bottom-left-radius: 0px;
+    border-bottom-right-radius: 0px;
+}
+
+#content_wrapper > .jspContainer .jspArrowLeft {
+    background: rgba(255,255,255,0.5);
+    width: 12px;
+    height: 12px;
+    border-top-left-radius: 0px;
+    border-top-right-radius: 6px;
+    border-bottom-left-radius: 0px;
+    border-bottom-right-radius: 0px;
+}
+
+#content_wrapper > .jspContainer .jspArrowRight {
+    background: rgba(255,255,255,0.5);
+    width: 12px;
+    height: 12px;
+    border-top-left-radius: 6px;
+    border-top-right-radius: 0px;
+    border-bottom-left-radius: 0px;
+    border-bottom-right-radius: 0px;
+}
+
+#content_wrapper > .jspContainer .jspArrowUp.jspDisabled {
+    background: rgba(255,255,255,0.25);
+    width: 12px;
+    height: 12px;
+    border-top-left-radius: 0px;
+    border-top-right-radius: 0px;
+    border-bottom-left-radius: 6px;
+    border-bottom-right-radius: 0px;
+}
+
+#content_wrapper > .jspContainer .jspArrowDown.jspDisabled {
+    background: rgba(255,255,255,0.25);
+    width: 12px;
+    height: 12px;
+    border-top-left-radius: 6px;
+    border-top-right-radius: 0px;
+    border-bottom-left-radius: 0px;
+    border-bottom-right-radius: 0px;
+}
+
+#content_wrapper > .jspContainer .jspArrowLeft.jspDisabled {
+    background: rgba(255,255,255,0.25);
+    width: 12px;
+    height: 12px;
+    border-top-left-radius: 0px;
+    border-top-right-radius: 6px;
+    border-bottom-left-radius: 0px;
+    border-bottom-right-radius: 0px;
+}
+
 #content_wrapper > .jspContainer .jspArrowRight.jspDisabled {
     background: rgba(255,255,255,0.25);
-    border-radius: 0px;
+    width: 12px;
     height: 12px;
+    border-top-left-radius: 6px;
+    border-top-right-radius: 0px;
+    border-bottom-left-radius: 0px;
+    border-bottom-right-radius: 0px;
 }
 
 /* jquery.jScrollPane style overrides - container */
@@ -351,4 +437,43 @@ div#chartjs-tooltip .container table tr:nth-child(even) td {
     border-top-right-radius: 0px;
     border-bottom-left-radius: 0px;
     border-bottom-right-radius: 6px;
+}
+
+/* common field styles */
+
+.container .indexField {
+    text-align: right;
+    padding-right: 0.5em;
+    width: 4em;
+    min-width: 2em;
+    max-width: 5em;
+}
+
+.container .rankingField {
+    width: 14em;
+    max-width: 14em;
+    padding-left: 0.25em;
+    padding-right: 0.25em;
+}
+
+.container .barFieldWithCaptions {
+    width: 19.5em;
+}
+
+.container .nameField {
+    width: 12em;
+    min-width: 12em;
+    max-width: 12em;
+}
+
+.container .countField {
+    width: 4em;
+    min-width: 2em;
+    max-width: 5em;
+}
+
+.container .durationField {
+    width: 8em;
+    min-width: 8em;
+    max-width: 8em;
 }
