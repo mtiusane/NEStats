@@ -516,6 +516,7 @@ get '/map/:id/players/:offset/:limit' => sub {
     my $map = Stats::DB::Map->new(id => params->{id});
     my $where = [ map_id => $map->id, total_kills => { gt => 0 } ];
     my $count = Stats::DB::Game::Manager->get_games_count(where => $where);
+    my $range = Stats::DB::Glicko2::get_rating_range();
     my @players = map {
 	my $killer = $_;
 	my %player = map { $_ => $killer->player->$_ } $killer->player->meta->column_names;
@@ -526,9 +527,18 @@ get '/map/:id/players/:offset/:limit' => sub {
 	$glicko2 = undef unless ($glicko2->load(speculative => 1));
 	{
 	    player  => \%player,
-	    glicko2 => { map { $_ => $glicko2->$_ } $glicko2->meta->column_names }
+	    glicko2 => {
+		%{db_to_hashref($glicko2)},
+		%{$range}
+	    }
 	}
-    } @{Stats::DB::PlayerMap::Manager->get_player_maps(where => $where,with_objects => [ 'player' ],sort_by => 'total_kills desc',offset => params->{offset},limit => params->{limit})};
+    } @{Stats::DB::PlayerMap::Manager->get_player_maps(
+	where        => $where,
+	with_objects => [ 'player' ],
+	sort_by      => 'total_kills desc',
+	offset       => params->{offset},
+	limit        => params->{limit}
+    )};
     return {
 	players => \@players,
 	offset => params->{offset},
