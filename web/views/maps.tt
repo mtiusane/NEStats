@@ -4,7 +4,7 @@
     <a class="data server_id" href="<% server_id %>"></a>
     <table>
       <thead>
-      	<tr class="title"><th colspan="8"><span class="f_server_name"></span> - Maps</th></tr>
+      	<tr class="title"><th colspan="9"><span class="f_server_name"></span> - Maps</th></tr>
 	<tr class="title">
 	  <th>Name</th>
 	  <th>Games Played</th>
@@ -14,6 +14,7 @@
 	  <th>Draws</th>
 	  <th>Total Kills</th>
 	  <th>Total Deaths</th>
+	  <th class="fill_column"></th>
 	</tr>
       </thead>
       <tbody>
@@ -26,6 +27,7 @@
 	  <td class="f_draws"></td>
 	  <td class="f_total_kills"></td>
 	  <td class="f_total_deaths"</td>
+	  <td class="fill_column"></td>
 	</tr>
       </tbody>
     </table>

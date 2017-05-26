@@ -201,10 +201,14 @@ get '/server/:id' => sub {
 get '/server/:id/players/:offset/:limit' => sub {
     my $where = [ 'player.server_id' => params->{id} ];
     my $count = Stats::DB::PlayerRanking::Manager->get_player_rankings_count(where => $where,require_objects => [ 'player' ]);
+    my $range = Stats::DB::Glicko2::get_rating_range();
     my @players = map {
 	+{
 	    player  => db_to_hashref($_->player),
-	    glicko2 => db_to_hashref($_->glicko2)
+	    glicko2 => {
+		%{db_to_hashref($_->glicko2)},
+		%{$range}
+	    }
 	}
     } @{Stats::DB::PlayerRanking::Manager->get_player_rankings(
 	where        => $where,

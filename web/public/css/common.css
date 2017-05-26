@@ -17,8 +17,10 @@
 
 .graph {
     display: inline-block;
-    min-width: 800px;
-    min-height: 400px;
+    width: calc(100vw - 8em - 11px);
+    height: calc(50vw - 4em - 5.5px);
+    min-width: calc(100vw - 8em - 11px);
+    min-height: calc(50vw - 4em - 5.5px);
     overflow: hidden;
     border-radius: 6px;
     /* border: 1px solid red; */
@@ -26,12 +28,6 @@
 
 .container {
     display: inline-block;
-    /*min-width: 800px;*/
-    /*min-height: 400px;*/
-    /*width: 100%;
-    min-width: 30%;
-    max-width: 100%;
-    min-height: 25em;*/
     min-height: 12em;
     min-width: 46%;
     margin: 0px;
@@ -451,9 +447,19 @@ div#chartjs-tooltip .container table tr:nth-child(even) td {
 
 .container .rankingField {
     width: 14em;
-    max-width: 14em;
-    padding-left: 0.25em;
-    padding-right: 0.25em;
+    max-width: 18em;
+    padding-left: 0.5em;
+    padding-right: 0.5em;
+}
+
+.container .rankingField span.f_rank {
+    display: inline-block;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.container .barField {
+    width: 160px;
 }
 
 .container .barFieldWithCaptions {
@@ -476,4 +482,13 @@ div#chartjs-tooltip .container table tr:nth-child(even) td {
     width: 8em;
     min-width: 8em;
     max-width: 8em;
+}
+
+.container .small {
+    font-size: 0.8em;
+}
+
+.container .fill_column {
+    min-width: 0px !important;
+    width: auto;
 }

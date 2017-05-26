@@ -21,9 +21,9 @@
   <body>
     <div id="logo">
       <div id="image">
-	<center>
+	<div id="links">
 	  <a href="http://new-edge.org">Home</a> | <a href="http://forum.new-edge.org">Forum</a> | <a href="http://stats.new-edge.org">Stats</a>
-	</center>
+	</div>
       </div>
       <div id="left"></div>
       <div id="right"></div>

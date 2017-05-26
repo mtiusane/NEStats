@@ -1,4 +1,8 @@
 $(document).ready(function() {
+    var server_id = $('div#games a.data.server_id').attr('href');
+    $.get('/json/server/'+server_id,function(data) {
+	$('#content div#games').find('.f_server_name').html(data.name);
+    });
     Common.scroll_table_multi('#content div#games',{
 	'a.data.server_id': function(href) {
 	    return function(offset,limit) {

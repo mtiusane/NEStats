@@ -218,27 +218,35 @@ Common = {
 	return result;
     },
 
-    rating: function(g) {
+    rating: function(g,w,h) {
+	var cw = (typeof w !== 'undefined') ? w : 160;
+	var ch = (typeof h !== 'undefined') ? h : 16;
+	var commonStyle='width: '+cw+'px; height: '+ch+'px; line-height: '+ch+'px';
 	if (g.update_count > 0) {
+	    var rangeMin = Number(g.min_range);
+	    var rangeMax = Number(g.max_range);
+	    var rangeDelta = rangeMax - rangeMin;
+	    var rMin = Number(g.min_rating);
+	    var rMax = Number(g.max_rating);
+	    var rDelta = rMax - rMin;
 	    var r = Number(g.rating);
 	    var rd = Number(g.rd);
+	    var rdScale = rd / (rangeDelta - rDelta);
 	    var fill_color = '#ff5533';
 	    var empty_color = '#3355ff';
 	    var stroke_color = fill_color;
-	    var cw = 160;
-	    var ch = 16;
-	    var rd_fill_left = cw * ( 0.5*r - 2.0 * rd ) / r;
-	    var rd_fill_width = cw * ( 4.0 * rd ) / r;
+	    var rd_fill_left = cw * (r - rangeMin - (2.0 - 0.25) * rd * rdScale) / rangeDelta;
+	    var rd_fill_width = cw * (4.0 * rd * rdScale) / rangeDelta;
 	    var x0 =       rd_fill_width /  4.0,x1 = 3.0*rd_fill_width / 10.0,x2 = rd_fill_width / 2.0;
 	    var x3 = 2.0 * rd_fill_width / 10.0,x4 =     rd_fill_width /  4.0,x5 = rd_fill_width / 2.0;
 	    var move = 'm '+$.each([ rd_fill_left, ch ], function(i,v) { return Number(v).toFixed(2); }).reduce(function(a,b) { return a + ' ' + b; });
 	    var curve = 'c '+$.each([ x0, 0.0, x1, -ch, x2, -ch, x3, 0, x4, ch, x5, ch ], function(i,v) { return Number(v).toFixed(2); }).reduce(function(a,b) { return a + ' ' + b; });
-	    var result = $('<div class="rating"></div>');
-	    var svg = $('<svg style="width: '+cw+'px; height: '+ch+'px; background: '+empty_color+'"><path d="'+move+' '+curve+'" fill="'+fill_color+'" stroke="'+stroke_color+'" stroke-width="1">');
+	    var result = $('<div style="'+commonStyle+'" class="rating"></div>');
+	    var svg = $('<svg style="'+commonStyle+'; background: '+empty_color+'"><path d="'+move+' '+curve+'" fill="'+fill_color+'" stroke="'+stroke_color+'" stroke-width="1">');
 	    result.append(svg);
-	    result.append('<span class="overlay">'+Number(r).toFixed(2)+'</span>');
+	    result.append('<span style="'+commonStyle+'" class="overlay">'+Number(r).toFixed(2)+'</span>');
 	    return result;
-	} else return $('<div class="rating">N/A</div>');
+	} else return $('<div style="'+commonStyle+'" class="rating">N/A</div>');
     },
 
     extractIcons: function(text, color) {
@@ -333,27 +341,6 @@ Common = {
     },  
 
     updateFullSize: function(menu,page) {
-	/*
-	var win = $(window);
-	menu.outerWidth(win.width());
-	page.outerWidth(win.width());
-	page.outerHeight(win.height() - page.css('top'));
-	*/
-	$('.fullheight').each(function(index,field) {
-	    field = $(field);
-	    field.outerHeight(page.innerHeight());
-	    field.find('table:first-child').each(function(childIndex,child) {
-		$(child).outerHeight(field.innerHeight());
-	    });
-	});
-	$('.fullwidth').each(function(index,field) {
-	    field = $(field);
-	    field.outerWidth(page.innerWidth());
-	    field.find('table:first-child').each(function(childIndex,child) {
-		$(child).outerWidth(field.innerWidth());
-	    });
-	});
-
 	$('.jspScrollable').each(function(index,field) {
 	    field = $(field);
 	    var jsp = field.data('jsp');
@@ -363,33 +350,6 @@ Common = {
 		jsp.reinitialise();
 	    }
 	});
-	/*
-	$('.fullHeight > .jspContainer').each(function(index,field) {
-	    $(field).height($(field).parent().innerHeight());
-	});
-	$('.fullwidth, .fullWidth > .jspContainer').each(function(index,field) {
-	    $(field).outerWidth($(field).parent().innerWidth());
-	});
-	$('.fullwidth > .jspContainer').each(function(index,field) {
-	    $(field).width($(field).parent().innerWidth());
-	});
-	$('.container fullwidth > .jspPane, .container.fullwidth > .jspPane > table').each(function(index,field) {
-	    $(field).outerWidth($(field).parent().innerWidth());
-	});
-	$('.container fullheight > .jspPane, .container.fullheight > .jspPane > table').each(function(index,field) {
-	    $(field).outerHeight($(field).parent().innerHeight());
-	});
-	$('.fullwidth.jspScrollable, .fullheight.jspScrollable').each(function(index,field) {
-	    var jsp = $(field).data('jsp');
-	    if (jsp !== undefined) {
-		// $(field).width($(field).parent().width());
-		jsp.reinitialise();
-	    }
-	});
-	$('.container.fullwidth .jspPane table').each(function(index,field) {
-	    $(field).outerWidth($(field).parent().innerWidth());
-	});
-	*/
     }
    
 };

@@ -1,14 +1,18 @@
 <div id="content">
   <script src="/javascripts/games.js"></script>
-  <div id="games" class="container">
+  <div id="games" class="container fullwidth">
     <a class="data server_id" href="<% server_id %>"></a>
     <table>
       <thead>
+	<tr class="title">
+	  <th colspan="5"><span class="f_server_name"></span> - Weapons</th>
+	</tr>
 	<tr class="title">
           <th>Game</th>
           <th>Map</th>
 	  <th>Players</th>
       	  <th>Outcome</th>
+	  <th class="fill_column"></th>
 	</tr>
       </thead>
       <tbody>
@@ -17,6 +21,7 @@
           <td class="map"></td>
           <td class="players"></td>
           <td class="outcome"></td>
+	  <td class="fill_column"></td>
 	</tr>
       </tbody>
     </table>
