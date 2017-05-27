@@ -24,7 +24,7 @@
 	  </tr>
 	</thead>
 	<tbody>
-	  <tr class="template">
+	  <tr class="template" style="min-width: 64vw">
 	    <td class="indexField"><span class="f_index"></span></td>
 	    <td class="rankingField"><span class="f_rank"></span></td>
 	    <td class="nameField"><span class="f_name"></span></td>
@@ -52,7 +52,7 @@
 	</tbody>
       </table>
     </div>
-    <div id="games" class="container fullwidth halfheight">
+    <div id="games" class="container halfwidth halfheight">
       <a class="data map_id" href="<% map_id %>"></a>
       <table>
 	<thead>

@@ -32,7 +32,7 @@ Common = {
 		table.data('lastLoad',(new Date()).getTime());
 		var oldWidth = table.width();
 		scroll.reinitialise();
-		table.width(oldWidth); /* TODO: Without this the table keeps getting +10px at every new content row if scrolled to the rightmost position. */
+		table.width(oldWidth,true); /* TODO: Without this the table keeps getting +10px at every new content row if scrolled to the rightmost position. */
 		if (callback) callback();
 	    });
 	};
@@ -112,13 +112,25 @@ Common = {
 	});
 	selector.find('.f__bar').each(function(field_index,field) {
 	    field = $(field);
-	    $(field).html(Common.bar(
-		field.find('.bar_value').text(),
-		field.find('.bar_total').text(),
-		field.find('.bar_text').html(),
-		field.find('.bar_prefix').html(),
-		field.find('.bar_suffix').html()
-	    ));
+	    var text = field.find('.bar_text');
+	    text = text.length ? text.html() : null;
+	    var prefix = field.find('.bar_prefix');
+	    prefix = prefix.length ? prefix.html() : null;
+	    var suffix = field.find('.bar_suffix');
+	    suffix = suffix.length ? suffix.html() : null;
+	    var fill_color = field.find('.bar_fillcolor');
+	    fill_color = fill_color.length ? fill_color.text() : null;
+	    var empty_color = field.find('.bar_emptycolor');
+	    empty_color = empty_color.length ? empty_color.text() : null;
+	    $(field).html(Common.bar2({
+		value: field.find('.bar_value').text(),
+		total: field.find('.bar_total').text(),
+		text: text,
+		prefix: prefix,
+		suffix: suffix,
+		fill_color: fill_color,
+		empty_color: empty_color
+	    }));
 	});
     },
 
@@ -129,6 +141,7 @@ Common = {
 		if (field_id.length) {
 		    var url = selectors[selector](field_id.attr('href'));
 		    Common.scroll_table(div,url,elements,line);
+		    field_id.remove();
 		    return;
 		}
 	    }
@@ -193,11 +206,12 @@ Common = {
 	    return "N/A";
     },
 
-    bar: function(value,total,text,prefix,suffix) {
+    bar: function(value,total,text,prefix,suffix,fill_color,empty_color) {
+	if (!Common.isDefined(fill_color)) var fill_color = '#3355ff';
+	if (!Common.isDefined(empty_color)) var empty_color = '#ff5533';
+	var resultWrapper = $('<div style="min-width: 200px"></div>');
 	var result = $('<div class="bar"></div>');
 	if (total > 0.0) {
-	    var fill_color = '#3355ff';
-	    var empty_color = '#ff5533';
 	    var fill_value = (100.0 * value / total).toFixed(2);
 	    var empty_value = (100.0 - fill_value).toFixed(2);
 	    var fill_text = (fill_value >= 40) ? fill_value+'%' : '';
@@ -209,13 +223,15 @@ Common = {
 	} else {
 	    result.append('<span class="empty">N/A</span>');
 	}
-	if (Common.isDefined(text))
-	    result.append('<span class="overlay">'+text+'</span>');
-	if (Common.isDefined(prefix))
-	    result.append('<span class="prefix">'+prefix+'</span>');	
-	if (Common.isDefined(suffix))
-	    result.append('<span class="suffix">'+suffix+'</span>');
-	return result;
+	if (Common.isDefined(text)) result.append('<span class="overlay">'+text+'</span>');
+	if (Common.isDefined(prefix)) resultWrapper.append('<div class="prefix">'+prefix+'</div>');
+	resultWrapper.append(result);
+	if (Common.isDefined(suffix)) resultWrapper.append('<div class="suffix">'+suffix+'</div>');
+	return resultWrapper;
+    },
+
+    bar2: function(params) {
+	return Common.bar(params.value,params.total,params.text,params.prefix,params.suffix,params.fill_color,params.empty_color);
     },
 
     rating: function(g,w,h) {
@@ -232,17 +248,20 @@ Common = {
 	    var r = Number(g.rating);
 	    var rd = Number(g.rd);
 	    var rdScale = rd / (rangeDelta - rDelta);
-	    var fill_color = '#ff5533';
-	    var empty_color = '#3355ff';
-	    var stroke_color = fill_color;
+	    var fill_color = 'rgba(100,63,51,0.66)';
+	    var empty_color = 'transparent';
+	    var stroke_color = '#642e1d';
 	    var rd_fill_left = cw * (r - rangeMin - (2.0 - 0.25) * rd * rdScale) / rangeDelta;
 	    var rd_fill_width = cw * (4.0 * rd * rdScale) / rangeDelta;
 	    var x0 =       rd_fill_width /  4.0,x1 = 3.0*rd_fill_width / 10.0,x2 = rd_fill_width / 2.0;
 	    var x3 = 2.0 * rd_fill_width / 10.0,x4 =     rd_fill_width /  4.0,x5 = rd_fill_width / 2.0;
 	    var move = 'm '+$.each([ rd_fill_left, ch ], function(i,v) { return Number(v).toFixed(2); }).reduce(function(a,b) { return a + ' ' + b; });
 	    var curve = 'c '+$.each([ x0, 0.0, x1, -ch, x2, -ch, x3, 0, x4, ch, x5, ch ], function(i,v) { return Number(v).toFixed(2); }).reduce(function(a,b) { return a + ' ' + b; });
+	    var rd_fill_middle = rd_fill_left + 0.5 * rd_fill_width;
+	    var extra = '';//'m '+rd_fill_middle.toFixed(2)+' 0 l '+rd_fill_middle.toFixed(2)+' '+ch.toFixed(2);
+	    var graph = move+' '+curve+' '+extra;
 	    var result = $('<div style="'+commonStyle+'" class="rating"></div>');
-	    var svg = $('<svg style="'+commonStyle+'; background: '+empty_color+'"><path d="'+move+' '+curve+'" fill="'+fill_color+'" stroke="'+stroke_color+'" stroke-width="1">');
+	    var svg = $('<svg style="'+commonStyle+'; background: '+empty_color+'"><path d="'+graph+'" fill="'+fill_color+'" stroke="'+stroke_color+'" stroke-width="1">');
 	    result.append(svg);
 	    result.append('<span style="'+commonStyle+'" class="overlay">'+Number(r).toFixed(2)+'</span>');
 	    return result;

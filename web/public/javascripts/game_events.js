@@ -13,11 +13,14 @@ $(document).ready(function() {
     };
     $('#content div#game_events').each(function(index) {
 	var div = $(this);
-	var game_id = div.find('a.data.game_id').attr('href');
+	var anchor = div.find('a.data.game_id');
+	var game_id = anchor.attr('href');
+	anchor.remove();
 	var graph = div.hasClass('graph') ? div : div.find('.graph');
-	var canvas = $('<canvas />').width(div.width).height(div.height).appendTo(div);
+	var canvas = $('<canvas />').appendTo(div);
 	var game,sessions;
 	// Chart.defaults.global.pointHitDetectionRadius = 1;
+	Chart.defaults.line.aspectRatio = 2.0;
 	$.when(
 	    $.getJSON('/json/game/'+game_id,function(data) { game = data.game; }),
 	    $.getJSON('/json/game/'+game_id+'/sessions',function(data) { sessions = data.sessions; })
@@ -152,6 +155,8 @@ $(document).ready(function() {
 			datasets: datasets,
 		    },
 		    options: {
+			responsive: true,
+			maintainAspectRatio: true,
 			title: {
 			    display: true,
 			    text: 'Game events',
@@ -301,6 +306,11 @@ $(document).ready(function() {
 		    Common.enableScroll();
 		    canvas.off('game_events.mousewheel');
 		});
+		/*
+		$(window).bind('resize',function() {
+		    console.log("RESIZE: ",div.width()," ",div.height());
+		    canvas.width(div.width()).height(div.height());
+		});*/
 	    });
 	});
     });

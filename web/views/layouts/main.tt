@@ -20,10 +20,10 @@
   </head>
   <body>
     <div id="logo">
-      <div id="image">
-	<div id="links">
-	  <a href="http://new-edge.org">Home</a> | <a href="http://forum.new-edge.org">Forum</a> | <a href="http://stats.new-edge.org">Stats</a>
-	</div>
+      <div id="image"></div>
+      <div id="links_background"></div>
+      <div id="links">
+	<a href="http://new-edge.org">Home</a> | <a href="http://forum.new-edge.org">Forum</a> | <a href="http://stats.new-edge.org">Stats</a>
       </div>
       <div id="left"></div>
       <div id="right"></div>

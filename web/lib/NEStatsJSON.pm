@@ -56,7 +56,7 @@ get '/servers/:offset/:limit' => sub {
 	# max_players => $_->max_players,
     },@{Stats::DB::Server::Manager->get_servers(
 	sort_by => 'name asc',
-	limit => max(25,params->{limit}),
+	limit  => min(25,params->{limit}),
 	offset => params->{offset},
 	# with_objects => [ 'map' ]
     )};
@@ -92,8 +92,8 @@ get '/player/:id' => sub {
 
 get '/player/:id/deaths_by_weapon/:offset/:limit' => sub {
     my $player = Stats::DB::Player->new(id => params->{id});
-    my $count = Stats::DB::PlayerWeapon::Manager->get_player_weapons_count(where => [ player_id => $player->id, total_kills => { gt => 0 } ],require_objects => [ 'weapon' ]);
-    my @deaths = @{Stats::DB::PlayerWeapon::Manager->get_player_weapons(where => [ player_id => $player->id, total_deaths => { gt => 0 } ],sort_by => [ 'total_deaths desc', 'total_bdeaths desc' ],with_objects => [ 'weapon' ],offset => params->{offset},limit => max(25,params->{limit}))};
+    my $count = Stats::DB::PlayerWeapon::Manager->get_player_weapons_count(where => [ player_id => $player->id, total_deaths => { gt => 0 } ],require_objects => [ 'weapon' ]);
+    my @deaths = @{Stats::DB::PlayerWeapon::Manager->get_player_weapons(where => [ player_id => $player->id, total_deaths => { gt => 0 } ],sort_by => [ 'total_deaths desc', 'total_bdeaths desc' ],with_objects => [ 'weapon' ],offset => params->{offset},limit => min(25,params->{limit}))};
     return {
 	deaths => [
 	    map {
@@ -113,7 +113,7 @@ get '/player/:id/deaths_by_weapon/:offset/:limit' => sub {
 get '/player/:id/kills_by_weapon/:offset/:limit' => sub {
     my $player = Stats::DB::Player->new(id => params->{id});
     my $count = Stats::DB::PlayerWeapon::Manager->get_player_weapons_count(where => [ player_id => $player->id, total_kills => { gt => 0 } ],require_objects => [ 'weapon' ]);
-    my @kills = @{Stats::DB::PlayerWeapon::Manager->get_player_weapons(where => [ player_id => $player->id, total_kills => { gt => 0 } ],sort_by => [ 'total_kills desc', 'total_bkills desc' ],with_objects => [ 'weapon' ],offset => params->{offset},limit => max(25,params->{limit}))};
+    my @kills = @{Stats::DB::PlayerWeapon::Manager->get_player_weapons(where => [ player_id => $player->id, total_kills => { gt => 0 } ],sort_by => [ 'total_kills desc', 'total_bkills desc' ],with_objects => [ 'weapon' ],offset => params->{offset},limit => min(25,params->{limit}))};
     return {
 	kills => [
 	    map {
@@ -140,7 +140,7 @@ get '/player/:id/favorite_maps/:offset/:limit' => sub {
 	total_kills => $_->total_kills,
 	total_kills_a => $_->total_kills_a,
 	total_kills_h => $_->total_kills_h
-    }, @{Stats::DB::PlayerMap::Manager->get_player_maps(where => [ player_id => $player->id, total_kills => { gt => 0 } ],sort_by => 'total_games desc',with_objects => [ 'map' ],offset => params->{offset},limit => max(25,params->{limit}))};
+    }, @{Stats::DB::PlayerMap::Manager->get_player_maps(where => [ player_id => $player->id, total_kills => { gt => 0 } ],sort_by => 'total_games desc',with_objects => [ 'map' ],offset => params->{offset},limit => min(25,params->{limit}))};
     return {
 	maps   => \@maps,
 	offset => params->{offset},
@@ -160,7 +160,7 @@ get '/player/:id/most_kills/:offset/:limit' => sub {
 	total_assists   => $_->total_assists,
 	total_assists_a => $_->total_assists_a,
 	total_assists_h => $_->total_assists_h
-    }, @{Stats::DB::PlayerKill::Manager->get_player_kills(where => [ player_id => $player->id, total_kills => { gt => 0 } ],sort_by => 'total_kills desc',with_objects => [ 'player', 'target' ],offset => params->{offset},limit => max(25,params->{limit}))};
+    }, @{Stats::DB::PlayerKill::Manager->get_player_kills(where => [ player_id => $player->id, total_kills => { gt => 0 } ],sort_by => 'total_kills desc',with_objects => [ 'player', 'target' ],offset => params->{offset},limit => min(25,params->{limit}))};
     return {
 	kills  => \@kills,
 	offset => params->{offset},
@@ -180,7 +180,7 @@ get '/player/:id/most_deaths/:offset/:limit' => sub {
 	total_assists   => $_->total_assists,
 	total_assists_a => $_->total_assists_a,
 	total_assists_h => $_->total_assists_h
-    }, @{Stats::DB::PlayerKill::Manager->get_player_kills(where => [ target_id => $player->id, total_kills => { gt => 0 } ],sort_by => 'total_kills desc',with_objects => [ 'player', 'target' ],offset => params->{offset},limit => max(25,params->{limit}))};
+    }, @{Stats::DB::PlayerKill::Manager->get_player_kills(where => [ target_id => $player->id, total_kills => { gt => 0 } ],sort_by => 'total_kills desc',with_objects => [ 'player', 'target' ],offset => params->{offset},limit => min(25,params->{limit}))};
     return {
 	kills  => \@kills,
 	offset => params->{offset},
@@ -201,6 +201,7 @@ get '/server/:id' => sub {
 get '/server/:id/players/:offset/:limit' => sub {
     my $where = [ 'player.server_id' => params->{id} ];
     my $count = Stats::DB::PlayerRanking::Manager->get_player_rankings_count(where => $where,require_objects => [ 'player' ]);
+    my $limit = min(25,params->{limit});
     my $range = Stats::DB::Glicko2::get_rating_range();
     my @players = map {
 	+{
@@ -213,7 +214,7 @@ get '/server/:id/players/:offset/:limit' => sub {
     } @{Stats::DB::PlayerRanking::Manager->get_player_rankings(
 	where        => $where,
 	sort_by      => 'by_glicko2 asc, by_kills asc',
-	limit        => params->{limit},
+	limit        => $limit,
 	offset       => params->{offset},
 	with_objects => [ 'player', 'glicko2' ],
     )};
@@ -245,7 +246,7 @@ get '/server/:id/games/:offset/:limit' => sub {
 	    total_kills => { gt => 0 },
 	],
 	sort_by => 'start desc',
-	limit => max(25,params->{limit}),
+	limit => min(25,params->{limit}),
 	offset => params->{offset},
 	with_objects => [ 'map' ]
     )};
@@ -261,7 +262,7 @@ get '/server/:id/maps/:offset/:limit' => sub {
     my @maps = @{Stats::DB::Map::Manager->get_maps(
         where   => [ server_id => params->{id} ],
 	sort_by => 'total_games desc',
-	limit   => max(25,params->{limit}),
+	limit   => min(25,params->{limit}),
 	offset  => params->{offset},
     )};
     return {
@@ -289,7 +290,7 @@ get '/server/:id/weapons/:offset/:limit' => sub {
     },@{Stats::DB::Weapon::Manager->get_weapons(
         where   => [ server_id => params->{id} ],
 	sort_by => 'total_kills desc',
-	limit   => max(25,params->{limit}),
+	limit   => min(25,params->{limit}),
 	offset  => params->{offset},
     )};
     return {
@@ -475,7 +476,7 @@ get '/game/:id/events' => sub {
 
 get '/game/:id/sessions/:team/:offset/:limit' => sub {
     my $count = Stats::DB::Session::Manager->get_sessions_count(where => [ game_id => params->{id}, team => params->{team} ]);
-    my @sessions = @{Stats::DB::Session::Manager->get_sessions(where => [ game_id => params->{id}, team => params->{team} ],with_objects => [ 'player' ],offset => params->{offset},limit => params->{limit},sort_by => [ 'score desc' ])};
+    my @sessions = @{Stats::DB::Session::Manager->get_sessions(where => [ game_id => params->{id}, team => params->{team} ],with_objects => [ 'player' ],offset => params->{offset},limit => min(25,params->{limit}),sort_by => [ 'score desc' ])};
     return {
 	sessions => [ map {
 	    {
@@ -537,7 +538,7 @@ get '/map/:id/players/:offset/:limit' => sub {
 	with_objects => [ 'player' ],
 	sort_by      => 'total_kills desc',
 	offset       => params->{offset},
-	limit        => params->{limit}
+	limit        => min(25,params->{limit})
     )};
     return {
 	players => \@players,
@@ -566,7 +567,7 @@ get '/map/:id/games/:offset/:limit' => sub {
 	max_players => $_->max_players,
 	start       => $_->start,
 	end         => $_->end
-    },@{Stats::DB::Game::Manager->get_games(where => [ max_players => { gt => 1 }, map_id => $map->id ],sort_by => 'start desc',limit => params->{limit},offset => params->{offset})};
+    },@{Stats::DB::Game::Manager->get_games(where => [ max_players => { gt => 1 }, map_id => $map->id ],sort_by => 'start desc',limit => min(25,params->{limit}),offset => params->{offset})};
     return {
 	games => \@games,
 	offset => params->{offset},

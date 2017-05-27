@@ -1,5 +1,7 @@
 $(document).ready(function() {
-    var player_id = $('#content div#player a.data.player_id').attr('href');
+    var link = $('#content div#player a.data.player_id');
+    var player_id = link.attr('href');
+    link.remove();
     $.get('/json/player/'+player_id,function(data) {
 	Common.load_fields_generic($('#content div#player_overall'), data);
 	Common.load_fields_generic($('#content div#player_glicko'), data);

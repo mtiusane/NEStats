@@ -9,15 +9,15 @@
 	  <th>#</th>
 	  <th>Ranking</th>
 	  <th>Name</th>
-	  <th>Play Time<br>(Games)</th>
+	  <th>Play Time</th>
 	  <th>Kills & Deaths</th>
-	  <th>Buildings<br>Building Kills / Deaths</th>
+	  <th>Buildings</th>
 	  <th>Team Preference</th>
 	  <th class="fill_column"></th>
 	</tr>
       </thead>
       <tbody>
-	<tr class="template">
+	<tr class="template" style="min-width: 64vw">
 	  <td class="indexField"><span class="f_index"></span></td>
 	  <td class="rankingField"><span class="f_rank"></span></td>
 	  <td class="nameField"><span class="f_name"></span></td>
