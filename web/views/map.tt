@@ -24,7 +24,7 @@
 	  </tr>
 	</thead>
 	<tbody>
-	  <tr class="template" style="min-width: 64vw">
+	  <tr class="template" style="min-width: 60vw">
 	    <td class="indexField"><span class="f_index"></span></td>
 	    <td class="rankingField"><span class="f_rank"></span></td>
 	    <td class="nameField"><span class="f_name"></span></td>

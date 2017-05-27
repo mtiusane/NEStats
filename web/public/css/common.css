@@ -477,6 +477,7 @@ div.bar {
     display: inline-block;
     min-height: 16px;
     max-height: 32px;
+    line-height: 16px;
 }
 
 div.rating {
