@@ -147,16 +147,21 @@ create table maps (
        total_time int not null default 0,
 
        -- total human/alien kills
-       total_hkills int not null default 0,
-       total_akills int not null default 0,
+       total_kills_h int not null default 0,
+       total_kills_a int not null default 0,
+       total_deaths_h int not null default 0,
+       total_deaths_a int not null default 0,
 
        -- total human/alien buildings killed
-       total_hbkills int not null default 0,
-       total_abkills int not null default 0,
+       total_bkills_h int not null default 0,
+       total_bkills_a int not null default 0,
 
        -- total human/alien deaths to buildings
-       total_hbdeaths int not null default 0,
-       total_abdeaths int not null default 0,
+       total_bdeaths_h int not null default 0,
+       total_bdeaths_a int not null default 0,
+
+       total_built_h int not null default 0,
+       total_built_a int not null default 0,
 
        human_wins int not null default 0,
        alien_wins int not null default 0,

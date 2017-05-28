@@ -35,6 +35,16 @@ use Glicko2::Player;
 
 use Rose::DB::Object::Helpers qw/as_tree/;
 
+my @GAMES_FILTER = (
+    or => [
+	import_complete => 0,
+	and             => [
+	    max_players => { gt => 1 },
+	    total_kills => { gt => 0 },
+	]
+    ]
+);
+
 # -- JSON handlers --
 
 set serializer => 'JSON';
@@ -226,14 +236,14 @@ get '/server/:id/players/:offset/:limit' => sub {
 };
 
 get '/server/:id/games/:offset/:limit' => sub {
-    my $count = Stats::DB::Game::Manager->get_games_count(where => [ max_players => { gt => 1 }, server_id => params->{id} ]);
+    my $count = Stats::DB::Game::Manager->get_games_count(where => [ @GAMES_FILTER, server_id => params->{id} ]);
     my @games = map +{
 	id          => $_->id,
 	map         => {
 	    id   => $_->map->id,
 	    name => replace_all($_->map->name)
 	},
-	outcome     => $_->outcome // 'draw',
+	outcome     => $_->import_complete ? ($_->outcome // 'draw') : 'unknown',
 	date        => $_->start->dmy,
 	time        => $_->start->hms,
 	max_players => $_->max_players,
@@ -242,8 +252,7 @@ get '/server/:id/games/:offset/:limit' => sub {
     },@{Stats::DB::Game::Manager->get_games(
 	where => [
 	    server_id   => params->{id},
-	    max_players => { gt => 1 },
-	    total_kills => { gt => 0 },
+	    @GAMES_FILTER
 	],
 	sort_by => 'start desc',
 	limit => min(25,params->{limit}),
@@ -554,7 +563,7 @@ get '/map/:id/games/:offset/:limit' => sub {
 	    error => "Invalid map id: ".params->{id}
 	}
     }
-    my $count = Stats::DB::Game::Manager->get_games_count(where => [ max_players => { gt => 1 }, map_id => $map->id ]);
+    my $count = Stats::DB::Game::Manager->get_games_count(where => [ @GAMES_FILTER, map_id => $map->id ]);
     my @games = map {
 	id          => $_->id,
 	map         => {
@@ -567,7 +576,7 @@ get '/map/:id/games/:offset/:limit' => sub {
 	max_players => $_->max_players,
 	start       => $_->start,
 	end         => $_->end
-    },@{Stats::DB::Game::Manager->get_games(where => [ max_players => { gt => 1 }, map_id => $map->id ],sort_by => 'start desc',limit => min(25,params->{limit}),offset => params->{offset})};
+    },@{Stats::DB::Game::Manager->get_games(where => [ @GAMES_FILTER, map_id => $map->id ],sort_by => 'start desc',limit => min(25,params->{limit}),offset => params->{offset})};
     return {
 	games => \@games,
 	offset => params->{offset},

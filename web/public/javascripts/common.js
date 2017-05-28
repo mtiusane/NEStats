@@ -65,53 +65,89 @@ Common = {
 	container = $(container);
 	Common.scroll_container(container,container.find('table'),link,elements,line);
     },
+
+    replaceField: function(field,value) {
+	if (field.is('span') && field.attr('class') == '') {
+	    field.replaceWith(value);
+	} else {
+	    field.html(value);
+	}
+    },
    
     load_fields_generic: function(selector,data) {
+	console.log("Loading generic fields: "+data._index);
 	// $.each(selector.find('a.data.field'),function(field_index,field) {
 	//     var name = field.attr('href');
 	//     if (_.has(data,name)) {
 	// 	$(field).replaceWith(data[name]);
 	//     }
 	// });
-	
 	$.each(data,function(name,value) {
 	    // console.log("Finding: "+name);
-	    selector.find('.f_'+name).each(function(field_index,field) {
+	    var selectorName = 'f_'+name;
+	    selector.find('.'+selectorName).each(function(field_index,field) {
 		// console.log("Loading field: f_"+name, field);
 		field = $(field);
+		field.removeClass(selectorName);
 		if (field.is('a')) {
 		    if (value != null)
 			field.attr('href',value);
 		    else
 			field.children().unwrap();
-		} else if (field.hasClass('f__sum')) {
+		} else if (field.hasClass('f__sum') || field.hasClass('f__sub')) {
 		    var sum = field.data('f__sum');
 		    if (sum === undefined) sum = 0.0;
 		    sum += Number(value);
 		    field.data('f__sum',sum);
-		    field.html(sum);
 		} else {
-		    $(field).html(value);
+		    Common.replaceField(field,value);
 		}
 	    });
 	});
+	selector.find('.f__sum').each(function(index,field) {
+	    field = $(field);
+	    field.removeClass('f__sum');
+	    var sum = field.data('f__sum');
+	    field.removeData('f__sum');
+	    Common.replaceField(field,sum);
+	});
+	selector.find('.f__sub').each(function(index,field) {
+	    field = $(field);
+	    field.removeClass('f__sub');
+	    var sum = field.text() - field.data('f__sum');
+	    field.removeData('f__sum');
+	    Common.replaceField(field,sum);
+	});
 	selector.find('.f__date').each(function(field_index,field) {
-	    $(field).html(new Date($(field).text()).toLocaleDateString());
+	    field = $(field);
+	    field.removeClass('f__date');
+	    Common.replaceField(field,new Date($(field).text()).toLocaleDateString());
 	});
 	selector.find('.f__time').each(function(field_index,field) {
-	    $(field).html(new Date($(field).text()).toLocaleTimeString());
+	    field = $(field);
+	    field.removeClass('f__time');
+	    Common.replaceField(field,new Date($(field).text()).toLocaleTimeString());
 	});
 	selector.find('.f__duration').each(function(field_index,field) {
-	    $(field).html(Common.format_duration($(field).text()));
+	    field = $(field);
+	    field.removeClass('f__duration');
+	    Common.replaceField(field,Common.format_duration($(field).text()));
 	});
 	selector.find('.f__duration_minutes').each(function(field_index,field) {
-	    $(field).html(Common.format_duration_minutes($(field).text()));
+	    field = $(field);
+	    field.removeClass('f__duration_minutes');
+	    Common.replaceField(field,Common.format_duration_minutes($(field).text()));
 	});
 	selector.find('.f__text').each(function(field_index,field) {
-	    $(field).html(Common.format_text($(field).text()));
+	    field = $(field);
+	    field.removeClass('f__text');
+	    Common.replaceField(field,Common.format_text($(field).text()));
 	});
 	selector.find('.f__bar').each(function(field_index,field) {
 	    field = $(field);
+	    field.removeClass('f__bar');
+	    var neutral = field.find('.bar_neutral');
+	    neutral = neutral.length ? neutral.text() : null;
 	    var text = field.find('.bar_text');
 	    text = text.length ? text.html() : null;
 	    var prefix = field.find('.bar_prefix');
@@ -122,14 +158,18 @@ Common = {
 	    fill_color = fill_color.length ? fill_color.text() : null;
 	    var empty_color = field.find('.bar_emptycolor');
 	    empty_color = empty_color.length ? empty_color.text() : null;
-	    $(field).html(Common.bar2({
+	    var neutral_color = field.find('.bar_neutralcolor');
+	    neutral_color = neutral_color.length ? neutral_color.text() : null;
+	    Common.replaceField(field,Common.bar({
 		value: field.find('.bar_value').text(),
 		total: field.find('.bar_total').text(),
+		neutral: neutral,
 		text: text,
 		prefix: prefix,
 		suffix: suffix,
 		fill_color: fill_color,
-		empty_color: empty_color
+		empty_color: empty_color,
+		neutral_color: neutral_color
 	    }));
 	});
     },
@@ -206,32 +246,32 @@ Common = {
 	    return "N/A";
     },
 
-    bar: function(value,total,text,prefix,suffix,fill_color,empty_color) {
-	if (!Common.isDefined(fill_color)) var fill_color = '#3355ff';
-	if (!Common.isDefined(empty_color)) var empty_color = '#ff5533';
+    bar: function(params) {
+	var fill_color = params.fill_color || '#3355ff';
+	var empty_color = params.empty_color || '#ff5533';
+	var neutral_color = params.neutral_color || '#555555';
 	var resultWrapper = $('<div style="min-width: 200px"></div>');
 	var result = $('<div class="bar"></div>');
+	var hasText = Common.isDefined(params.text);
+	var total = Number(params.total);
 	if (total > 0.0) {
-	    var fill_value = (100.0 * value / total).toFixed(2);
-	    var empty_value = (100.0 - fill_value).toFixed(2);
-	    var fill_text = (fill_value >= 40) ? fill_value+'%' : '';
-	    var empty_text = (fill_value <= 60) ? empty_value+'%' : '';
-	    if (Common.isDefined(text)) fill_text = empty_text = '';
-	    result.append(
-		'<span class="fill" style="background: '+fill_color+'; left: 0px; top: 0px; height: 100%; width: '+fill_value+'%">'+fill_text+'</span>',
-		'<span class="fill" style="background: '+empty_color+'; left: '+fill_value+'%; top: 0px; height: 100%; width: '+empty_value+'%">'+empty_text+'</span>')
+	    var fill = 100.0 * Number(params.value) / total;
+	    var neutral = Common.isDefined(params.neutral) ? 100.0 * Number(params.neutral) / total : 0.0;
+	    var empty = 100.0 - fill - neutral;
+	    var fill_text = hasText ? '' : ((fill >= 33.0) ? fill.toFixed(2)+'%' : '');
+	    var empty_text = hasText ? '' : ((empty >= 33.0) ? empty.toFixed(2)+'%' : '');
+	    var neutral_text = hasText ? '' : ((neutral >= 33.0) ? neutral.toFixed(2)+'%' : '');
+	    result.append('<span class="fill" style="background: '+fill_color+'; left: 0px; top: 0px; height: 100%; width: '+fill.toFixed(2)+'%; text-align: center">'+fill_text+'</span>');
+	    if (neutral > 0.0) result.append('<span class="fill" style="background: '+neutral_color+'; left: '+fill.toFixed(2)+'%; top: 0px; height: 100%; width: '+neutral.toFixed(2)+'%; text-align: center">'+neutral_text+'</span>');
+	    result.append('<span class="fill" style="background: '+empty_color+'; left: '+(fill+neutral).toFixed(2)+'%; top: 0px; height: 100%; width: '+empty.toFixed(2)+'%; text-align: center">'+empty_text+'</span>');
 	} else {
 	    result.append('<span class="empty">N/A</span>');
 	}
-	if (Common.isDefined(text)) result.append('<span class="overlay">'+text+'</span>');
-	if (Common.isDefined(prefix)) resultWrapper.append('<div class="prefix">'+prefix+'</div>');
+	if (hasText) result.append('<span class="overlay">'+params.text+'</span>');
+	if (Common.isDefined(params.prefix)) resultWrapper.append('<div class="prefix">'+params.prefix+'</div>');
 	resultWrapper.append(result);
-	if (Common.isDefined(suffix)) resultWrapper.append('<div class="suffix">'+suffix+'</div>');
+	if (Common.isDefined(params.suffix)) resultWrapper.append('<div class="suffix">'+params.suffix+'</div>');
 	return resultWrapper;
-    },
-
-    bar2: function(params) {
-	return Common.bar(params.value,params.total,params.text,params.prefix,params.suffix,params.fill_color,params.empty_color);
     },
 
     rating: function(g,w,h) {
