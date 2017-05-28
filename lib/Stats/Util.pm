@@ -92,7 +92,7 @@ sub format_duration {
 
 sub db_to_hashref {
     my ($obj) = @_;
-    return +{ map { $_ => $obj->$_ } $obj->meta->column_names };
+    return defined($obj) ? +{ map { $_ => $obj->$_ } $obj->meta->column_names } : +{ };
 }
 
 1;

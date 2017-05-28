@@ -11,7 +11,7 @@
 	  <th>Name</th>
 	  <th>Play Time</th>
 	  <th>Kills & Deaths</th>
-	  <th>Buildings</th>
+	  <th>Buildings Built / Killed</th>
 	  <th>Team Preference</th>
 	  <th class="fill_column"></th>
 	</tr>

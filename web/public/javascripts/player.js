@@ -3,6 +3,7 @@ $(document).ready(function() {
     var player_id = link.attr('href');
     link.remove();
     $.get('/json/player/'+player_id,function(data) {
+	Common.load_fields_generic($('#content div#player_header'), data);
 	Common.load_fields_generic($('#content div#player_overall'), data);
 	Common.load_fields_generic($('#content div#player_glicko'), data);
     });
