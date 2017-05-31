@@ -4,7 +4,7 @@
     <a class="data server_id" href="<% server_id %>"></a>
     <table>
       <thead>
-      	<tr class="title"><th colspan="8" class="f_server_name"></th></tr>
+      	<tr class="title"><th colspan="8"><span class="f_server_name"></span> - Players</th></tr>
 	<tr class="title">
 	  <th>#</th>
 	  <th>Ranking</th>

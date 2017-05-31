@@ -19,7 +19,7 @@ $(document).ready(function() {
 	var player = data.player;
 	var entry = template.clone();
 	entry.find('.f_index').html('<span class="number">'+(1+index)+'</span>');
-	entry.find('.f_rank').html(Common.rating(data.glicko2, 160, 32));
+	entry.find('.f_rank').html(Common.rating(data.glicko2));
 	entry.find('.f_name').html('<span class="name text"><a href="/player/'+player.id+'">'+Common.format_text(player.displayname)+'</a></span>');
 	entry.find('.f_total_games').html('<span class="number">'+player.total_games+'</span>');
 	entry.find('.f_total_playtime').html('<span class="number">'+Common.format_duration_minutes(player.total_time)+'</span>');

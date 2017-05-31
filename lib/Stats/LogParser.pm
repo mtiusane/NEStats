@@ -932,7 +932,7 @@ sub deleteGameEntries {
 sub loadGlicko2 {
     my ($self,$player_id,%extra) = @_;
     return {
-	player  => $player_id,
+	player  => undef,
 	glicko  => Glicko2::Player->new,
 	db      => undef,
         %extra,
@@ -1039,7 +1039,8 @@ sub updateRankings {
 		    glicko2  => $self->loadGlicko2($_->id),
 		    outcomes => [ ]
 		}
-	    } @{Stats::DB::Player::Manager->get_players(query => [ server_id => $server_id ])};
+	    } map { $_->session->player } @scores;
+	    # @{Stats::DB::Player::Manager->get_players(query => [ server_id => $server_id ])};
 	    foreach my $score (@scores) {
 		push @{$matches{$score->session->player_id}->{outcomes}},{
 		    opponent => Glicko2::Player->new(rating     => $score->opponent_rating,

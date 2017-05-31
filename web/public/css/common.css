@@ -232,6 +232,7 @@ div#menu > ul {
     height: 7vh;
     list-style-type: none;
     overflow: hidden;
+    list-style: none;
 }
 
 div#menu > ul > li {
@@ -239,6 +240,7 @@ div#menu > ul > li {
     padding-left: 1vh;
     padding-right: 1vh;
     line-height: 7vh;
+    list-style: none;
 }
 
 div#menu > ul > li > a,
@@ -461,8 +463,7 @@ div.rating {
     overflow: visible;
     margin: 0px;
     padding: 0px;
-    background: url('/images/rating_background.png') no-repeat scroll left top transparent;
-    background-size: 100%;
+    background: url('/images/rating_background.png') repeat scroll left top transparent;
     font-size: 0.8em;
     font-weight: bold;
     color: #cfcfcf;
@@ -475,14 +476,10 @@ div.rating {
 
 div.bar {
     display: inline-block;
-    min-height: 16px;
-    max-height: 32px;
-    line-height: 16px;
 }
 
 div.rating {
     display: inline-block;
-    height: 32px;
 }
 
 div.barWithCaptions {
@@ -1406,6 +1403,7 @@ div#chartjs-tooltip .container table tr:nth-child(even) td {
     max-width: 18em;
     padding-left: 0.5em;
     padding-right: 0.5em;
+    min-width: 160px;
 }
 
 .container .rankingField span.f_rank {
@@ -1415,7 +1413,7 @@ div#chartjs-tooltip .container table tr:nth-child(even) td {
 }
 
 .container .barField {
-    width: 160px;
+    min-width: 160px;
 }
 
 .container .barFieldWithCaptions {

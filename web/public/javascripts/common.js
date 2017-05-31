@@ -246,37 +246,33 @@ Common = {
 	    return "N/A";
     },
 
-    bar: function(params) {
-	var fill_color = params.fill_color || '#3355ff';
-	var empty_color = params.empty_color || '#ff5533';
-	var neutral_color = params.neutral_color || '#555555';
-	var resultWrapper = $('<div style="min-width: 200px"></div>');
-	var result = $('<div class="bar"></div>');
-	var hasText = Common.isDefined(params.text);
-	var total = Number(params.total);
-	if (total > 0.0) {
-	    var fill = 100.0 * Number(params.value) / total;
-	    var neutral = Common.isDefined(params.neutral) ? 100.0 * Number(params.neutral) / total : 0.0;
-	    var empty = 100.0 - fill - neutral;
-	    var fill_text = hasText ? '' : ((fill >= 33.0) ? fill.toFixed(2)+'%' : '');
-	    var empty_text = hasText ? '' : ((empty >= 33.0) ? empty.toFixed(2)+'%' : '');
-	    var neutral_text = hasText ? '' : ((neutral >= 33.0) ? neutral.toFixed(2)+'%' : '');
-	    result.append('<span class="fill" style="background: '+fill_color+'; left: 0px; top: 0px; height: 100%; width: '+fill.toFixed(2)+'%; text-align: center">'+fill_text+'</span>');
-	    if (neutral > 0.0) result.append('<span class="fill" style="background: '+neutral_color+'; left: '+fill.toFixed(2)+'%; top: 0px; height: 100%; width: '+neutral.toFixed(2)+'%; text-align: center">'+neutral_text+'</span>');
-	    result.append('<span class="fill" style="background: '+empty_color+'; left: '+(fill+neutral).toFixed(2)+'%; top: 0px; height: 100%; width: '+empty.toFixed(2)+'%; text-align: center">'+empty_text+'</span>');
-	} else {
-	    result.append('<span class="empty">N/A</span>');
-	}
-	if (hasText) result.append('<span class="overlay">'+params.text+'</span>');
-	if (Common.isDefined(params.prefix)) resultWrapper.append('<div class="prefix">'+params.prefix+'</div>');
-	resultWrapper.append(result);
-	if (Common.isDefined(params.suffix)) resultWrapper.append('<div class="suffix">'+params.suffix+'</div>');
-	return resultWrapper;
+    roundTo: function(v,m) {
+	return Math.round(v / m) * m;
     },
 
-    rating: function(g,w,h) {
-	var cw = (typeof w !== 'undefined') ? w : 160;
-	var ch = (typeof h !== 'undefined') ? h : 16;
+    rating_size: function(aspect,margin) {
+	var a = (typeof aspect !== 'undefined') ? aspect : 4.0;
+	var m = (typeof margin !== 'undefined') ? margin : 0.1;
+	var ce = $('#page');
+	var wh = ce.height() / 12, ww = a * wh;
+	var ca = a - m;
+	var window_a = ww / wh;
+	if (ca < window_a) {
+	    var ch = Common.roundTo(wh, 8);
+	    return [ Common.roundTo(ch * ca, 16), ch ];
+	} else {
+	    var cw = Common.roundTo(ww, 16);
+	    return [ cw, Common.roundTo(cw / ca, 8) ];
+	}
+    },
+
+    bar_size: function() {
+	var [w,h] = Common.rating_size(8.0);
+	return [0.5*w,0.5*h];
+    },
+
+    rating: function(g) {
+	var [cw,ch] = Common.rating_size();
 	var commonStyle='width: '+cw+'px; height: '+ch+'px; line-height: '+ch+'px';
 	if (g.update_count > 0) {
 	    var rangeMin = Number(g.min_range);
@@ -306,6 +302,36 @@ Common = {
 	    result.append('<span style="'+commonStyle+'" class="overlay">'+Number(r).toFixed(2)+'</span>');
 	    return result;
 	} else return $('<div style="'+commonStyle+'" class="rating">N/A</div>');
+    },
+
+    bar: function(params) {
+	var [cw,ch] = Common.bar_size();
+	var commonStyle='width: '+cw+'px; height: '+ch+'px; line-height: '+ch+'px';
+	var fill_color = params.fill_color || '#3355ff';
+	var empty_color = params.empty_color || '#ff5533';
+	var neutral_color = params.neutral_color || '#555555';
+	var resultWrapper = $('<div style="min-width: 200px"></div>');
+	var result = $('<div class="bar" style="'+commonStyle+'"></div>');
+	var hasText = Common.isDefined(params.text);
+	var total = Number(params.total);
+	if (total > 0.0) {
+	    var fill = 100.0 * Number(params.value) / total;
+	    var neutral = Common.isDefined(params.neutral) ? 100.0 * Number(params.neutral) / total : 0.0;
+	    var empty = 100.0 - fill - neutral;
+	    var fill_text = hasText ? '' : ((fill >= 33.0) ? fill.toFixed(2)+'%' : '');
+	    var empty_text = hasText ? '' : ((empty >= 33.0) ? empty.toFixed(2)+'%' : '');
+	    var neutral_text = hasText ? '' : ((neutral >= 33.0) ? neutral.toFixed(2)+'%' : '');
+	    result.append('<span class="fill" style="background: '+fill_color+'; left: 0px; top: 0px; height: 100%; width: '+fill.toFixed(2)+'%; text-align: center">'+fill_text+'</span>');
+	    if (neutral > 0.0) result.append('<span class="fill" style="background: '+neutral_color+'; left: '+fill.toFixed(2)+'%; top: 0px; height: 100%; width: '+neutral.toFixed(2)+'%; text-align: center">'+neutral_text+'</span>');
+	    result.append('<span class="fill" style="background: '+empty_color+'; left: '+(fill+neutral).toFixed(2)+'%; top: 0px; height: 100%; width: '+empty.toFixed(2)+'%; text-align: center">'+empty_text+'</span>');
+	} else {
+	    result.append('<span class="empty" style="'+commonStyle+'">N/A</span>');
+	}
+	if (hasText) result.append('<span class="overlay" style="'+commonStyle+'">'+params.text+'</span>');
+	if (Common.isDefined(params.prefix)) resultWrapper.append('<div class="prefix">'+params.prefix+'</div>');
+	resultWrapper.append(result);
+	if (Common.isDefined(params.suffix)) resultWrapper.append('<div class="suffix">'+params.suffix+'</div>');
+	return resultWrapper;
     },
 
     extractIcons: function(text, color) {
