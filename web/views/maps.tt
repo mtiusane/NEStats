@@ -6,7 +6,7 @@
       <thead>
       	<tr class="title"><th colspan="7"><span class="f_server_name"></span> - Maps</th></tr>
 	<tr class="title">
-	  <th>Name</th>
+	  <th>Map</th>
 	  <!-- <th>Games Played</th> -->
 	  <th>Total Play Time</th>
 	  <th>Outcomes</th>
@@ -18,7 +18,15 @@
       </thead>
       <tbody>
 	<tr class="template">
-	  <td><a class="f_url" href=""><span class="f_name f__text"></span></a></td>
+	  <td class="imageTextField">
+	    <a class="f_url" href="">
+	      <span class="roundcorners f__img">
+		<img class="f_img_url" src="">
+		<span class="imgNotFound">N/A</span>
+	      </span>
+	      <span class="f_name f__text"></span>
+	    </a>
+	  </td>
 	  <td>
 	    <span class="f__duration_minutes f_total_time"></span><br />
 	    <span class="small">

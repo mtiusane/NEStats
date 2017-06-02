@@ -1438,6 +1438,16 @@ div#chartjs-tooltip .container table tr:nth-child(even) td {
     max-width: 8em;
 }
 
+.container .imageTextField {
+    min-width: 160px;
+    line-height: 100%;
+    text-align: left;
+    padding-left: 0.5vw;
+    padding-right: 0.5vw;
+    padding-top: 0.25vh;
+    padding-bottom: 0.25vh;
+}
+
 .container .small {
     font-size: 0.8em;
 }
@@ -1445,4 +1455,34 @@ div#chartjs-tooltip .container table tr:nth-child(even) td {
 .container .fill_column {
     min-width: 0px !important;
     width: auto;
+}
+
+.roundcorners {
+    display: inline-block;
+    border-radius: 6px;
+    overflow: hidden;
+    border: 1px solid #7f7f7f;
+    vertical-align: middle;
+    padding: 0px;
+    margin: 0px;
+}
+
+.roundcorners img {
+    height: 100%;
+    width: 100%;
+    object-fit: contain;
+    object-position: 50%;
+}
+
+a:hover .roundcorners,
+a:visited:hover .roundcorners {
+    border: 1px solid cyan;
+}
+
+.imgNotFound {
+    display: inline-block;
+    width: 100%;
+    height: 100%;
+    background: #3f3f3f;
+    text-align: center;
 }

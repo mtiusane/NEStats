@@ -13,3 +13,6 @@
 [submodule "externals/jScrollPane"]
 	path = externals/jScrollPane
 	url = https://github.com/vitch/jScrollPane
+[submodule "externals/crunch"]
+	path = externals/crunch
+	url = https://github.com/Unvanquished/crunch

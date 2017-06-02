@@ -280,7 +280,8 @@ get '/server/:id/maps/:offset/:limit' => sub {
 		my $map = $_;
 		+{
 		    %{db_to_hashref($map)},
-		    url => '/map/'.$map->id
+		    url     => '/map/'.$map->id,
+		    img_url => (-f 'public/images/maps/'.$map->name.'.png') ? '/images/maps/'.$map->name.'.png' : ""
 		}
 	    } @maps
 	],

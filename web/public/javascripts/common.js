@@ -75,7 +75,7 @@ Common = {
     },
    
     load_fields_generic: function(selector,data) {
-	console.log("Loading generic fields: "+data._index);
+	// console.log("Loading generic fields: "+data._index);
 	// $.each(selector.find('a.data.field'),function(field_index,field) {
 	//     var name = field.attr('href');
 	//     if (_.has(data,name)) {
@@ -94,6 +94,13 @@ Common = {
 			field.attr('href',value);
 		    else
 			field.children().unwrap();
+		} else if (field.is('img')) {
+		    if (value != null && value != "") {
+			field.attr('src',value);
+			field.parent().children('.imgNotFound').remove();
+		    } else {
+			field.remove();
+		    }
 		} else if (field.hasClass('f__sum') || field.hasClass('f__sub')) {
 		    var sum = field.data('f__sum');
 		    if (sum === undefined) sum = 0.0;
@@ -103,6 +110,13 @@ Common = {
 		    Common.replaceField(field,value);
 		}
 	    });
+	});
+	selector.find('.f__img').each(function(index,field) {
+	    field = $(field);
+	    field.removeClass('f__img');
+	    var [cw,ch] = Common.image_size();
+	    var commonStyle='display: inline-block; background: black; width: '+cw+'px; height: '+ch+'px; line-height: '+ch+'px';
+	    field.attr('style',commonStyle);
 	});
 	selector.find('.f__sum').each(function(index,field) {
 	    field = $(field);
@@ -269,6 +283,11 @@ Common = {
     bar_size: function() {
 	var [w,h] = Common.rating_size(8.0);
 	return [0.5*w,0.5*h];
+    },
+
+    image_size: function() {
+	var [w,h] = Common.rating_size(8.0);
+	return [0.25*w,1.2*h];
     },
 
     rating: function(g) {
