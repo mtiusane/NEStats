@@ -11,7 +11,7 @@
       <a class="data map_id" href="<% map_id %>"></a>
       <table>
 	<thead>
-      	  <tr class="title"><th colspan="8" class="f_server_name"></th></tr>
+      	  <tr class="title"><th colspan="8">Top Players</th></tr>
 	  <tr class="title">
 	    <th>#</th>
 	    <th>Ranking</th>
