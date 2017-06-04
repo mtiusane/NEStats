@@ -25,7 +25,7 @@ $(document).ready(function() {
 	    $.getJSON('/json/game/'+game_id,function(data) { game = data.game; }),
 	    $.getJSON('/json/game/'+game_id+'/sessions',function(data) { sessions = data.sessions; })
 	).then(function() {
-    	    console.log("Loading game sessions: "+game_id);
+    	    // console.log("Loading game sessions: "+game_id);
 	    var eventsBySession = { };
 	    var teamColors = {
 		spectator: $.map(_.range(31), function(v) { return '#7f7f7f'; }),

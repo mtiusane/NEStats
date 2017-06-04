@@ -73,17 +73,56 @@ Common = {
 	    field.html(value);
 	}
     },
-   
-    load_fields_generic: function(selector,data) {
-	// console.log("Loading generic fields: "+data._index);
-	// $.each(selector.find('a.data.field'),function(field_index,field) {
-	//     var name = field.attr('href');
-	//     if (_.has(data,name)) {
-	// 	$(field).replaceWith(data[name]);
-	//     }
-	// });
+
+    findFieldType: function(field) {
+	var numericTypes = new Map([
+	    [ function(field) {
+		return field.hasClass('f__date') ||
+		    field.hasClass('f__time') ||
+		    field.hasClass('f__duration') ||
+		    field.hasClass('f__duration_minutes') ||
+		    field.hasClass('f__duration_date');
+	    }, {
+		parseValue: function(value) { return new Date(value); }
+	    } ],
+	    [ function(field) { return true }, {
+		parseValue: function(value) { return new Number(value); }
+	    } ]
+	]);
+	for(var [test,fns] of numericTypes.entries()) {
+	    if (test(field)) {
+		return fns;
+	    }
+	}
+	return undefined;
+    },
+
+    loadFieldType: function(field) {
+	var fns = field.data('f__fieldType');
+	if (fns === undefined) {
+	    fns = Common.findFieldType(field);
+	    field.data('f__fieldType',fns);
+	}
+	return fns;
+    },
+
+    clearFieldType: function(field) {
+	field.removeData('f__fieldType');
+    },
+
+    loadFieldValues: function(selector,data) {
+	selector.find('.f__parent').each(function(index,parent) {
+	    parent = $(parent);
+	    parent.removeClass('f__parent');
+	    $.each(data,function(name,value) {
+		var selectorName = 'f_'+name;
+		if (parent.hasClass(selectorName)) {
+		    parent.removeClass(selectorName);
+		    Common.loadFieldValues(parent,value);
+		}
+	    });
+	});
 	$.each(data,function(name,value) {
-	    // console.log("Finding: "+name);
 	    var selectorName = 'f_'+name;
 	    selector.find('.'+selectorName).each(function(field_index,field) {
 		// console.log("Loading field: f_"+name, field);
@@ -102,15 +141,31 @@ Common = {
 			field.remove();
 		    }
 		} else if (field.hasClass('f__sum') || field.hasClass('f__sub')) {
+		    var fns = Common.loadFieldType(field);
 		    var sum = field.data('f__sum');
-		    if (sum === undefined) sum = 0.0;
-		    sum += Number(value);
+		    var parsedValue = fns.parseValue(value);
+		    if (sum === undefined) {
+			sum = parsedValue;
+		    } else {
+			sum += parsedValue;
+		    }
 		    field.data('f__sum',sum);
 		} else {
 		    Common.replaceField(field,value);
 		}
 	    });
 	});
+    },
+   
+    load_fields_generic: function(selector,data) {
+	// console.log("Loading generic fields: "+data._index);
+	// $.each(selector.find('a.data.field'),function(field_index,field) {
+	//     var name = field.attr('href');
+	//     if (_.has(data,name)) {
+	// 	$(field).replaceWith(data[name]);
+	//     }
+	// });
+	Common.loadFieldValues(selector,data);
 	selector.find('.f__img').each(function(index,field) {
 	    field = $(field);
 	    field.removeClass('f__img');
@@ -128,8 +183,10 @@ Common = {
 	selector.find('.f__sub').each(function(index,field) {
 	    field = $(field);
 	    field.removeClass('f__sub');
-	    var sum = field.text() - field.data('f__sum');
+	    var fns = Common.loadFieldType(field);
+	    var sum = fns.parseValue(field.text()) - field.data('f__sum');
 	    field.removeData('f__sum');
+	    Common.clearFieldType(field);
 	    Common.replaceField(field,sum);
 	});
 	selector.find('.f__date').each(function(field_index,field) {
@@ -142,20 +199,30 @@ Common = {
 	    field.removeClass('f__time');
 	    Common.replaceField(field,new Date($(field).text()).toLocaleTimeString());
 	});
+	selector.find('.f__utcdate').each(function(field_index,field) {
+	    field = $(field);
+	    field.removeClass('f__utcdate');
+	    Common.replaceField(field,new Date(field.text()).toUTCString());
+	});
 	selector.find('.f__duration').each(function(field_index,field) {
 	    field = $(field);
 	    field.removeClass('f__duration');
-	    Common.replaceField(field,Common.format_duration($(field).text()));
+	    Common.replaceField(field,Common.format_duration(field.text()));
 	});
 	selector.find('.f__duration_minutes').each(function(field_index,field) {
 	    field = $(field);
 	    field.removeClass('f__duration_minutes');
-	    Common.replaceField(field,Common.format_duration_minutes($(field).text()));
+	    Common.replaceField(field,Common.format_duration_minutes(field.text()));
+	});
+	selector.find('.f__duration_date').each(function(field_index,field) {
+	    field = $(field);
+	    field.removeClass('f__duration_date');
+	    Common.replaceField(field,Common.format_duration_minutes(new Number(field.text()).valueOf() / 1000.0));
 	});
 	selector.find('.f__text').each(function(field_index,field) {
 	    field = $(field);
 	    field.removeClass('f__text');
-	    Common.replaceField(field,Common.format_text($(field).text()));
+	    Common.replaceField(field,Common.format_text(field.text()));
 	});
 	selector.find('.f__bar').each(function(field_index,field) {
 	    field = $(field);
@@ -208,6 +275,20 @@ Common = {
 	    data._index = 1+index;
 	    Common.load_fields_generic(entry,data);
 	    return entry;
+	});
+    },
+
+    scroll_table_generic_multi: function(container,selectors,elements) {
+	$(container).each(function(div_index,div) {
+	    for(var selector in selectors) {
+		var field_id = $(div).find(selector);
+		if (field_id.length) {
+		    var url = selectors[selector](field_id.attr('href'));
+		    field_id.remove();
+		    Common.scroll_table_generic(div,url,elements);
+		    return;
+		}
+	    }
 	});
     },
 

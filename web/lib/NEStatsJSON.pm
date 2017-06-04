@@ -45,6 +45,38 @@ my @GAMES_FILTER = (
     ]
 );
 
+sub get_map_fields {
+    my ($map) = @_;
+    return {
+	%{db_to_hashref($map)},
+	url     => '/map/'.$map->id,
+	img_url => (-f 'public/images/maps/'.$map->name.'.png') ? '/images/maps/'.$map->name.'.png' : ""
+    }
+}
+
+sub get_server_fields {
+    my ($server) = @_;
+    return {
+	%{db_to_hashref($server)},
+	remote_url => $server->{url},
+	url        => join('/','','server',$server->{id})
+    }
+}
+
+sub get_formatted_outcome {
+    my ($game) = @_;
+    if ($game->import_complete && defined(my $outcome = $game->outcome)) {
+	if ($outcome eq 'humans') {
+	    return '[bsuit] humans';
+	} elsif ($outcome eq 'aliens') {
+	    return '[tyrant] aliens';
+	} else {
+	    return 'draw';
+	}
+    }
+    return 'unknown';
+}
+
 # -- JSON handlers --
 
 set serializer => 'JSON';
@@ -236,16 +268,15 @@ get '/server/:id/players/:offset/:limit' => sub {
 };
 
 get '/server/:id/games/:offset/:limit' => sub {
+    my $server = Stats::DB::Server->new(id => params->{id});
+    $server->load(speculative => 1);
     my $count = Stats::DB::Game::Manager->get_games_count(where => [ @GAMES_FILTER, server_id => params->{id} ]);
     my @games = map +{
+	server      => get_server_fields($server),
 	id          => $_->id,
-	map         => {
-	    id   => $_->map->id,
-	    name => replace_all($_->map->name)
-	},
-	outcome     => $_->import_complete ? ($_->outcome // 'draw') : 'unknown',
-	date        => $_->start->dmy,
-	time        => $_->start->hms,
+	url         => join('/','','game',$_->id),
+	map         => get_map_fields($_->map),
+	outcome     => get_formatted_outcome($_),
 	max_players => $_->max_players,
 	start       => $_->start,
 	end         => $_->end
@@ -275,16 +306,7 @@ get '/server/:id/maps/:offset/:limit' => sub {
 	offset  => params->{offset},
     )};
     return {
-	maps   => [
-	    map {
-		my $map = $_;
-		+{
-		    %{db_to_hashref($map)},
-		    url     => '/map/'.$map->id,
-		    img_url => (-f 'public/images/maps/'.$map->name.'.png') ? '/images/maps/'.$map->name.'.png' : ""
-		}
-	    } @maps
-	],
+	maps   => [ map { get_map_fields($_) } @maps ],
 	offset => params->{offset},
 	total  => $count
     };
@@ -332,7 +354,7 @@ get '/game/:id' => sub {
 	    disconnects => $game->disconnects,
 
 	    max_players => $game->max_players,
-	    outcome => $game->outcome,
+	    outcome => get_formatted_outcome($game),
 
 	    sd => $game->sd,
 	    wsd => $game->wsd,
@@ -567,17 +589,15 @@ get '/map/:id/games/:offset/:limit' => sub {
     my $count = Stats::DB::Game::Manager->get_games_count(where => [ @GAMES_FILTER, map_id => $map->id ]);
     my @games = map {
 	id          => $_->id,
-	map         => {
-	    id   => $map->id,
-	    name => replace_all($map->name)
-	},
-	outcome     => $_->outcome // 'draw',
+	server      => get_server_fields($_->server),
+	map         => get_map_fields($map),
+	outcome     => get_formatted_outcome($_),
 	date        => $_->start->dmy,
 	time        => $_->start->hms,
 	max_players => $_->max_players,
 	start       => $_->start,
 	end         => $_->end
-    },@{Stats::DB::Game::Manager->get_games(where => [ @GAMES_FILTER, map_id => $map->id ],sort_by => 'start desc',limit => min(25,params->{limit}),offset => params->{offset})};
+    },@{Stats::DB::Game::Manager->get_games(where => [ @GAMES_FILTER, map_id => $map->id ],with_objects => [ 'server' ],sort_by => 'start desc',limit => min(25,params->{limit}),offset => params->{offset})};
     return {
 	games => \@games,
 	offset => params->{offset},

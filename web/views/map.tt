@@ -52,27 +52,9 @@
 	</tbody>
       </table>
     </div>
-    <div id="games" class="container halfwidth halfheight">
+    <div id="games" class="container fullheight" style="min-width: 80vw">
       <a class="data map_id" href="<% map_id %>"></a>
-      <table>
-	<thead>
-	  <tr class="title"><th colspan="4">Recent Games</th></tr>
-	  <tr class="title">
-	    <th>Game</th>
-	    <th>Max Players</th>
-	    <th>Outcome</th>
-	    <th class="fill_column"></th>
-	  </tr>
-	</thead>
-	<tbody>
-	  <tr class="template">
-            <td class="game"></td>
-            <td class="players"></td>
-            <td class="outcome"></td>
-	    <td class="fill_column"></td>
-	  </tr>
-	</tbody>
-      </table>
+      <% INCLUDE "parts/games_list.tt" %>
     </div>
-</div>
+  </div>
 </div>

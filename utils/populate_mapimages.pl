@@ -13,6 +13,8 @@ use Archive::Zip qw/:ERROR_CODES :CONSTANTS/;
 use Fcntl qw/SEEK_SET SEEK_END/;
 use Image::Magick;
 
+my $previewGeometry = '256x144'; # '512x288';
+
 my $unvPath = shift || die "Syntax: $0 path-to-unv";
 my $pkgPath = "$unvPath/pkg";
 my $outputDir = "../web/public/images/maps";
@@ -57,7 +59,7 @@ while (my $path = readdir DIR) {
 		    my $readResult = $image->Read(filename => $tempfile);
 		    die "Failed to read extracted file: $readResult" if ("$readResult");
 		}
-		$image->Resize(geometry => '512x288');
+		$image->Resize(geometry => $previewGeometry);
 		my $writeResult = $image->Write(filename => $outputName);
 		die "Failed to write output file: $writeResult" if ("$writeResult");
 	    }
