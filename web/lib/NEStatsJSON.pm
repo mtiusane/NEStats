@@ -432,76 +432,9 @@ get '/session/:id/events' => sub {
 };
 
 get '/game/:id/events' => sub {
-    my %scoreValues = (
-	kill    => 1.5,
-	death   => -1,
-	assist  => 0.5,
-	build   => 1,
-	destroy => 2,
-	team    => 1,
-    );
-    my @weapons = @{Stats::DB::Weapon::Manager->get_weapons() // [ ]};
-    # my %weapon_names = map { $_->name => replace_all($_->displayname) } @weapons;
-    my %weapons_by_id = map { $_->id => replace_all($_->displayname) } @weapons;
-    my %buildings_by_id = map { $_->id => replace_all($_->name) } @{Stats::DB::Building::Manager->get_buildings() // [ ]};
-    my @sessions = @{Stats::DB::Session::Manager->get_sessions(query => [ game_id => params->{id} ], with_objects => [ 'player' ]) // [ ]};
-    my %players_by_session_id = map {
-	$_->id => $_->player
-    } @sessions;
-    my %names_by_session_id = map {
-	$_->id => #replace_all(
-	    $_->name
-	#); # defined($players_by_session_id{$_->id}) ? $players_by_session_id{$_->id}->displayname : $_->name),
-    } @sessions;
-    my @events = map {
-	my $session = $_;
-     	my $player = $session->player;
-
-	my $team = $session->team;
-	my $prefix = replace_all($session->name);
-
-	my @player;
-	push @player,{ time => $session->start, type => "team", team => $team };
-	push @player,map {
-	    my $event = $_;
-	    {
-		time   => $event->time,
-		type   => (($event->killer_id == $session->id) && "kill") ||
-		          (($event->killed_id == $session->id) && "death") ||
-		          (($event->assist_id == $session->id) && "assist"),
-		weapon => $weapons_by_id{$event->weapon_id}
-	    }
-	} @{Stats::DB::PlayerEvent::Manager->get_player_events(where => [ or => [ killer_id => $session->id, killed_id => $session->id, assist_id => $session->id ] ],sort_by => 'time') // [ ]};
-	push @player,map {
-	    my $event = $_;
-	    {
-		time     => $event->time,
-		type     => $event->type,
-		building => $buildings_by_id{$event->building_id},
-		weapon   => $weapons_by_id{$event->weapon_id}
-	    }
-	} @{Stats::DB::BuildingEvent::Manager->get_building_events(where => [ session_id => $session->id ],sort_by => 'time') // [ ]};
-	push @player,map {
-	    my $event = $_;
-	    {
-		time    => $event->time,
-		type    => 'team',
-		team    => $event->team
-	    }
-	} @{Stats::DB::TeamEvent::Manager->get_team_events(where => [ session_id => $session->id ],sort_by => 'time') // [ ]};
-	push @player,{
-	    time    => $session->end,
-	    type    => 'end'
-	};
-	{
-	    player_id   => 
-	    player_name => $prefix, # $player->displayname,
-	    entries     => \@player
-	};
-    } @sessions;
     my @status_events = @{Stats::DB::GameStatusEvent::Manager->get_game_status_events(query => [ game_id => params->{id} ],sort_by => 'time')};
     return {
-	events        => \@events,
+	# events        => \@status_events,
 	status_events => [ map { db_to_hashref($_) } @status_events ],
     };
 };

@@ -387,7 +387,7 @@ Common = {
 	    var fill_color = 'rgba(100,63,51,0.66)';
 	    var empty_color = 'transparent';
 	    var stroke_color = '#642e1d';
-	    var rd_fill_left = cw * (r - rangeMin - (2.0 - 0.25) * rd * rdScale) / rangeDelta;
+	    var rd_fill_left = cw * (r - rangeMin - (2.0 /*- 0.25*/) * rd * rdScale) / rangeDelta;
 	    var rd_fill_width = cw * (4.0 * rd * rdScale) / rangeDelta;
 	    var x0 =       rd_fill_width /  4.0,x1 = 3.0*rd_fill_width / 10.0,x2 = rd_fill_width / 2.0;
 	    var x3 = 2.0 * rd_fill_width / 10.0,x4 =     rd_fill_width /  4.0,x5 = rd_fill_width / 2.0;
