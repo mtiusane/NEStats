@@ -39,7 +39,12 @@
 	      (<span class="f_building_kd"></span> bk / death)
 	    </span>
 	  </td>
-	  <td class="barField"><span class="f_team_preference"></span></td>
+	  <td class="barField">
+	    <span class="f_team_preference"></span>
+	    <span class="small">
+	      (<span class="f_total_time_h"></span> : <span class="f_total_time_a"></span>)
+	    </span>
+	  </td>
 	  <td class="fill_column"></td>
 	</tr>
       </tbody>

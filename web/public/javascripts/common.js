@@ -309,6 +309,17 @@ Common = {
 	return hours + minutes + seconds;
     },
 
+    format_duration_hm: function(seconds)
+    {
+	seconds = Number(seconds);
+	var hours = Math.floor(seconds / 3600.0);
+	seconds -= 3600.0 * hours;
+	var minutes = Math.floor(seconds / 60.0);
+	minutes = (minutes > 0) ? ((hours > 0) ? ' ' : '') + minutes + 'min' : '';
+	hours = (hours > 0) ? hours + 'h' : '';
+	return hours + minutes;
+    },	
+
     format_duration_minutes: function(seconds) {
 	return Common.format_duration(Math.ceil(Number(seconds) / 60.0) * 60.0);
     },

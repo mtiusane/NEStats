@@ -72,10 +72,10 @@ tr:nth-child(even) td {
 */
 tr td {
     text-align: center;
-    padding-left: 4px;
-    padding-right: 4px;
-    padding-top: 2px;
-    padding-bottom: 2px;
+    padding-left: 6px;
+    padding-right: 6px;
+    padding-top: 6px;
+    padding-bottom: 6px;
     margin: 0px;
     /*border-left: 1px solid #606060;
     border-right: 1px solid #606060;*/
@@ -1059,9 +1059,9 @@ canvas {
 .container table thead {
     min-height: 1em;
 
-    background: url('/images/metal_background.png') repeat scroll left top rgba(59,198,184,0.8);
-    border-bottom: 2px solid rgba(59,198,184,0.2);
-    padding-bottom: 2px;
+    background: url('/images/metal_background.png') repeat scroll left top rgba(33, 177, 160, 0.8);
+    border-bottom: 2px solid rgba(72, 152, 143, 0.8);
+    margin: 2px;
 }
 
 .container table thead tr th {

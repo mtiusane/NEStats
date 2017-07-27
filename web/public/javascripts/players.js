@@ -49,6 +49,8 @@ $(document).ready(function() {
 	    fill_color: 'rgba(51,63,100,0.66)',
 	    empty_color: 'rgba(63,100,51,0.66)'
 	}));
+	entry.find('.f_total_time_h').html('<span class="number">'+Common.format_duration_hm(player.total_time_h)+'</span>');
+	entry.find('.f_total_time_a').html('<span class="number">'+Common.format_duration_hm(player.total_time_a)+'</span>');
 	// entry.find('.f_reliability').html(Common.percent(player.total_rqs,player.total_sessions));
 	return entry;
     });
