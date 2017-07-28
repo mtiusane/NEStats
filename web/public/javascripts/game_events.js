@@ -112,6 +112,8 @@ $(document).ready(function() {
 		    }
 		}
 	    };
+	    var minTime = game.start, maxTime = game.start;
+	    var minScore = 0, maxScore = 0;
 	    $.when.apply($,$.map(sessions, function(s) {
 		return $.getJSON('/json/session/'+s.id+'/events', function(data) {
 		    eventsBySession[s.id] = { session: s, events: data.events };
@@ -135,6 +137,10 @@ $(document).ready(function() {
 			    title: eventTypes[e.type].tooltip(set.session,e)
 			};
 		    });
+		    var minTime = Math.min(minTime, $.map(data, function(e) { return e.x; }));
+		    var maxTime = Math.max(maxTime, $.map(data, function(e) { return e.x; }));
+		    var minScore = Math.min(minScore, $.map(data, function(e) { return e.y; }));
+		    var maxScore = Math.max(maxScore, $.map(data, function(e) { return e.y; }));
 		    var hidden = Math.abs(score) <= 0;
 		    var color = hidden ? '#7f7f7f' : teamColors[set.session.team][index++];
 		    return {
@@ -149,6 +155,8 @@ $(document).ready(function() {
 		}),function(set) {
 		    return !set.hidden;
 		}).sort(function(a,b) { return b.score - a.score; });
+		var minRange = { x: minTime, y: minScore };
+		var maxRange = { x: maxTime, y: maxScore };
 		var chart = new Chart(canvas, {
 		    type: 'line',
 		    data: {
@@ -169,15 +177,19 @@ $(document).ready(function() {
 				    type: 'time',
 				    time: {
 					round: 'second',
-					unit: 'minute',
+					 unit: 'minute',
 					minUnit: 'minute',
 					displayFormats: {
 					    'minute': 'hh:mm'
 					},
-					unitStepSize: '1',
+					/* unitStepSize: '1', */
 					min: game.start
 				    },
 				    ticks: {
+					autoSkip: true,
+					mode: 'linear',
+					source: 'auto', // 'data', 'labels'
+					bounds: 'data',
 					fontColor: 'lightgray'
 				    },
 				}
@@ -187,17 +199,18 @@ $(document).ready(function() {
 			    mode: 'single',
 			    animationDuration: 400,
 			},
-			zoom: {
-			    enabled: true,
-			    mode: 'xy',
-			    limits: {
-				min: 0.25,
-				max: 4
-			    }
-			},
 			pan: {
 			    enabled: true,
-			    mode: 'xy'
+			    mode: 'xy',
+			    rangeMin: minRange,
+			    rangeMax: maxRange
+			},
+			zoom: {
+			    enabled: true,
+			    /* drag: true, */
+			    mode: 'xy',
+			    rangeMin: minRange,
+			    rangeMax: maxRange
 			},
 			legend: {
 			    display: true,
@@ -295,16 +308,29 @@ $(document).ready(function() {
 				    return itemData.title;
 				}
 			    }
-			}
+			},
+			events: [
+			    'mousewheel',
+			    'mousedown',
+			    'mousemove', 'click', 'mouseout',
+			    'touchstart', 'touchmove', 'touchend'
+			],
 		    }
 		});
 		
 		canvas.hover(function() {
 		    Common.disableScroll();
-		    canvas.on('game_events.mousewheel',false);
+		    for(var eventName in [
+			'mousewheel',
+			'mousedown',
+			'mousemove', 'click', 'mouseout',
+			'touchstart', 'touchmove', 'touchend'
+		    ]) {
+			canvas.on(eventName+'.game_events',false);
+		    }
 		},function() {
 		    Common.enableScroll();
-		    canvas.off('game_events.mousewheel');
+		    canvas.off('.game_events');
 		});
 		/*
 		$(window).bind('resize',function() {

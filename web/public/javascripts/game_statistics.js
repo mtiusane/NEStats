@@ -57,7 +57,7 @@ $(document).ready(function() {
 		    return {
 			x: new Date(e.time),
 			y: Number(e[def.name]),
-			title: def.name+' = '+e[def.name]
+			title: formatPopup(def.name,[ e[def.name] ])
 		    };
 		});
 		let min = values.reduce(function(a,b) { return (a.y < b.y) ? a : b; }, values[0]).y;

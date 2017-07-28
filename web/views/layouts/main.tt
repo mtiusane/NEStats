@@ -16,6 +16,7 @@
     <script src="/javascripts/jquery.mousewheel.min.js"></script>
     <script src="/javascripts/jquery.jscrollpane.js"></script> <!-- TODO: .min but needs update-->
     <script src="/javascripts/underscore-min.js"></script>
+    <script src="/javascripts/hammer.min.js"></script>
     <script src="/javascripts/common.js"></script>
   </head>
   <body>

@@ -1450,12 +1450,12 @@
 					// 
 					enableMouseWheel: function()
 					{
-						initMousewheel();
+					    initMousewheel();
 					},
 					// 
 					disableMouseWheel: function()
 					{
-						removeMousewheel();
+					    removeMousewheel();
 					}
 				}
 			);
