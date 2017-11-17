@@ -6,7 +6,7 @@
       <thead>
       	<tr class="title"><th colspan="8"><span class="f_server_name"></span> - Players</th></tr>
 	<tr class="title">
-	  <th>#</th>
+	  <th class="indexField">#</th>
 	  <th>Ranking</th>
 	  <th>Name</th>
 	  <th>Play Time</th>

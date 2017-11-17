@@ -397,6 +397,7 @@ a {
     color: #efefef;
     text-decoration: none;
     cursor: pointer;
+    border-bottom: none;
 }
 
 a:hover {

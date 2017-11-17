@@ -41,6 +41,7 @@ use Rose::DB::Object::Helpers qw/as_tree/;
 set content_type => 'text/html';
 
 my $global_menu = [
+    { link => '/servers', title => 'Servers' },
     { link => '/server/1/games', title => 'Games' },
     { link => '/server/1/players', title => 'Players' },
     { link => '/server/1/maps', title => 'Maps' },

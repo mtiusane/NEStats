@@ -1,0 +1,3 @@
+requires 'Dancer2' => 0.166001;
+requires 'Template' => 0;
+requires 'Rose::DB::Object' => 0.815;

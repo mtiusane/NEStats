@@ -1,3 +1,4 @@
 web/sessions/*
 *~
 importer/*.log
+web/local/
