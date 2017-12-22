@@ -65,7 +65,6 @@ $(document).ready(function() {
 				    'assisted by',
 				    Common.format_text(eventsBySession[e.assist_id].session.name)
 				] : [ ]));
-			    return result;
 			} else {
 			    return formatPopup('Death',[
 				Common.format_text(s.name),
