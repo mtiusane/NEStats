@@ -1,14 +1,14 @@
 -- grant usage on stats.* to 'stats'@'localhost'; -- this will create user 'stats' if it doesn't exist
--- drop user 'stats'@'localhost';
--- drop database if exists stats;
+drop user if exists 'stats'@'localhost';
+drop database if exists stats;
 
--- create database stats;
+create database stats;
 use stats;
 
 -- Create default user with full privileges
--- create user 'stats'@'localhost' identified by 'stats';
--- grant all privileges on stats.* to 'stats'@'localhost';
--- flush privileges;
+create user 'stats'@'localhost' identified by 'stats';
+grant all privileges on stats.* to 'stats'@'localhost';
+flush privileges;
 
 -- drop table if exists game_types; -- TODO
 drop table if exists player_kills;
@@ -37,22 +37,22 @@ drop table if exists clans;
 drop table if exists players;
 drop table if exists servers;
 
-/*
-create table game_types (
-       id int not null primary key auto_increment,
-       name varchar(32) not null unique
-);
 
-insert into game_types (name) values ('unvanquished');
-insert into game_types (name) values ('tremulous');
-*/
+-- create table game_types (
+--        id int not null primary key auto_increment,
+--        name varchar(32) not null unique
+-- );
+
+-- insert into game_types (name) values ('unvanquished');
+-- insert into game_types (name) values ('tremulous');
+
 
 create table servers (
        id int not null primary key auto_increment,
        name varchar(64) not null unique,
        -- type_id int not null references game_types(id),
        ip varchar(40) not null,
-       url varchar(64),
+       url varchar(64)
        -- foreign key type_id references game_types(id)
 );
 
