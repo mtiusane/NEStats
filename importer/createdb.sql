@@ -209,6 +209,7 @@ create table games (
        total_bdeaths int not null default 0,
        total_built int not null default 0,
 
+       max_bots int not null default 0,
        max_players int not null default 0,
        connects int not null default 0,
        disconnects int not null default 0,

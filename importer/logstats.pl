@@ -24,7 +24,15 @@ my %importers = (
 );
 use Stats::LogParser;
 
-Log::Log4perl->easy_init({ level => $INFO, file => '>>logstats.log' });
+my $logConf = q{
+    log4perl.category = INFO, Logfile
+    log4perl.appender.Logfile = Log::Dispatch::FileRotate
+    log4perl.appender.Logfile.mode = truncate
+    log4perl.appender.Logfile.autoflush = 1
+    log4perl.appender.Logfile.size = 104857600
+    log4perl.appender.Logfile.layout = Log::Log4perl::Layout::SimpleLayout
+};
+Log::Log4perl->init(\$logConf);
 
 $SIG{__DIE__} = sub {
     return if($^S); # inside eval { }

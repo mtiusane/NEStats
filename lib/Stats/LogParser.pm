@@ -151,28 +151,28 @@ sub loadPlayer {
 sub beginSession {
     my ($self,%params) = @_;
     my $result = Stats::DB::Session->new(
-	game_id   => $params{game_id},
-	player_id => $params{player_id},
-	name      => $params{name},
-	ip        => $params{ip},
-	team      => $params{team},
-	start     => $params{start}
+        game_id   => $params{game_id},
+        player_id => $params{player_id},
+        name      => $params{name},
+        ip        => $params{ip},
+        team      => $params{team},
+        start     => $params{start}
     );
     $result->save;
     if (my $db_player = $self->loadPlayer($params{player_id})) {
-	my $map = $self->{cache}->{map};
-	my $playerMap = Stats::DB::PlayerMap->new(player_id => $db_player->id,map_id => $map->id);
-	$playerMap->load(speculative => 1);
-	if ($params{team} =~ /^alien|humans$$/) {
-	    $db_player->total_sessions($db_player->total_sessions+1);
-	    $playerMap->total_sessions($playerMap->total_sessions+1);
-	    $self->{game}->{db_players}->{$db_player->id} = $db_player;
-	} elsif ($params{is_new}) { # 'spectator'
-	    $db_player->total_rqs($db_player->total_rqs+1);
-	    $playerMap->total_rqs($playerMap->total_rqs+1);
-	}
-	$db_player->save;
-	$playerMap->save();
+        my $map = $self->{cache}->{map};
+        my $playerMap = Stats::DB::PlayerMap->new(player_id => $db_player->id,map_id => $map->id);
+        $playerMap->load(speculative => 1);
+        if ($params{team} =~ /^alien|humans$$/) {
+            $db_player->total_sessions($db_player->total_sessions+1);
+            $playerMap->total_sessions($playerMap->total_sessions+1);
+            $self->{game}->{db_players}->{$db_player->id} = $db_player;
+        } elsif ($params{is_new}) { # 'spectator'
+            $db_player->total_rqs($db_player->total_rqs+1);
+            $playerMap->total_rqs($playerMap->total_rqs+1);
+        }
+        $db_player->save;
+        $playerMap->save();
     }
     return $result;
 }
@@ -182,28 +182,28 @@ sub endSession {
     $session->end($end);
     $session->save;
     if ($session->team =~ /^human|alien$/) {
-	if (my $player = $self->loadPlayer($session->player_id)) {
-	    my $playerMap = Stats::DB::PlayerMap->new(player_id => $player->id,map_id => $self->{db_game}->map_id);
-	    $playerMap->load(speculative => 1);
-	    my $duration = $self->getDuration($end-$session->start);
-	    $player->total_time($player->total_time+$duration);
-	    if ($session->team =~ /^human|alien$/) {
-		if (!defined($self->{db_game}->end)) {
-		    $player->total_rqs($player->total_rqs+1);
-		    $playerMap->total_rqs($playerMap->total_rqs+1);
-		}
-		if ($session->team eq 'human') {
-		    $player->total_time_h($player->total_time_h+$duration);
-		    $playerMap->total_time_h($playerMap->total_time_h+$duration);
-		} elsif ($session->team eq 'alien') {
-		    $player->total_time_a($player->total_time_a+$duration);
-		    $playerMap->total_time_a($playerMap->total_time_a+$duration);
-		}
-	    }
-	    $playerMap->total_time($playerMap->total_time+$duration);
-	    $playerMap->save();
-	    $player->save;
-	}
+        if (my $player = $self->loadPlayer($session->player_id)) {
+            my $playerMap = Stats::DB::PlayerMap->new(player_id => $player->id,map_id => $self->{db_game}->map_id);
+            $playerMap->load(speculative => 1);
+            my $duration = $self->getDuration($end-$session->start);
+            $player->total_time($player->total_time+$duration);
+            if ($session->team =~ /^human|alien$/) {
+                if (!defined($self->{db_game}->end)) {
+                    $player->total_rqs($player->total_rqs+1);
+                    $playerMap->total_rqs($playerMap->total_rqs+1);
+                }
+                if ($session->team eq 'human') {
+                    $player->total_time_h($player->total_time_h+$duration);
+                    $playerMap->total_time_h($playerMap->total_time_h+$duration);
+                } elsif ($session->team eq 'alien') {
+                    $player->total_time_a($player->total_time_a+$duration);
+                    $playerMap->total_time_a($playerMap->total_time_a+$duration);
+                }
+            }
+            $playerMap->total_time($playerMap->total_time+$duration);
+            $playerMap->save();
+            $player->save;
+        }
     }
 }
 
@@ -218,7 +218,7 @@ sub handleInitGame {
         total_deaths => [ ],
         result       => 'Draw (voted / crashed)',
         score        => [ ],
-	db_players   => { },
+        db_players   => { },
     };
 }
 
@@ -232,27 +232,28 @@ sub handleRealTime {
     $map->total_loaded($map->total_loaded+1);
     $self->{cache}->{map} = $map;
     $self->{cache}->{total_players} = 0;
+    $self->{cache}->{total_bots} = 0;
     $self->{db_game} = Stats::DB::Game->new(
         map_id          => $map->id,
         server_id       => $self->{db_server}->id,
         start           => $self->{game}->{realtime}
     );
     if ($self->{db_game}->load(speculative => 1)) {
-	unless ($self->{db_game}->import_complete) {
-	    $self->log->info(sprintf('Reimporting game: %s %s',$self->{game}->{map},$self->{game}->{realtime}));
-	    # Re-importing an existing game entry - remove all event data first
-	    deleteGameEntries($self->{db_game}->id);
-	    $self->{skip_game} = 0;
-	} else {
-	    $self->log->info(sprintf('Skipping fully imported game: %s %s',$self->{game}->{map},$self->{game}->{realtime}));
-	    $self->{skip_game} = 1;
-	}
+        unless ($self->{db_game}->import_complete) {
+            $self->log->info(sprintf('Reimporting game: %s %s',$self->{game}->{map},$self->{game}->{realtime}));
+            # Re-importing an existing game entry - remove all event data first
+            deleteGameEntries($self->{db_game}->id);
+            $self->{skip_game} = 0;
+        } else {
+            $self->log->info(sprintf('Skipping fully imported game: %s %s',$self->{game}->{map},$self->{game}->{realtime}));
+            $self->{skip_game} = 1;
+        }
     } else {
-	$self->log->info(sprintf('Importing game: %s %s',$self->{game}->{map},$self->{game}->{realtime}));
+        $self->log->info(sprintf('Importing game: %s %s',$self->{game}->{map},$self->{game}->{realtime}));
         $self->{db_game}->max_players(0);
-	$self->{db_game}->import_complete(0);
+        $self->{db_game}->import_complete(0);
         $self->{db_game}->save;
-	$self->{skip_game} = 0;
+        $self->{skip_game} = 0;
     }
 }
 
@@ -260,19 +261,19 @@ sub handleShutdownGame {
     my ($self,%fields) = @_;
     return unless (defined $self->{game});
     if ($self->shouldSkipCurrentGame) {
-	undef $self->{db_game};
-	return;
+        undef $self->{db_game};
+        return;
     }
     foreach my $slot (0..63) {
         next unless defined $self->{slots}->[$slot];
-	next if $self->{slots}->[$slot]->{disconnected};
+        next if $self->{slots}->[$slot]->{disconnected};
         $self->handleClientDisconnect(time => $fields{time},guid => $self->{slots}->[$slot]->{guid},slot => $slot);
     }
     $self->{db_game}->import_complete(1);
     $self->{db_game}->save;
-
+    
     my $hadPlayers = $self->{db_game}->max_players > 0;
-  
+    
     foreach my $player (values %{$self->{cache}->{players}}) { $player->save; }
     foreach my $cache (qw/map players player_weapons session_weapons game_weapons/) { $self->dropCache($cache); }
 
@@ -280,7 +281,7 @@ sub handleShutdownGame {
 
     my $updateNeeded = $hadPlayers;
     $updateNeeded = 1 if ($self->updateGlicko2());
-
+    
     undef $self->{game};
     undef $self->{db_game};
 
@@ -310,34 +311,35 @@ sub handleClientConnect
     my ($self,%fields) = @_;
     return unless (defined $self->{game});
     unless ($fields{simplename}) {
-	# TODO: (1.1): Not tested yet, 1.1 doesn't provide separate simplename field
-	$fields{simplename} = $fields{name};
-	$fields{simplename} =~ s/\^.//g;
+        # TODO: (1.1): Not tested yet, 1.1 doesn't provide separate simplename field
+        $fields{simplename} = $fields{name};
+        $fields{simplename} =~ s/\^.//g;
     }
     my $db_player = ($fields{guid} !~ /^X+$/) ? Stats::DB::Player->new(server_id => $self->{db_server}->id,guid => $fields{guid}) : undef;
     if ($db_player) {
-	unless ($db_player->load(speculative => 1)) {
-	    $db_player->name($fields{simplename});
-	    $db_player->displayname($fields{name});
-	    $db_player->save;
-	} elsif ($db_player->displayname ne $fields{name}) {
-	    $db_player->displayname($fields{name});
-	    $db_player->save;
-	}
+        unless ($db_player->load(speculative => 1)) {
+            $db_player->name($fields{simplename});
+            $db_player->displayname($fields{name});
+            $db_player->save;
+        } elsif ($db_player->displayname ne $fields{name}) {
+            $db_player->displayname($fields{name});
+            $db_player->save;
+        }
     }
     my ($name,$simplename) = ($fields{name},$fields{simplename});
     if ($fields{flags} !~ /^\s*$/) {
-	$name       .= " $fields{flags}";
-	$simplename .= " $fields{flags}";
+        $name       .= " $fields{flags}";
+        $simplename .= " $fields{flags}";
     }
     my $db_session = $self->beginSession(
-	game_id   => $self->{db_game}->id,
-	player_id => (defined($db_player) ? $db_player->id : undef),
-	name      => $name,
-	ip        => $fields{ip},
-	team      => 'spectator',
-	start     => $self->parseTimeRelative($fields{time}),
-	is_new    => 1
+        game_id   => $self->{db_game}->id,
+        player_id => (defined($db_player) ? $db_player->id : undef),
+        name      => $name,
+        ip        => $fields{ip},
+        team      => 'spectator',
+        start     => $self->parseTimeRelative($fields{time}),
+        is_new    => 1,
+        is_bot    => $fields{flags} =~ /\[BOT\]/,
     );
     return unless (defined $self->{game});
     # my $event = Stats::DB::TeamEvent->new(
@@ -354,6 +356,7 @@ sub handleClientConnect
         ip            => $fields{ip},
         authenticated => 0,
         db_session    => $db_session,
+        is_bot        => $db_session->{is_bot}
     };
     $self->{guids}->{$fields{guid}} //= {
         guid          => $fields{guid},
@@ -374,7 +377,11 @@ sub handleClientConnect
         total_deaths => [ ],
     };
     push @{$self->{game}->{players}->{$fields{guid}}->{sessions}},$self->parseTime($fields{time}) if (defined $db_player);
-    $self->{db_game}->max_players(max($self->{db_game}->max_players,++$self->{cache}->{total_players}));
+    if ($db_session->{is_bot}) {
+        $self->{db_game}->max_bots(max($self->{db_game}->max_bots,++$self->{cache}->{total_bots}));
+    } else {
+        $self->{db_game}->max_players(max($self->{db_game}->max_players,++$self->{cache}->{total_players}));
+    }
     $self->{db_game}->save;
 }
 
@@ -386,7 +393,7 @@ sub handleClientDisconnect {
     my $db_session = $self->{slots}->[$fields{slot}]->{db_session};
     if (defined $db_session) {
         my $duration = $self->getDuration($time);
-	$self->endSession($db_session,$self->parseTimeRelative($fields{time}));
+        $self->endSession($db_session,$self->parseTimeRelative($fields{time}));
     } else {
         $self->log->warn("ClientDisconnect(): No active db_session for slot $fields{slot} guid $fields{guid}");
     }
@@ -718,41 +725,41 @@ sub handleExit {
     $self->{game}->{end} = $self->parseTime($fields{time});
     $self->{db_game}->end($self->{db_game}->start->clone->add_duration($self->{game}->{end}));
     if ($fields{reason} =~ /^humans.*$/i) { # 'Humans win.'
-	$self->{db_game}->outcome('humans');
+        $self->{db_game}->outcome('humans');
     } elsif ($fields{reason} =~ /^aliens.*$/i) { # 'Aliens win.'
-	$self->{db_game}->outcome('aliens');
+        $self->{db_game}->outcome('aliens');
     } elsif ($fields{reason} =~ /^evacuation.*$/i) { # 'Evacuation.'
-	$self->{db_game}->outcome('draw');
+        $self->{db_game}->outcome('draw');
     } elsif ($fields{reason} =~ /^timelimit.*$/i) { # 'Timelimit hit.'
-	$self->{db_game}->outcome('draw');
+        $self->{db_game}->outcome('draw');
     } elsif ($fields{reason} =~ /^nextmap.*$/i) { # 'nextmap was run by (console|playername)'
-	$self->{db_game}->outcome('draw');
+        $self->{db_game}->outcome('draw');
     } else {
-	$self->{db_game}->outcome($fields{reason});
+        $self->{db_game}->outcome($fields{reason});
     }
     $self->{db_game}->save;
     if ($self->{db_game}->max_players >= 2) {
-	my $outcome = $self->{db_game}->outcome;
-	my $map = $self->{cache}->{map};
-	if ($outcome eq 'humans') {
-	    $map->human_wins($map->human_wins+1);
-	} elsif ($outcome eq 'aliens') {
-	    $map->alien_wins($map->alien_wins+1);
-	} else {
-	    $map->draws($map->draws+1);
-	}
-	$map->total_games($map->total_games+1);
-	$map->total_time($map->total_time+$self->getDuration($self->{db_game}->end - $self->{db_game}->start));
-	$map->save;
-	foreach my $player (values %{$self->{game}->{db_players}}) {
-	    $player->total_games($player->total_games+1);
-	    $player->save;
-
-	    my $playerMap = Stats::DB::PlayerMap->new(player_id => $player->id,map_id => $map->id);
-	    $playerMap->load(speculative => 1);
-	    $playerMap->total_games($playerMap->total_games+1);
-	    $playerMap->save;
-	}
+        my $outcome = $self->{db_game}->outcome;
+        my $map = $self->{cache}->{map};
+        if ($outcome eq 'humans') {
+            $map->human_wins($map->human_wins+1);
+        } elsif ($outcome eq 'aliens') {
+            $map->alien_wins($map->alien_wins+1);
+        } else {
+            $map->draws($map->draws+1);
+        }
+        $map->total_games($map->total_games+1);
+        $map->total_time($map->total_time+$self->getDuration($self->{db_game}->end - $self->{db_game}->start));
+        $map->save;
+        foreach my $player (values %{$self->{game}->{db_players}}) {
+            $player->total_games($player->total_games+1);
+            $player->save;
+            
+            my $playerMap = Stats::DB::PlayerMap->new(player_id => $player->id,map_id => $map->id);
+            $playerMap->load(speculative => 1);
+            $playerMap->total_games($playerMap->total_games+1);
+            $playerMap->save;
+        }
     }
 }
 
