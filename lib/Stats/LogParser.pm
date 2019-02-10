@@ -738,7 +738,7 @@ sub handleExit {
         $self->{db_game}->outcome($fields{reason});
     }
     $self->{db_game}->save;
-    if ($self->{db_game}->max_players >= 2) {
+    if ($self->{db_game}->max_players >= 1) {
         my $outcome = $self->{db_game}->outcome;
         my $map = $self->{cache}->{map};
         if ($outcome eq 'humans') {
