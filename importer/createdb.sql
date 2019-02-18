@@ -62,6 +62,7 @@ create table players (
        guid varchar(32) not null,
        name varchar(128) not null,
        displayname varchar(128) not null,
+       is_bot boolean not null,
 
        total_time int not null default 0,
        total_time_h int not null default 0,

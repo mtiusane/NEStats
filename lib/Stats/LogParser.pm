@@ -316,13 +316,21 @@ sub handleClientConnect
         $fields{simplename} = $fields{name};
         $fields{simplename} =~ s/\^.//g;
     }
+    my $is_bot = $fields{flags} =~ /\[BOT\]/;
+    $fields{guid} = "[BOT]" if ($is_bot);
     my $db_player = ($fields{guid} !~ /^X+$/) ? Stats::DB::Player->new(server_id => $self->{db_server}->id,guid => $fields{guid}) : undef;
     if ($db_player) {
         unless ($db_player->load(speculative => 1)) {
-            $db_player->name($fields{simplename});
-            $db_player->displayname($fields{name});
+            unless ($is_bot) {
+                $db_player->name("[BOT]");
+                $db_player->displayname("(bot)");
+            } else {
+                $db_player->name($fields{simplename});
+                $db_player->displayname($fields{name});
+            }
+            $db_player->is_bot($is_bot);
             $db_player->save;
-        } elsif ($db_player->displayname ne $fields{name}) {
+        } elsif ($db_player->displayname ne $fields{name} && !$is_bot) {
             $db_player->displayname($fields{name});
             $db_player->save;
         }
@@ -339,9 +347,10 @@ sub handleClientConnect
         ip        => $fields{ip},
         team      => 'spectator',
         start     => $self->parseTimeRelative($fields{time}),
-        is_new    => 1,
-        is_bot    => $fields{flags} =~ /\[BOT\]/,
+        is_new    => 1
     );
+    # TODO: create a separate player entry shared by all bots? issues?
+    #       in any case we need info for is_bot in the beginSession when joining team...
     return unless (defined $self->{game});
     # my $event = Stats::DB::TeamEvent->new(
     #   time       => $self->parseTimeRelative($fields{time}),
@@ -356,8 +365,7 @@ sub handleClientConnect
         simple_name   => $simplename,
         ip            => $fields{ip},
         authenticated => 0,
-        db_session    => $db_session,
-        is_bot        => $db_session->is_bot
+        db_session    => $db_session
     };
     $self->{guids}->{$fields{guid}} //= {
         guid          => $fields{guid},
@@ -378,7 +386,7 @@ sub handleClientConnect
         total_deaths => [ ],
     };
     push @{$self->{game}->{players}->{$fields{guid}}->{sessions}},$self->parseTime($fields{time}) if (defined $db_player);
-    if ($db_session->is_bot) {
+    if (defined($db_player) && $db_player->is_bot) {
         $self->{db_game}->max_bots(max($self->{db_game}->max_bots,++$self->{cache}->{total_bots}));
     } else {
         $self->{db_game}->max_players(max($self->{db_game}->max_players,++$self->{cache}->{total_players}));
