@@ -259,6 +259,7 @@ create table sessions (
        score int,
        ping int,
        name varchar(128),
+       is_bot boolean,
        total_kills int not null default 0,
        total_deaths int not null default 0,
        total_assists int not null default 0,

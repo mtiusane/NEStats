@@ -156,7 +156,8 @@ sub beginSession {
         name      => $params{name},
         ip        => $params{ip},
         team      => $params{team},
-        start     => $params{start}
+        start     => $params{start},
+        is_bot    => $params{is_bot}
     );
     $result->save;
     if (my $db_player = $self->loadPlayer($params{player_id})) {
@@ -356,7 +357,7 @@ sub handleClientConnect
         ip            => $fields{ip},
         authenticated => 0,
         db_session    => $db_session,
-        is_bot        => $db_session->{is_bot}
+        is_bot        => $db_session->is_bot
     };
     $self->{guids}->{$fields{guid}} //= {
         guid          => $fields{guid},
@@ -377,7 +378,7 @@ sub handleClientConnect
         total_deaths => [ ],
     };
     push @{$self->{game}->{players}->{$fields{guid}}->{sessions}},$self->parseTime($fields{time}) if (defined $db_player);
-    if ($db_session->{is_bot}) {
+    if ($db_session->is_bot) {
         $self->{db_game}->max_bots(max($self->{db_game}->max_bots,++$self->{cache}->{total_bots}));
     } else {
         $self->{db_game}->max_players(max($self->{db_game}->max_players,++$self->{cache}->{total_players}));
@@ -792,14 +793,14 @@ sub handleChangeTeam {
     }
     my $player_id = $db_session->player_id;
     my $db_session = $self->{slots}->[$fields{slot}]->{db_session} = $self->beginSession(
-	slot      => $fields{slot},
-	game_id   => $self->{db_game}->id,
-	player_id => $player_id,
-	name      => $self->{slots}->[$fields{slot}]->{name},
+        slot      => $fields{slot},
+        game_id   => $self->{db_game}->id,
+        player_id => $player_id,
+        name      => $self->{slots}->[$fields{slot}]->{name},
         team      => $fields{team},
         ip        => $self->{slots}->[$fields{slot}]->{ip},
         start     => $self->parseTimeRelative($fields{time}),
-	is_new    => 0
+        is_new    => 0
     );
 }
 
@@ -1020,12 +1021,12 @@ sub updateGlicko2 {
 	    # print "Append queue: ".((defined $entry->{db}) ? $entry->{db}->id : 'null')."\n";
 	    next unless (defined $entry->{db});
 	    Stats::DB::Glicko2Score->new(glicko2_id          => $entry->{db}->id,
-					 session_id          => $entry->{session}->id,
-					 score               => $score_values->{$team},
-					 opponent_rating     => $opponents{$team}->rating,
-					 opponent_rd         => $opponents{$team}->rd,
-					 opponent_volatility => $opponents{$team}->volatility,
-					 is_new              => 1)->save;
+                                     session_id          => $entry->{session}->id,
+                                     score               => $score_values->{$team},
+                                     opponent_rating     => $opponents{$team}->rating,
+                                     opponent_rd         => $opponents{$team}->rd,
+                                     opponent_volatility => $opponents{$team}->volatility,
+                                     is_new              => 1)->save;
 	}
     }
     $self->{last_glicko2} = $game->end->clone;
@@ -1038,46 +1039,46 @@ sub updateRankings {
     my $server_id = $self->{db_server}->id;
     my $lastUpdate = Stats::DB::TimeStamp->new(name => 'last_glicko2',server_id => $server_id);
     if (!$lastUpdate->load(speculative => 1) || !defined($lastUpdate->value) || !defined($self->{last_glicko2}) || $self->getDuration($self->{last_glicko2} - $lastUpdate->value) >= 12*3600) {
-	# print "  Updating glicko2\n";
-	my @scores = @{Stats::DB::Glicko2Score::Manager->get_glicko2_scores(query => [ is_new => 1, 'session.player.server_id' => $server_id, 'session.player.total_time' => { ge => MIN_GLICKO2_TIME }, 'session.player.total_games' => { ge => MIN_GLICKO2_GAMES } ],with_objects => [ 'session', 'session.player'] )};
-	if (scalar(@scores)) {
-	    my %matches = map {
-		$_->id => {
-		    glicko2  => $self->loadGlicko2($_->id),
-		    outcomes => [ ]
-		}
-	    } map { $_->session->player } @scores;
-	    # @{Stats::DB::Player::Manager->get_players(query => [ server_id => $server_id ])};
-	    foreach my $score (@scores) {
-		push @{$matches{$score->session->player_id}->{outcomes}},{
-		    opponent => Glicko2::Player->new(rating     => $score->opponent_rating,
-						     rd         => $score->opponent_rd,
-						     volatility => $score->opponent_volatility),
-		    score    => $score->score
-		};
-		$score->is_new(0);
-		$score->save;
-	    }
-	    foreach my $match (values %matches) {
-		# print "Outcomes: ".scalar(@{$match->{outcomes}})."\n";
-		$match->{glicko2}->{glicko}->update(@{$match->{outcomes}});
-		$self->saveGlicko2($match->{glicko2});
-	    }
-	    $lastUpdate->value($self->{last_glicko2});
-	    $lastUpdate->save;
-	}
+        # print "  Updating glicko2\n";
+        my @scores = @{Stats::DB::Glicko2Score::Manager->get_glicko2_scores(query => [ is_new => 1, 'session.player.server_id' => $server_id, 'session.player.total_time' => { ge => MIN_GLICKO2_TIME }, 'session.player.total_games' => { ge => MIN_GLICKO2_GAMES } ],with_objects => [ 'session', 'session.player'] )};
+        if (scalar(@scores)) {
+            my %matches = map {
+                $_->id => {
+                    glicko2  => $self->loadGlicko2($_->id),
+                    outcomes => [ ]
+                }
+            } map { $_->session->player } @scores;
+            # @{Stats::DB::Player::Manager->get_players(query => [ server_id => $server_id ])};
+            foreach my $score (@scores) {
+                push @{$matches{$score->session->player_id}->{outcomes}},{
+                    opponent => Glicko2::Player->new(rating     => $score->opponent_rating,
+                                                     rd         => $score->opponent_rd,
+                                                     volatility => $score->opponent_volatility),
+                    score    => $score->score
+                };
+                $score->is_new(0);
+                $score->save;
+            }
+            foreach my $match (values %matches) {
+                # print "Outcomes: ".scalar(@{$match->{outcomes}})."\n";
+                $match->{glicko2}->{glicko}->update(@{$match->{outcomes}});
+                $self->saveGlicko2($match->{glicko2});
+            }
+            $lastUpdate->value($self->{last_glicko2});
+            $lastUpdate->save;
+        }
     }
     my @statements = (
         # Update player rankings - needed for player name searches with nearby player rankings display
         "delete from player_rankings where server_id = $server_id",
         "set \@rownum=-1",
-	"insert into player_rankings (player_id,server_id,glicko2_id,by_glicko2) select p.id as player_id,$server_id,g.id as glicko2_id,\@rownum:=\@rownum+1 as by_glicko2 from players p,player_glicko2 g where server_id = $server_id and g.player_id = p.id order by g.rating desc",
-	# TODO: For some reason the above insert wont get players in correct order so we're rearranging them on the next two lines
+        "insert into player_rankings (player_id,server_id,glicko2_id,by_glicko2) select p.id as player_id,$server_id,g.id as glicko2_id,\@rownum:=\@rownum+1 as by_glicko2 from players p,player_glicko2 g where server_id = $server_id and g.player_id = p.id order by g.rating desc",
+        # TODO: For some reason the above insert wont get players in correct order so we're rearranging them on the next two lines
         "set \@rownum=-1",
-	"update player_rankings r left join (select p.id,\@rownum:=\@rownum+1 as value,p.total_games,p.total_time from players p,player_glicko2 g where server_id = $server_id and g.player_id = p.id and p.total_games >= ".MIN_GLICKO2_GAMES." and p.total_time >= ".MIN_GLICKO2_TIME." order by g.rating desc) as q on r.player_id = q.id set by_glicko2 = value where q.total_games >= ".MIN_GLICKO2_GAMES." and q.total_time >= ".MIN_GLICKO2_TIME,
-	"update player_rankings r left join (select p.id,\@rownum:=\@rownum+1 as value,p.total_games,p.total_time from players p,player_glicko2 g where server_id = $server_id and g.player_id = p.id and (p.total_games < ".MIN_GLICKO2_GAMES." or p.total_time < ".MIN_GLICKO2_TIME.") order by p.total_kills desc, p.total_time desc) as q on r.player_id = q.id set by_glicko2 = value where (q.total_games < ".MIN_GLICKO2_GAMES." or q.total_time < ".MIN_GLICKO2_TIME.")",
-	"set \@rownum=-1",
-	"update player_rankings r left join (select id,\@rownum:=\@rownum+1 as value from players where server_id = $server_id order by total_kills desc) as p on r.player_id = p.id set by_kills = value",
+        "update player_rankings r left join (select p.id,\@rownum:=\@rownum+1 as value,p.total_games,p.total_time from players p,player_glicko2 g where server_id = $server_id and g.player_id = p.id and p.total_games >= ".MIN_GLICKO2_GAMES." and p.total_time >= ".MIN_GLICKO2_TIME." order by g.rating desc) as q on r.player_id = q.id set by_glicko2 = value where q.total_games >= ".MIN_GLICKO2_GAMES." and q.total_time >= ".MIN_GLICKO2_TIME,
+        "update player_rankings r left join (select p.id,\@rownum:=\@rownum+1 as value,p.total_games,p.total_time from players p,player_glicko2 g where server_id = $server_id and g.player_id = p.id and (p.total_games < ".MIN_GLICKO2_GAMES." or p.total_time < ".MIN_GLICKO2_TIME.") order by p.total_kills desc, p.total_time desc) as q on r.player_id = q.id set by_glicko2 = value where (q.total_games < ".MIN_GLICKO2_GAMES." or q.total_time < ".MIN_GLICKO2_TIME.")",
+        "set \@rownum=-1",
+        "update player_rankings r left join (select id,\@rownum:=\@rownum+1 as value from players where server_id = $server_id order by total_kills desc) as p on r.player_id = p.id set by_kills = value",
         "set \@rownum=-1",
         "update player_rankings r left join (select id,\@rownum:=\@rownum+1 as value from players where server_id = $server_id order by name) as p on r.player_id = p.id set by_name = value",
         "set \@rownum=-1",
