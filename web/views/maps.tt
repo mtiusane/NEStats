@@ -1,99 +1,106 @@
-<div id="content">
+<div id="content" class="fullheight">
   <script src="/javascripts/maps.js"></script>
-  <div id="maps" class="container fullheight" style="min-width: 80vw">
+  <div id="maps" class="container fullheight fullwidth">
     <a class="data server_id" href="<% server_id %>"></a>
     <table>
-      <thead>
-      	<tr class="title"><th colspan="7"><span class="f_server_name"></span> - Maps</th></tr>
-	<tr class="title">
-	  <th>Map</th>
-	  <!-- <th>Games Played</th> -->
-	  <th>Total Play Time</th>
-	  <th>Outcomes</th>
-	  <th>Kills</th>
-	  <th>Buildings Built</th>
-	  <th>Buildings Killed</th>
-	  <th class="fill_column"></th>
-	</tr>
+      <thead class="sticky">
+      	<tr class="title"><th colspan="3"><span class="f__parent f_server"><a class="f_url" href=""><span class="f_server_name"></span></a> - Maps</th></tr>
+	    <tr class="title">
+	      <th>Map</th>
+          <th class="barFieldWithCaptions">Stats</th>
+	      <th class="fill_column"></th>
+	    </tr>
       </thead>
       <tbody>
-	<tr class="template">
-	  <td class="imageTextField">
-	    <a class="f_url" href="">
-	      <span class="roundcorners f__img">
-		<img class="f_img_url" src="">
-		<span class="imgNotFound">N/A</span>
-	      </span>
-	      <span class="f_name f__text"></span>
-	    </a>
-	  </td>
-	  <td>
-	    <span class="f__duration_minutes f_total_time"></span><br />
-	    <span class="small">
-	      (<span class="f_total_games"></span> games)
-	    </span>
-	  </td>
-	  <td class="barField">
-	    <span class="f__bar">
-	      <span class="bar_value f_human_wins"></span>
-	      <span class="bar_neutral f_draws"></span>
-	      <span class="bar_total f__sum f_human_wins f_alien_wins f_draws"></span>
-	      <span class="bar_prefix f__text">[bsuit]</span>
-	      <span class="bar_suffix f__text">[tyrant]</span>
-	      <span class="bar_fillcolor">rgba(51,63,100,0.66)</span>
-	      <span class="bar_emptycolor">rgba(63,100,51,0.66)</span>
-	      <span class="bar_neutralcolor">rgba(100,100,100,0.66)</span>
-	    </span>
-	    <span class="small">
-	      <span class="f_human_wins"></span> : <span class="f_alien_wins"></span> (<span class="f_draws"></span> draws)
-	    </span>
-	  </td>
-	  <td class="barField">
-	    <span class="f__bar">
-	      <span class="bar_value f_total_kills_h"></span>
-	      <span class="bar_neutral f__sub f_total_kills_h f_total_kills_a"><span class="f_total_kills"></span></span>
-	      <span class="bar_total f_total_kills"></span>
-	      <span class="bar_prefix f__text">[bsuit]</span>
-	      <span class="bar_suffix f__text">[tyrant]</span>
-	      <span class="bar_fillcolor">rgba(51,63,100,0.66)</span>
-	      <span class="bar_emptycolor">rgba(63,100,51,0.66)</span>
-	      <span class="bar_neutralcolor">rgba(100,100,100,0.66)</span>
-	    </span>
-	    <span class="small">
-	      <span class="f_total_kills_h"></span> : <span class="f_total_kills_a"></span> (<span class="f__sub f_total_kills_h f_total_kills_a"><span class="f_total_kills"></span></span> unknown)
-	    </span>
-	  </td>
-	  <td class="barField">
-	    <span class="f__bar">
-	      <span class="bar_value f_total_built_h"></span>
-	      <span class="bar_total f__sum f_total_built_h f_total_built_a"></span>
-	      <span class="bar_prefix f__text">[bsuit]</span>
-	      <span class="bar_suffix f__text">[tyrant]</span>
-	      <span class="bar_fillcolor">rgba(51,63,100,0.66)</span>
-	      <span class="bar_emptycolor">rgba(63,100,51,0.66)</span>
-	      <span class="bar_neutralcolor">rgba(100,100,100,0.66)</span>
-	    </span>
-	    <span class="small">
-	      <span class="f_total_built_h"></span> : <span class="f_total_built_a"></span>
-	    </span>
-	  </td>
-	  <td class="barField">
-	    <span class="f__bar">
-	      <span class="bar_value f_total_bkills_h"></span>
-	      <span class="bar_neutral f__sub f_total_bkills_h f_total_bkills_a"><span class="f_total_bkills"></span></span>
-	      <span class="bar_total f_total_bkills"></span>
-	      <span class="bar_prefix f__text">[bsuit]</span>
-	      <span class="bar_suffix f__text">[tyrant]</span>
-	      <span class="bar_fillcolor">rgba(51,63,100,0.66)</span>
-	      <span class="bar_emptycolor">rgba(63,100,51,0.66)</span>
-	      <span class="bar_neutralcolor">rgba(100,100,100,0.66)</span>
-	    </span>
-	    <span class="small">
-	      <span class="f_total_bkills_h"></span> : <span class="f_total_bkills_a"></span> (<span class="f__sub f_total_bkills_h f_total_bkills_a"><span class="f_total_bkills"></span></span> unknown)
-	    </span>
-	  </td>
-	  <td class="fill_column"></td>
-	</tr>
+	    <tr class="template">
+	      <td class="top">
+            <span class="imageTextField">
+	          <a class="f_url" href="">
+	            <span class="title"><span class="f_name f__text"></span></span>
+	            <span class="roundcorners f__img">
+		          <img class="f_img_url" src="">
+		          <span class="imgNotFound">N/A</span>
+	            </span>
+	          </a>
+            </span>
+            <span class="row">
+              <span class="title dim">Total Playtime</span>
+              <span class="f__duration_minutes f_total_time"></span>
+              <span class="small">(<span class="f_total_games"></span> games)</span>
+            </span>
+	      </td>
+	      <td>
+            <span class="title dim">Match Outcomes</span>
+            <span class="barFieldWithCaptions">
+	          <span class="f__bar">
+	            <span class="bar_value f_human_wins"></span>
+	            <span class="bar_neutral f_draws"></span>
+	            <span class="bar_total f__sum f_human_wins f_alien_wins f_draws"></span>
+	            <span class="bar_prefix f__text">[bsuit]</span>
+	            <span class="bar_suffix f__text">[tyrant]</span>
+	            <span class="bar_fillcolor">rgba(51,63,100,0.66)</span>
+	            <span class="bar_emptycolor">rgba(63,100,51,0.66)</span>
+	            <span class="bar_neutralcolor">rgba(100,100,100,0.66)</span>
+	          </span>
+	          <span class="row small">
+	            <span class="f_human_wins"></span> : <span class="f_alien_wins"></span> (<span class="f_draws"></span> draws)
+	          </span>
+            </span>
+            <span class="smaller row"></span>
+            <span class="title dim">Kills and Deaths</span>
+            <span class="barFieldWithCaptions">
+	          <span class="f__bar">
+	            <span class="bar_value f_total_kills_h"></span>
+	            <span class="bar_neutral f__sub f_total_kills_h f_total_kills_a"><span class="f_total_kills"></span></span>
+	            <span class="bar_total f_total_kills"></span>
+	            <span class="bar_prefix f__text">[bsuit]</span>
+	            <span class="bar_suffix f__text">[tyrant]</span>
+	            <span class="bar_fillcolor">rgba(51,63,100,0.66)</span>
+	            <span class="bar_emptycolor">rgba(63,100,51,0.66)</span>
+	            <span class="bar_neutralcolor">rgba(100,100,100,0.66)</span>
+	          </span>
+	          <span class="row small">
+	            <span class="f_total_kills_h"></span> : <span class="f_total_kills_a"></span> (<span class="f__sub f_total_kills_h f_total_kills_a"><span class="f_total_kills"></span></span> unknown)
+	          </span>
+            </span>
+            <span class="smaller row"></span>
+            <span class="title dim">Buildings</span>
+            <span class="barField">
+	          <span class="f__bar">
+	            <span class="bar_value f_total_built_h"></span>
+	            <span class="bar_total f__sum f_total_built_h f_total_built_a"></span>
+	            <span class="bar_prefix f__text">[bsuit]</span>
+	            <span class="bar_suffix f__text">[tyrant]</span>
+	            <span class="bar_fillcolor">rgba(51,63,100,0.66)</span>
+	            <span class="bar_emptycolor">rgba(63,100,51,0.66)</span>
+	            <span class="bar_neutralcolor">rgba(100,100,100,0.66)</span>
+	          </span>
+	          <span class="row small">
+	            <span class="f_total_built_h"></span> : <span class="f_total_built_a"></span>
+	          </span>
+            </span>
+            <span class="smaller row"></span>
+            <span class="title dim">Building Kills</span>
+            <span class="barField">
+	          <span class="f__bar">
+	            <span class="bar_value f_total_bkills_h"></span>
+	            <span class="bar_neutral f__sub f_total_bkills_h f_total_bkills_a"><span class="f_total_bkills"></span></span>
+	            <span class="bar_total f_total_bkills"></span>
+	            <span class="bar_prefix f__text">[bsuit]</span>
+	            <span class="bar_suffix f__text">[tyrant]</span>
+	            <span class="bar_fillcolor">rgba(51,63,100,0.66)</span>
+	            <span class="bar_emptycolor">rgba(63,100,51,0.66)</span>
+	            <span class="bar_neutralcolor">rgba(100,100,100,0.66)</span>
+	          </span>
+	          <span class="row small">
+	            <span class="f_total_bkills_h"></span> : <span class="f_total_bkills_a"></span> (<span class="f__sub f_total_bkills_h f_total_bkills_a"><span class="f_total_bkills"></span></span> unknown)
+	          </span>
+            </span>
+            <span class="row"></span>
+            <span class="row"></span>
+	      </td>
+	      <td class="fill_column"></td>
+	    </tr>
       </tbody>
     </table>
   </div>

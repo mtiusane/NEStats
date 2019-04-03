@@ -3,22 +3,22 @@
   <div id="weapons" class="container fullwidth fullheight">
     <a class="data server_id" href="<% server_id %>"></a>
     <table>
-      <thead>
-      	<tr class="title"><th colspan="4"><span class="f_server_name"></span> - Weapons</th></tr>
-	<tr class="title">
-	  <th>Name</th>
-	  <th>Total Kills</th>
-	  <th>Total Building Kills</th>
-	  <th class="fill_column"></th>
-	</tr>
+      <thead class="sticky">
+      	<tr class="title"><th colspan="4"><span class="f__parent f_server"><a class="f_url" href=""><span class="f_server_name"></span></a> - Weapons</th></tr>
+	    <tr class="title">
+	      <th>Name</th>
+	      <th>Total Kills</th>
+	      <th>Total Building Kills</th>
+	      <th class="fill_column"></th>
+	    </tr>
       </thead>
       <tbody>
-	<tr class="template">
-	  <td class="f_name"></td>
-	  <td class="f_total_kills"></td>
-	  <td class="f_total_bkills"></td>
-	  <td class="fill_column"></td>
-	</tr>
+	    <tr class="template">
+	      <td class="f_name"></td>
+	      <td class="f_total_kills"></td>
+	      <td class="f_total_bkills"></td>
+	      <td class="fill_column"></td>
+	    </tr>
       </tbody>
     </table>
   </div>

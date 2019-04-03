@@ -121,8 +121,8 @@ sub loadBuilding {
 sub loadWeapon {
     my ($self,$name) = @_;
     return $self->loadCached('weapons',qw/Stats::DB::Weapon/,sub { $_[0]->displayname($_[0]->name); },{
-	server_id => $self->{db_server}->id,
-	name      => $name,
+        server_id => $self->{db_server}->id,
+        name      => $name,
     });
 }
 
@@ -156,8 +156,7 @@ sub beginSession {
         name      => $params{name},
         ip        => $params{ip},
         team      => $params{team},
-        start     => $params{start},
-        is_bot    => $params{is_bot}
+        start     => $params{start}
     );
     $result->save;
     if (my $db_player = $self->loadPlayer($params{player_id})) {
@@ -322,11 +321,11 @@ sub handleClientConnect
     if ($db_player) {
         unless ($db_player->load(speculative => 1)) {
             unless ($is_bot) {
-                $db_player->name("[BOT]");
-                $db_player->displayname("(bot)");
-            } else {
                 $db_player->name($fields{simplename});
                 $db_player->displayname($fields{name});
+            } else {
+                $db_player->name("[BOT]");
+                $db_player->displayname("(bot)"); 
             }
             $db_player->is_bot($is_bot);
             $db_player->save;
@@ -441,8 +440,8 @@ sub handleDie {
         return;
     }
     unless ($fields{assistslot} >= 64 || defined($self->{slots}->[$fields{assistslot}]->{db_session})) {
-	$self->log->warn("handleDie(): No db session for assistslot $fields{assistslot}");
-	return;
+        $self->log->warn("handleDie(): No db session for assistslot $fields{assistslot}");
+        return;
     }
     # print "DEBUG: assist: $fields{assistslot} ".(defined($fields{assistslot}) ? "1" : "0")."\n";
     my $killer_session = (($fields{killerslot} // 64) < 64) ? $self->{slots}->[$fields{killerslot}]->{db_session} : undef;
@@ -471,30 +470,30 @@ sub handleDie {
 	    $assist->save;
 
 	    if ($killed_session->player_id) {
-		my $kill = Stats::DB::PlayerKill->new(player_id => $assist_session->player_id,target_id => $killed_session->player_id);
-		$kill->load(speculative => 1);
-		$kill->total_assists($kill->total_assists+1);
-		if ($assist_session->team eq 'alien') {
-		    $kill->total_assists_a($kill->total_assists_a+1);
-		} elsif ($assist_session->team eq 'human') {
-		    $kill->total_assists_h($kill->total_assists_h+1);
-		} else {
-		    $self->log->warn("Assisted by a spectator. Might need to track previous team as well.");
-		}
-		$kill->save;
+            my $kill = Stats::DB::PlayerKill->new(player_id => $assist_session->player_id,target_id => $killed_session->player_id);
+            $kill->load(speculative => 1);
+            $kill->total_assists($kill->total_assists+1);
+            if ($assist_session->team eq 'alien') {
+                $kill->total_assists_a($kill->total_assists_a+1);
+            } elsif ($assist_session->team eq 'human') {
+                $kill->total_assists_h($kill->total_assists_h+1);
+            } else {
+                $self->log->warn("Assisted by a spectator. Might need to track previous team as well.");
+            }
+            $kill->save;
 	    }
 
 	    my $assistMap = Stats::DB::PlayerMap->new(player_id => $assist->id,map_id => $map->id);
 	    $assistMap->load(speculative => 1);
 	    $assistMap->total_assists($assistMap->total_assists+1);
 	    if ($assist_session->team eq 'alien') {
-		$assistMap->total_assists_a($assistMap->total_assists_a+1);
+            $assistMap->total_assists_a($assistMap->total_assists_a+1);
 	    } elsif ($assist_session->team eq 'human') {
-		$assistMap->total_assists_h($assistMap->total_assists_h+1);
+            $assistMap->total_assists_h($assistMap->total_assists_h+1);
 	    } else {
-		$self->log->warn("Assist by a spectator. Might need to track previous team as well.");
+            $self->log->warn("Assist by a spectator. Might need to track previous team as well.");
 	    }
-
+        
 	    $assistMap->save;
 	}
     }
@@ -747,7 +746,7 @@ sub handleExit {
         $self->{db_game}->outcome($fields{reason});
     }
     $self->{db_game}->save;
-    if ($self->{db_game}->max_players >= 1) {
+    if ($self->{db_game}->max_players + $self->{db_game}->max_bots >= 1) {
         my $outcome = $self->{db_game}->outcome;
         my $map = $self->{cache}->{map};
         if ($outcome eq 'humans') {
@@ -828,9 +827,13 @@ sub handleClientTeam {
 sub handleClientRename {
     my ($self,%fields) = @_;
     return unless (defined $self->{game});
-    my $player = Stats::DB::Player->new(guid => $fields{guid});
-    if ($player->load(speculative => 1)) {
-        if ($player->displayname ne $fields{newnameformatted}) {
+    my $db_session = $self->{slots}->[$fields{slot}]->{db_session};
+    unless (defined $db_session) {
+        $self->log->warn("No db session found for client rename of slot $fields{slot} to $fields{newnameformatted}.");
+        return;
+    }
+    if (my $player = $self->loadPlayer($db_session->player_id)) {
+        if (!$player->is_bot && $player->displayname ne $fields{newnameformatted}) {
             $player->displayname($fields{newnameformatted});
             $player->save;
         }
@@ -994,8 +997,8 @@ sub updateGlicko2 {
 	$score_values = { human => 0.5, alien => 0.5 }
     }
     unless (defined $score_values) {
-	$self->log->warn("Unrecognized outcome: '".$game->outcome."' skipping rankings update.");
-	return 0;
+        $self->log->warn("Unrecognized outcome: '".$game->outcome."' skipping rankings update.");
+        return 0;
     }
     my %teams = (human => [ ],alien => [ ]);
     foreach my $session (@{Stats::DB::Session::Manager->get_sessions(where => [ game_id => $game->id,team => [ 'human', 'alien' ]])}) {
@@ -1160,52 +1163,52 @@ sub parseLine {
 	} elsif ($self->{skip_game}) {
 	    # Nothing to do, current game already imported, shutdowngame required for next match
 	} elsif ($line =~ /^\s*(?:\d+:\d+)\s*RealTime:\s+(?<year>\d{4})[\/-](?<month>\d{2})[\/-](?<day>\d{2})\s+(?<hour>\d{2}):(?<minute>\d{2}):(?<second>\d{2})(?:(\s+(?<time_zone>[A-Z]+)))?\s*$/) { # TODO: optional time_zone added for unv
-            $self->handleRealTime(%+);
-        } elsif ($line =~ /^\s*(?<time>\d+:\d+)\s*Beginning\s*Sudden\s*Death\s*$/) {
-            $self->handleSuddenDeath(%+);
-        } elsif ($line =~ /^\s*(?<time>\d+:\d+)\s*Beginning\s*Weak\s*Sudden\s*Death\s*$/) {
-            $self->handleWeakSuddenDeath(%+);
-        } elsif ($line =~ /^\s*(?<time>\d+:\d+)\s*ClientConnect:\s+(?<slot>\d+)\s+\[(?<ip>\S+?)\]\s+\((?<guid>\S+?)\)(?:\s+\"(?<simplename>.+?)\")?\s+\"(?<name>.+?)\"(?:\s+(?<flags>\S+))?\s*$/) {
+        $self->handleRealTime(%+);
+    } elsif ($line =~ /^\s*(?<time>\d+:\d+)\s*Beginning\s*Sudden\s*Death\s*$/) {
+        $self->handleSuddenDeath(%+);
+    } elsif ($line =~ /^\s*(?<time>\d+:\d+)\s*Beginning\s*Weak\s*Sudden\s*Death\s*$/) {
+        $self->handleWeakSuddenDeath(%+);
+    } elsif ($line =~ /^\s*(?<time>\d+:\d+)\s*ClientConnect:\s+(?<slot>\d+)\s+\[(?<ip>\S+?)\]\s+\((?<guid>\S+?)\)(?:\s+\"(?<simplename>.+?)\")?\s+\"(?<name>.+?)\"(?:\s+(?<flags>\S+))?\s*$/) {
 	    # TODO: (1.1): Simplename made optional
-            $self->handleClientConnect(%+);
-        } elsif ($line =~ /^\s*(?<time>\d+:\d+)\s*ClientDisconnect:\s*(?<slot>\d+)\s+\[(?<ip>\S*?)\]\s+\((?<guid>\S+?)\)\s+\"(?<simplename>.+?)\"\s*$/) {
-            $self->handleClientDisconnect(%+);
-        } elsif ($line =~ /^\s*(?<time>\d+:\d+)\s*AdminAuth:\s+(?<slot>\d+)\s+\"(?<simplename>.+?)\"\s+\"(?<authname>.+?)\"\s+\[(?<level>\-?\d+)\]\s+\((?<guid>\S+?)\):\s+.+$/) {
-            $self->handleAdminAuth(%+);
-        } elsif ($line =~ /^\s*(?<time>\d+:\d+)\s*Die:\s+(?<killerslot>\d+)\s+(?<killedslot>\d+)\s+(?<mod>\S+)(?:\s+(?<assistslot>\d+)\s+(?<assistteam>\d+))?:\s+(?<killername>.+?)\s+killed\s+(?<killedname>.+)$/) {
-            $self->handleDie(%+);
+        $self->handleClientConnect(%+);
+    } elsif ($line =~ /^\s*(?<time>\d+:\d+)\s*ClientDisconnect:\s*(?<slot>\d+)\s+\[(?<ip>\S*?)\]\s+\((?<guid>\S+?)\)\s+\"(?<simplename>.+?)\"\s*$/) {
+        $self->handleClientDisconnect(%+);
+    } elsif ($line =~ /^\s*(?<time>\d+:\d+)\s*AdminAuth:\s+(?<slot>\d+)\s+\"(?<simplename>.+?)\"\s+\"(?<authname>.+?)\"\s+\[(?<level>\-?\d+)\]\s+\((?<guid>\S+?)\):\s+.+$/) {
+        $self->handleAdminAuth(%+);
+    } elsif ($line =~ /^\s*(?<time>\d+:\d+)\s*Die:\s+(?<killerslot>\d+)\s+(?<killedslot>\d+)\s+(?<mod>\S+)(?:\s+(?<assistslot>\d+)\s+(?<assistteam>\d+))?:\s+(?<killername>.+?)\s+killed\s+(?<killedname>.+)$/) {
+        $self->handleDie(%+);
 	} elsif ($line =~ /^\s*(?<time>\d+:\d+)\s*Kill:\s+(?<killerslot>\d+)\s+(?<killedslot>\d+)\s+(?<modnumber>\S+):\s+(?<killername>.+?)\s+killed\s+(?<killedname>.+?)\s+by\s+(?<mod>\S+)$/) {
 	    # TODO: (1.1) Kill message instead of Die but provides mostly same information.
 	    $self->handleDie(%+);
-        } elsif ($line =~ /^\s*(?<time>\d+:\d+)\s*Construct:\s+(?<slot>\d+)\s+(?<entityid>\d+)\s+(?<buildingname>\S+):\s+.+$/) {
-            # 31:26 Construct: 0 177 mgturret: Pat is building Machinegun Turret
-            # 31:04 Construct: 0 149 medistat: CU|Mario is building Medistation
-            $self->handleConstruct(%+,mod => 'MOD_CONSTRUCT');
+    } elsif ($line =~ /^\s*(?<time>\d+:\d+)\s*Construct:\s+(?<slot>\d+)\s+(?<entityid>\d+)\s+(?<buildingname>\S+):\s+.+$/) {
+        # 31:26 Construct: 0 177 mgturret: Pat is building Machinegun Turret
+        # 31:04 Construct: 0 149 medistat: CU|Mario is building Medistation
+        $self->handleConstruct(%+,mod => 'MOD_CONSTRUCT');
 	} elsif ($line =~ /^\s*(?<time>\d+:\d+)\s*Construct:\s+(?<slot>\d+)\s+(?<entityid>\d+)\s+(?<buildingname>\S+)\s+(?<replacedids>\d+(?:\s+\d+)*?):\s+.+$/) {
 	    # 4:51 Construct: 0 149 mgturret 119: CU|narbatucker is building Machinegun Turret, replacing Telenode
 	    # 2:27 Construct: 0 158 mgturret 83 70: DRM vs. freeloaders is building Machinegun Turret, replacing Machinegun Turret and Drill
 	    $self->handleConstruct(%+,mod => 'MOD_CONSTRUCT');
-        } elsif ($line =~ /^\s*(?<time>\d+:\d+)\s*Deconstruct:\s+(?<playerid>\d+)\s+(?<entityid>\d+)\s+(?<buildingname>\S+)\s+(?<mod>\S+):\s+.+$/) {
-            # 32:48 Deconstruct: 0 168 acid_tube MOD_MACHINEGUN: Acid Tube destroyed by Pat
-            $self->handleDeconstruct(%+);
-        } elsif ($line =~ /^\s*(?<time>\d+:\d+)\s*Exit:\s+(?<reason>.+)\s*$/) {
-            $self->handleExit(%+);
-        } elsif ($line =~ /^\s*(?<time>\d+:\d+)\s*score:\s+(?<score>\-?\d+)\s+ping:\s+(?<ping>\d+)\s+client:\s+(?<slot>\d+)\s+(?<name>.+?)\s*$/) {
-            # 1101:22score: 48  ping: 412  client: 0 kwergangregory
-            # 17:31 score: 8  ping: 322  client: 1 bluedemon1
-            $self->handleScore(%+);
-        } elsif ($line =~ /^\s*(?<time>\d+:\d+)\s*Warmup:\s+(?<duration>\d+)\s*$/) {
-            # Warmup definition - not used
-        } elsif ($line =~ /^\s*(?<time>\d+:\d+)\s*ClientBegin:\s+(?<slot>\d+)\s*$/) {
-            # ClientBegin - not used
-        } elsif ($line =~ /^\s*(?<time>\d+:\d+)\s*AdminExec:.*$/) {
-            # AdminExec - not used
-        } elsif ($line =~ /^\s*(?<time>\d+:\d+)\s*Say(?:Team|Area)?:\s+(?<slot>\-?\d+)\s+\"(?<name>.+?)\":\s+(?<message>.*?)\s*$/) {
-            # Say, SayTeam, SayArea - not used
-        } elsif ($line =~ /^\s*(?<time>\d+:\d+)\s*ChangeTeam:\s+(?<slot>\d+)\s+(?<team>\S+):\s+(?<message>.*?)\s*$/) {
-            # 41:06 ChangeTeam: 1 human: Lucirant switched teams
-            # team values: human, alien, spectator directly mapped as enum in db
-            $self->handleChangeTeam(%+);
+    } elsif ($line =~ /^\s*(?<time>\d+:\d+)\s*Deconstruct:\s+(?<playerid>\d+)\s+(?<entityid>\d+)\s+(?<buildingname>\S+)\s+(?<mod>\S+):\s+.+$/) {
+        # 32:48 Deconstruct: 0 168 acid_tube MOD_MACHINEGUN: Acid Tube destroyed by Pat
+        $self->handleDeconstruct(%+);
+    } elsif ($line =~ /^\s*(?<time>\d+:\d+)\s*Exit:\s+(?<reason>.+)\s*$/) {
+        $self->handleExit(%+);
+    } elsif ($line =~ /^\s*(?<time>\d+:\d+)\s*score:\s+(?<score>\-?\d+)\s+ping:\s+(?<ping>\d+)\s+client:\s+(?<slot>\d+)\s+(?<name>.+?)\s*$/) {
+        # 1101:22score: 48  ping: 412  client: 0 kwergangregory
+        # 17:31 score: 8  ping: 322  client: 1 bluedemon1
+        $self->handleScore(%+);
+    } elsif ($line =~ /^\s*(?<time>\d+:\d+)\s*Warmup:\s+(?<duration>\d+)\s*$/) {
+        # Warmup definition - not used
+    } elsif ($line =~ /^\s*(?<time>\d+:\d+)\s*ClientBegin:\s+(?<slot>\d+)\s*$/) {
+        # ClientBegin - not used
+    } elsif ($line =~ /^\s*(?<time>\d+:\d+)\s*AdminExec:.*$/) {
+        # AdminExec - not used
+    } elsif ($line =~ /^\s*(?<time>\d+:\d+)\s*Say(?:Team|Area)?:\s+(?<slot>\-?\d+)\s+\"(?<name>.+?)\":\s+(?<message>.*?)\s*$/) {
+        # Say, SayTeam, SayArea - not used
+    } elsif ($line =~ /^\s*(?<time>\d+:\d+)\s*ChangeTeam:\s+(?<slot>\d+)\s+(?<team>\S+):\s+(?<message>.*?)\s*$/) {
+        # 41:06 ChangeTeam: 1 human: Lucirant switched teams
+        # team values: human, alien, spectator directly mapped as enum in db
+        $self->handleChangeTeam(%+);
 	} elsif ($line =~ /^\s*(?<time>\d+:\d+)\s*ClientTeamClass:\s+(?<slot>\d+)\s+(?<team>\S+)\s+(?<weapon>\S+)\s*$/) {
 	    # TODO: (1.1)
 	    # 2:22 ClientTeamClass: 0 human rifle

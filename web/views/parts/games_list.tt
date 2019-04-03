@@ -1,41 +1,55 @@
     <table>
-      <thead>
-	<tr class="title">
-	  <th colspan="7"><span class="f_server_name"></span> - Games</th>
-	</tr>
-	<tr class="title">
-	  <th>Server</th>
-	  <th>Start</th>
-	  <th>Duration</th>
+      <thead class="sticky">
+	    <tr class="title">
+	      <th colspan="6"><span class="f__parent f_server"><a class="f_url" href=""><span class="f_server_name"></span></a> - Games</span></th>
+	    </tr>
+	    <tr class="title">
+	      <th>Start</th>
+	      <th>Duration</th>
           <th>Map</th>
-	  <th>Players</th>
+	      <th>Players</th>
       	  <th>Outcome</th>
-	  <th class="fill_column"></th>
-	</tr>
+	      <th class="fill_column"></th>
+	    </tr>
       </thead>
       <tbody>
-	<tr class="template">
-	  <td class="f__parent f_server">
-	    <a class="f_url" href=""><span class="f__text f_name"></span></a>
-	  </td>
+	    <tr class="template">
           <td>   
-	    <a class="f_url" href="">
-	      <span class="f__utcdate f_start"></span>
-	    </a>
-	  </td>
-	  <td class="f__duration_date f__sub f_start"><span class="f_end"></span></td>
-	  <td class="imageTextField f__parent f_map">
-	    <a class="f_url" href="">
-	      <span class="roundcorners f__img">
-		<img class="f_img_url" src="">
-		<span class="imgNotFound">N/A</span>
-	      </span>
-	      <span class="f_name f__text"></span>
-	    </a>
-	  </td>
-          <td class="f_max_players"></td>
-          <td class="f__text f_outcome"></td>
-	  <td class="fill_column"></td>
-	</tr>
+	        <a class="f_url" href="">
+	          <span class="f__utcdate f_start"></span>
+	        </a>
+	      </td>
+	      <td class="f__duration_date f__sub f_start"><span class="f_end"></span></td>
+
+	      <td class="top f__parent f_map">
+            <span class="imageTextField">
+	          <a class="f_url" href="">
+	            <span class="title"><span class="f_name f__text"></span></span>
+	            <span class="roundcorners f__img">
+		          <img class="f_img_url" src="">
+		          <span class="imgNotFound">N/A</span>
+	            </span>
+	          </a>
+            </span>
+            <span class="row">
+              <span class="title dim">Total Playtime</span>
+              <span class="f__duration_minutes f_total_time"></span>
+              <span class="small">(<span class="f_total_games"></span> games)</span>
+            </span>
+	      </td>
+<!--
+          <td class="imageTextField f__parent f_map">
+            <a class="f_url" href="">
+	          <span class="roundcorners f__img">
+		        <img class="f_img_url" src="">
+		        <span class="imgNotFound">N/A</span>
+	          </span>
+	          <span class="f_name f__text"></span>
+	        </a>
+	      </td>-->
+          <td><span class="f_max_players"></span> (<span class="f_max_bots"></span>)</td>
+          <td class="f__text f_outcome row"></td>
+	      <td class="fill_column"></td>
+	    </tr>
       </tbody>
     </table>

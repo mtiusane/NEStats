@@ -246,24 +246,24 @@ get '/server/:id/players/:offset/:limit' => sub {
     my $limit = min(25,params->{limit});
     my $range = Stats::DB::Glicko2::get_rating_range();
     my @players = map {
-	+{
-	    player  => db_to_hashref($_->player),
-	    glicko2 => {
-		%{db_to_hashref($_->glicko2)},
-		%{$range}
-	    }
-	}
+        +{
+            player  => db_to_hashref($_->player),
+            glicko2 => {
+                %{db_to_hashref($_->glicko2)},
+                    %{$range}
+            }
+        }
     } @{Stats::DB::PlayerRanking::Manager->get_player_rankings(
-	where        => $where,
-	sort_by      => 'by_glicko2 asc, by_kills asc',
-	limit        => $limit,
-	offset       => params->{offset},
-	with_objects => [ 'player', 'glicko2' ],
+        where        => $where,
+        sort_by      => 'by_glicko2 asc, by_kills asc',
+        limit        => $limit,
+        offset       => params->{offset},
+        with_objects => [ 'player', 'glicko2' ],
     )};
     return +{
-	players => \@players,
-	offset  => params->{offset},
-	total   => $count
+        players => \@players,
+        offset  => params->{offset},
+        total   => $count
     };
 };
 
@@ -278,6 +278,7 @@ get '/server/:id/games/:offset/:limit' => sub {
         map         => get_map_fields($_->map),
         outcome     => get_formatted_outcome($_),
         max_players => $_->max_players,
+        max_bots    => $_->max_bots,
         start       => $_->start,
         end         => $_->end
     },@{Stats::DB::Game::Manager->get_games(
@@ -354,6 +355,7 @@ get '/game/:id' => sub {
             disconnects => $game->disconnects,
 
             max_players => $game->max_players,
+            max_bots => $game->max_bots,
             outcome => get_formatted_outcome($game),
 
             sd => $game->sd,
@@ -528,6 +530,7 @@ get '/map/:id/games/:offset/:limit' => sub {
         date        => $_->start->dmy,
         time        => $_->start->hms,
         max_players => $_->max_players,
+        max_bots    => $_->max_bots,
         start       => $_->start,
         end         => $_->end
     },@{Stats::DB::Game::Manager->get_games(where => [ @GAMES_FILTER, map_id => $map->id ],with_objects => [ 'server' ],sort_by => 'start desc',limit => min(25,params->{limit}),offset => params->{offset})};

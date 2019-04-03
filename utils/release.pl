@@ -22,12 +22,12 @@ my @skipRe = (
 
 my %targets = (
     webroot => {
-	sourcePaths => [ "../web","../lib" ],
-	pkgName     => 'dist_web.tar.gz'
+        sourcePaths => [ "../web","../lib" ],
+        pkgName     => 'dist_web.tar.gz'
     },
     importerroot => {
-	sourcePaths => [ "../importer","../lib" ],
-	pkgName     => 'dist_importer.tar.gz'
+        sourcePaths => [ "../importer","../lib" ],
+        pkgName     => 'dist_importer.tar.gz'
     }
 );
 
@@ -53,25 +53,25 @@ sub list_files
     my ($targetRoot, @sourcePaths) = @_;
     my @files;
     foreach my $sourcePath (@sourcePaths) {
-	my $basePath = basename($sourcePath);
-	my $targetDir = "$targetRoot/$basePath";
-	my $realSource = realpath($sourcePath);
-	my $skipRe = join('|',@skipRe);
-	push @files, { type => 'd', target => $targetDir };
-	find({
-	    no_chdir => 1,
-	    wanted   => sub {
-		unless (/$skipRe/) {
-		    my $filename = File::Spec->abs2rel($_,$realSource);
-		    my $target = "$targetDir/$filename";
-		    if (-d) {
-			push @files, { type => 'd', target => $target };
-		    } elsif (-f) {
-			push @files, { type => 'f', source => $_, target => $target };
-		    }
-		}
-	    }
-	}, $realSource);
+        my $basePath = basename($sourcePath);
+        my $targetDir = "$targetRoot/$basePath";
+        my $realSource = realpath($sourcePath);
+        my $skipRe = join('|',@skipRe);
+        push @files, { type => 'd', target => $targetDir };
+        find({
+            no_chdir => 1,
+            wanted   => sub {
+                unless (/$skipRe/) {
+                    my $filename = File::Spec->abs2rel($_,$realSource);
+                    my $target = "$targetDir/$filename";
+                    if (-d) {
+                        push @files, { type => 'd', target => $target };
+                    } elsif (-f) {
+                        push @files, { type => 'f', source => $_, target => $target };
+                    }
+                }
+            }
+        }, $realSource);
     }
     return @files;
 }

@@ -7,6 +7,13 @@
 }
 */
 
+:root {
+    --field-width: 24vw;
+    --border-size: 1px;
+    --border-radius: 6px;
+    --thead-height: 4em;
+}
+
 * {
     box-sizing: border-box;
 
@@ -15,7 +22,7 @@
 }
 
 body {
-    font-size: 1.5vh;
+    font-size: 1.4vh;
     background-color: #252322;
 
     text-shadow: 0px 0px 5px #000;
@@ -45,7 +52,7 @@ h1:first-child, h2:first-child, h3:first-child, h4:first-child, h5:first-child, 
 
 table {
     border-collapse: collapse;
-    border-radius: 6px;
+    border-radius: var(--border-radius);
 }
 
 tr {
@@ -67,7 +74,7 @@ tr:nth-child(odd) td {
 }
 
 tr:nth-child(even) td {
-    background: cyan;
+    background: rgba(59,198,184,0.75);
 }
 */
 tr td {
@@ -108,8 +115,8 @@ div#logo {
     background-image: -ms-radial-gradient(50% 92%,ellipse farthest-corner, #343434, #0a0a0a);
     background-image: -o-radial-gradient(50% 92%,ellipse farthest-corner, #343434, #0a0a0a);
   
-    height: 25vh;
-    min-width: 125vh;
+    height: 10.5vh;
+    min-width: 100vw;
     width: 100%;
     top: 0%;
     left: 0%;
@@ -144,7 +151,7 @@ div#logo > div#image {
     position: absolute;
     display: block;
     background: url('/images/logo/site_logo.png') no-repeat scroll 50% -1vh transparent;
-    background-size: 85vh;
+    background-size: contain;
     width: 100%;
     height: 100%;
     top: 0px;
@@ -156,18 +163,18 @@ div#logo > div#links_background {
     display: block;
     position: absolute;
     bottom: 0%;
-    width: 100%;
-    height: 2.5em;
-    line-height: 2.5em;
+    left: 12.5vh;
+    right: 12.5vh;
+
+    margin: 0px;
+    padding: 0px;
+
+    height: 2em;
+    line-height: 2em;
     text-align: center;
-    color: #0ff;
+    color: #0ef;
     font-size: 1.67em;
 
-    background-image: url('/images/logo/menu_gradient.png');
-    background-repeat: repeat-x;
-    background-position: 0% 0%;
-    background-attachment: scroll;
-    background-size: contain;
     z-index: -2000;
 }
 
@@ -175,24 +182,40 @@ div#logo > div#links {
     display: block;
     position: absolute;
     bottom: 0%;
-    width: 100%;
-    height: 2.5em;
-    line-height: 2.5em;
+    left: 21vh;
+    right: 21vh;
+    height: 1.4em;
+    line-height: 1.4em;
     text-align: center;
-    color: #0ff;
-    font-size: 1.67em;
+    color: #efefef;
+    font-size: 1.47em;
+
+    padding: 0px;
+    margin: 0px;
     
     z-index: 2000;
 }
 
-div#logo > div#image > div#links a,
-div#logo > div#image > div#links a:visited {
-    color: #ffffff;
+div#logo > div#links a,
+div#logo > div#links a:visited {
+    display: inline-block;
+    height: 1.47em;
+
+    padding: 0px;
+    margin: 0px;
+
+    color: #efefef;
 }
 
-div#logo > div#image > div#links a:active,
-div#logo > div#image > div#links a:hover {
-    color: #95b9c7;
+div#logo > div#links a:active,
+div#logo > div#links a:hover {
+    display: inline-block;
+    height: 1.47em;
+
+    padding: 0px;
+    margin: 0px;
+  
+    color: #0ef;
 }
 
 div#menu {
@@ -201,9 +224,9 @@ div#menu {
     text-shadow: 0px 0px 5px #000;
     color: #efefef;
     width: 100%;
-    height: 7vh;
-    top: 25vh;
-    min-width: 125vh;
+    height: 5vh;
+    top: 10.5vh;
+    min-width: 100vw;
 
     background-color: #3D3C3A;
     background-image: radial-gradient(50% 8%,ellipse farthest-corner, #483D3D, #3d3c3a);
@@ -218,7 +241,7 @@ div#menu {
     background-position: 0% 0%;
     background-attachment: scroll;
     background-size: contain;
-   */
+    */
     
     z-index: 2000;
 }
@@ -229,7 +252,8 @@ div#menu > ul {
     padding-right: 2vh;
     padding-top: 0px;
     padding-bottom: 0px;
-    height: 7vh;
+    margin: 0px;
+    height: 5vh;
     list-style-type: none;
     overflow: hidden;
     list-style: none;
@@ -239,7 +263,10 @@ div#menu > ul > li {
     display: inline-block;
     padding-left: 1vh;
     padding-right: 1vh;
-    line-height: 7vh;
+    padding-top: 0px;
+    padding-bottom: 0px;
+    margin: 0px;
+    line-height: 5vh;
     list-style: none;
 }
 
@@ -248,17 +275,17 @@ div#menu > ul > li > a:visited {
     transition: color 0.5s;
     background: transparent;
     color: white;
-    font-size: 1.67em;
+    font-size: 1.47em;
     font-weight: normal;
     text-decoration: none;
 }
 
 div#menu > ul > li > a:hover,
 div#menu > ul > li > a:active {
-    font-size: 1.67em;
+    font-size: 1.47em;
     font-weight: normal;
-    text-decoration: normal;
-    color: cyan;
+    text-decoration: none;
+    color: #0ef;
 }
 
 div#page {
@@ -266,7 +293,7 @@ div#page {
     position: absolute;
     left: 0px;
     width: 100%;
-    top: 32vh;
+    top: 15.5vh;
     bottom: 0px;
     overflow-x: hidden;
     overflow-y: auto;
@@ -277,15 +304,20 @@ div#page {
 div#content_wrapper {
     display: block;
     overflow: auto;
-    min-height: 64vh;
-    min-width: 100vw;
+    margin: 0px;
+    padding: 0px;
+    width: 100%;
+    height: 100%;
+    left: 0px;
+    top: 0px;
 }
     
 div#content {
     display: inline-block;
     left: 0px;
     top: 0px;
-    width: 96vw;
+    width: 100%;
+    min-width: 62vh;
     height: 62vh;
     margin: 0px;
     padding: 2vh;
@@ -296,6 +328,7 @@ div#footer {
     position: absolute;
     bottom: 0.5vh;
     right: 0.5vh;
+    color: #5f5f56;
 }
 
 div#loading {
@@ -305,8 +338,8 @@ div#loading {
     background: #252525;
     left: 0px;
     right: 0px;
-    top: 33vh;
-    height: 64vh;
+    top: 15.5vh;
+    height: 84.5vh;
     /* bottom: -245px; */
     z-index: 1000;
     font-size: 1.25em;
@@ -401,7 +434,7 @@ a {
 }
 
 a:hover {
-    color: cyan;
+    color: rgba(59,198,184,0.75);
     text-decoration: none;
 }
 
@@ -409,7 +442,7 @@ a:hover {
 a:hover span,
 a:visited:hover span { /* override for color codes in emoticons */
     text-decoration: none;
-    border-bottom: 1px solid cyan;
+    border-bottom: 1px solid rgba(59,198,184,0.75);
 }
 
 a:hover span.smiley,
@@ -429,7 +462,7 @@ a:visited {
 }
 
 a:visited:hover {
-    color: cyan;
+    color: rgba(59,198,184,0.75);
     text-decoration: none;
 }
 
@@ -452,14 +485,14 @@ svg.rating {
     color: #cfcfcf;
     vertical-align: middle;
     padding: 1px;
-    border: 1px solid #7f7f7f;
-    border-radius: 6px;
-    min-width: 160px;
+    border: var(--border-size) solid #7f7f7f;
+    border-radius: var(--border-radius);
+    min-width: var(--field-width);
 }
 
-div.bar,
-div.rating {
-    display: block;
+.bar,
+.rating {
+    display: inline-block;
     position: relative;
     overflow: visible;
     margin: 0px;
@@ -469,82 +502,77 @@ div.rating {
     font-weight: bold;
     color: #cfcfcf;
     vertical-align: middle;
-    border: 1px solid #7f7f7f;
-    border-radius: 6px;
-    min-width: 160px;
+    border: var(--border-size) solid #7f7f7f;
+    border-radius: var(--border-radius);
+    min-width: var(--field-width);
     overflow: hidden;
 }
 
-div.bar {
+.field {
     display: inline-block;
+    padding: 0px;
+    margin: 0px;
 }
 
-div.rating {
+.barWithCaptions {
     display: inline-block;
+    position: relative;
+    padding: 0px;
+    margin: 0px;
+    font-size: 0.8em;
+    font-weight: bold;
+    color: #cfcfcf;
+    vertical-align: middle;
+    min-width: calc(var(--field-width) + 6.5em);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: clip;
 }
 
-div.barWithCaptions {
-    height: 16px;
+.barWithCaptions .bar {
+    width: calc(100% - 6.5em);
     margin-top: 0px;
     margin-bottom: 0px;
-    margin-left: 3.25em;
-    margin-right: 3.25em;
+    margin-left: 3.25px;
+    margin-right: 3.25px;
+    padding: 0px;
 }
 
-div.bar > span.prefix,
-div.rating > span.prefix,
-div.prefix {
+.bar > span.prefix,
+.rating > span.prefix,
+.prefix {
     display: inline-block;
+    margin: 0px;
+    padding: 0px;
     min-width: 1em;
     max-width: 3em;
     height: 100%;
     text-align: right;
 }
 
-div.bar > span.suffix,
-div.rating > span.suffix,
-div.suffix {
+.bar > span.suffix,
+.rating > span.suffix,
+.suffix {
     display: inline-block;
+    margin: 0px;
+    padding: 0px;
     min-width: 1em;
     max-width: 3em;
     height: 100%;
     text-align: left;
 }
-
-div.bar > span.fill,
-div.rating > span.fill {
-    display: block;
-    position: absolute;
-    overflow: hidden;
-    background: #ff3300;
+/*
+.barWithCaptions .prefix {
+    padding-right: -3.25px;
 }
 
-div.bar > span.empty,
-div.rating > span.empty {
-    display: block;
-    position: absolute;
-    overflow: hidden;
-    background: transparent;
-    left: 0px;
-    top: 0px;
-    width: 100%;
-    height: 100%;
-    margin: 0px;
-    padding: 0px;
+.barWithCaptions .suffix {
+    padding-left: -3.25px;
 }
-
-div.bar > .overlay,
-div.rating > .overlay {
-    display: block;
-    position: absolute;
-    left: 0px;
-    top: 0px;
-    width: 100%;
-    height: 100%;
-    overflow: visible;
-    background: transparent;
-    margin: 0px;
-    padding: 0px;
+*/
+.bar > svg,
+.rating > svg {
+    margin-bottom: calc(0px - var(--border-radius));
 }
 
 .highlight {
@@ -556,8 +584,8 @@ div.rating > .overlay {
     vertical-align: top;
     padding: 0px;
     margin: 0px;
-    border-radius: 6px;
-    border: 2px solid rgba(0,0,0,0.1);
+    border-radius: var(--border-radius);
+    border: var(--border-size) solid rgba(0,0,0,0.1);
     overflow: hidden;
 }
 
@@ -602,7 +630,7 @@ div.tools > a:visited {
 }
 
 div.tools > a:hover {
-    color: cyan;
+    color: rgba(59,198,184,0.75);
     text-decoration: none;
 }
 
@@ -696,7 +724,7 @@ table.jqplot-table-legend tr td {
 }
 
 ::-webkit-scrollbar-thumb {
-    border-radius: 6px;
+    border-radius: var(--border-radius);
     border-left: 2px solid rgba(0,0,0,0.35);
     background: rgba(255,255,255,0.25);
 }
@@ -719,7 +747,7 @@ input[type="submit"] {
     border-bottom: 1px solid rgba(0,0,0,0.5);
     border-right: 1px solid rgba(0,0,0,0.5);
     
-    border-radius: 6px;
+    border-radius: var(--border-radius);
 }
 
 button[type="submit"]:hover,
@@ -741,7 +769,7 @@ input[type="submit"]:active, input[type="submit"]:focus {
 }
 
 input[type="text"] {
-    border-radius: 6px;
+    border-radius: var(--border-radius);
     font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
     background: #efefef;
     color: black;
@@ -766,7 +794,7 @@ input[type="text"]:active, input[type="text"]:focus {
 /* The following initialize the element dimensions on js side. */
 
 .fullheight {
-    height: 63vh;
+    height: 79.5vh;
     /* min-height: 24em; */
     /* max-height: 34em !important; */
 }
@@ -779,15 +807,15 @@ input[type="text"]:active, input[type="text"]:focus {
     padding: 0px;
     margin-left: 0.5em;
     margin-right: 0.5em;
-    width: calc(100vw - 4.5em - 10px);
-    min-width: calc(100vw - 4.5em - 10px);
+    width: calc(100vw - 4vh); /*calc(60vh - 4.5em - 20px);*/
+    min-width: calc(100vw - 4vh); /*calc(60vh - 4.5em - 20px);*/
 }
 
 .halfwidth {
     margin-left: 0.5em;
     margin-right: 0.5em;
-    width: calc(50vw - 3em - 8px);
-    min-width: (50vw - 3em - 8px);
+    width: calc(30vh - 3em - 16px);
+    min-width: (30vh - 3em - 16px);
 }
 
 
@@ -838,8 +866,8 @@ tr td:nth-last-child(1) {
 
 /* Common selectors */
 .selected {
-    color: cyan;
-    text-decoration: normal;
+    color: rgba(59,198,184,0.75);
+    text-decoration: none;
 }
 
 /* Generic on hover tooltips */
@@ -989,11 +1017,13 @@ canvas {
     min-width: 800px;
     min-height: 400px;
     overflow: hidden;
-    border-radius: 6px;
+    border-radius: var(--border-radius);
     /* border: 1px solid red; */
 }
 
 .container {
+    word-wrap: break-word;
+    font-size: 0.9em;
     display: inline-block;
     min-height: 30vh;
     min-width: 46vw;
@@ -1040,14 +1070,14 @@ canvas {
 
 .container.noscroll {
     overflow-y: hidden !important;
-    border-radius: 6px;
+    border-radius: var(--border-radius);
     min-width: 20% !important;
     min-height: 3em !important;
     max-height: 100% !important;
 }
 
 .container.noscroll table {
-    border-radius: 6px;
+    border-radius: var(--border-radius);
 }
 
 .container table {
@@ -1058,11 +1088,13 @@ canvas {
 }
 
 .container table thead {
-    min-height: 1em;
+    height: var(--thead-height);
 
     background: url('/images/metal_background.png') repeat scroll left top rgba(33, 177, 160, 0.8);
     border-bottom: 2px solid rgba(72, 152, 143, 0.8);
     margin: 2px;
+
+    z-index: 500;
 }
 
 .container table thead tr th {
@@ -1072,6 +1104,9 @@ canvas {
     padding-bottom: 3px;
     padding-left: 6px;
     padding-right: 6px;
+}
+
+.container table thead tr th.fill_column {
 }
 
 .container table:not(.rows) tbody tr td:nth-child(odd) {
@@ -1113,7 +1148,7 @@ div#chartjs-tooltip .container table
     padding: 0px;
     margin: 0px;
     width: 100%;
-    border-radius: 6px;
+    border-radius: var(--border-radius);
     border: 0px none transparent;
     display: inline-block;
 }
@@ -1304,7 +1339,7 @@ div#chartjs-tooltip .container table tr:nth-child(even) td {
 }
 
 .container .jspContainer {
-    border-radius: 6px;
+    border-radius: var(--border-radius);
 }
 
 .container .jspVerticalBar {
@@ -1389,42 +1424,108 @@ div#chartjs-tooltip .container table tr:nth-child(even) td {
     border-bottom-right-radius: 6px;
 }
 
+.container .jspVerticalBar {
+    margin-top: var(--thead-height);
+}
+
 /* common field styles */
+
+.container td .title {
+    display: inline-block;
+    min-width: 100%;
+    /* font-weight: bold; */
+    font-style: italic;
+    margin: 0px;
+    padding-left: 0px;
+    padding-right: 0px;
+    padding-top: 0.5em;
+    padding-bottom: 0px;
+}
+
+.container .sticky {
+}
+
+.container .sticky.hold {
+    position: relative;
+}
+
+.container td .row {
+    display: inline-block;
+    min-width: 100%;
+}
+
+.container .dim {
+    color: rgba(255,255,255,0.75);
+}
+
+.container svg {
+    width: 100%;
+    height: auto;
+}
+
+.container .top {
+    vertical-align: top;
+}
 
 .container .indexField {
     text-align: right;
-    padding-right: 0.5em;
-    width: 4em;
+    padding: 0px;
+    margin: 0px;
+    padding-top: 0.5em;
+    padding-bottom: 0px;
+    padding-left: 0px;
+    padding-right: 0px;
+    vertical-align: top;
+    width: calc(var(--field-width) / 4);
     min-width: 2em;
     max-width: 5em;
+    text-align: center;
 }
 
 .container .rankingField {
-    width: 14em;
-    max-width: 18em;
-    padding-left: 0.5em;
-    padding-right: 0.5em;
-    min-width: 160px;
+    width: auto;
+    min-width: calc(var(--field-width) + 1em);
+    margin: 0px;
+    padding-left: 0px;
+    padding-right: 0px;
+    padding-top: 0.5em;
+    padding-bottom: 0.5em;
+    text-align: center;
+}
+
+.container .rankingField .rating {
+    margin: 0.5em;
 }
 
 .container .rankingField span.f_rank {
     display: inline-block;
-    margin-left: auto;
-    margin-right: auto;
+    margin: 0px;
+    padding: 0px;
 }
 
 .container .barField {
-    min-width: 160px;
+    width: auto;
+    min-width: var(--field-width);
+    margin: 0px;
+    padding: 0px;
 }
 
 .container .barFieldWithCaptions {
-    width: 19.5em;
+    display: block;
+    width: 100%;
+    min-width: calc(var(--field-width) + 6.5em);
+    overflow: hidden;
+    text-overflow: clip;
+    word-wrap: normal;
+    margin: 0px;
+    padding: 0px;
 }
 
 .container .nameField {
     width: 12em;
     min-width: 12em;
     max-width: 12em;
+    vertical-align: top;
 }
 
 .container .countField {
@@ -1440,27 +1541,108 @@ div#chartjs-tooltip .container table tr:nth-child(even) td {
 }
 
 .container .imageTextField {
-    min-width: 160px;
-    line-height: 100%;
-    text-align: left;
-    padding-left: 0.5vw;
-    padding-right: 0.5vw;
-    padding-top: 0.25vh;
-    padding-bottom: 0.25vh;
+    display: inline-block;
+    min-width: var(--field-width);
+    height: auto;
+    text-align: center;
+    vertical-align: top;
+    padding: 0.5em;
+    margin: 0px;
+}
+
+.container .imageTextField .title {
+    min-width: 100%;
+    display: inline-block;
+    background: rgba(255,255,255,0.2);
+    border-top-left-radius: 6px;
+    border-top-right-radius: 6px;
+    border-bottom-left-radius: 0px;
+    border-bottom-right-radius: 0px;
+    border-left: var(--border-size) solid #7f7f7f;
+    border-right: var(--border-size) solid #7f7f7f;
+    border-top: var(--border-size) solid #7f7f7f;
+    border-bottom: none;
+    font-weight: bold;
+    font-style: normal;
+    padding-top: 0.25em;
+    padding-bottom: 0.125em;
+    padding-left: 0px;
+    padding-right: 0px;
+    margin: 0px;
+}
+
+.container .imageTextField .roundcorners {
+    display: inline-block;
+    border-top-left-radius: 0px !important;
+    border-top-right-radius: 0px !important;
+    border-bottom-left-radius: 6px;
+    border-bottom-right-radius: 6px;
+    border-left: var(--border-size) solid #7f7f7f;
+    border-right: var(--border-size) solid #7f7f7f;
+    border-bottom: var(--border-size) solid #7f7f7f;
+    border-top: none;
+    margin: 0px;
+    padding: 0px;
+    vertical-align: middle;
+    min-width: 100%;
+}
+
+.container .imageTextField img {
+    display: inline-block;
+    margin: 0px;
+    padding: 0px;
+}
+
+.container .imageTextField a {
+    display: inline-block;
+    margin: 0px;
+    padding: 0px;
+}
+
+.container .imageTextField a:hover,
+.container .imageTextField a:visited:hover {
+    text-decoration: none !important;
+}
+
+.container .imageTextField a:hover span:not(.roundcorners),
+.container .imageTextField a:visited:hover span:not(.roundcorners) {
+    text-decoration: none !important;
+    border-bottom: none !important;
+}
+
+.container .imageTextField a:hover .roundcorners,
+.container .imageTextField a:visited:hover .roundcorners {
+    border-bottom: var(--border-size) solid rgba(59,198,184,0.75);
+    border-left: var(--border-size) solid rgba(59,198,184,0.75);
+    border-right: var(--border-size) solid rgba(59,198,184,0.75);
+    border-top: none;
+}
+
+.container .imageTextField a:hover .title,
+.container .imageTextField a:visited:hover .title {
+    border-top: var(--border-size) solid rgba(59,198,184,0.75);
+    border-left: var(--border-size) solid rgba(59,198,184,0.75);
+    border-right: var(--border-size) solid rgba(59,198,184,0.75);
+    border-bottom: none;
+    background: rgba(59,198,184,0.75);
 }
 
 .container .small {
     font-size: 0.8em;
 }
 
+.container .smaller {
+    font-size: 0.6em;
+}
+
 .container .fill_column {
-    min-width: 0px !important;
-    width: auto;
+    min-width: 1.6vw !important;
+    width: 1.6vw;
 }
 
 .roundcorners {
     display: inline-block;
-    border-radius: 6px;
+    border-radius: var(--border-radius);
     overflow: hidden;
     border: 1px solid #7f7f7f;
     vertical-align: middle;
@@ -1473,11 +1655,14 @@ div#chartjs-tooltip .container table tr:nth-child(even) td {
     width: 100%;
     object-fit: contain;
     object-position: 50%;
+    margin: 0px;
+    padding: 0px;
+    margin-bottom: calc(0px - var(--border-radius)) !important;
 }
 
 a:hover .roundcorners,
 a:visited:hover .roundcorners {
-    border: 1px solid cyan;
+    border: 1px solid rgba(59,198,184,0.75);
 }
 
 .imgNotFound {

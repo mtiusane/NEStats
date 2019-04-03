@@ -13,48 +13,49 @@
     <script type="text/javascript">/* <![CDATA[ */
     !window.jQuery && document.write('<script type="text/javascript" src="<% request.uri_base %>/javascripts/jquery-3.2.1.min.js"><\/script>')
     /* ]]> */</script>
-    <script src="/javascripts/jquery.mousewheel.min.js"></script>
-    <script src="/javascripts/jquery.jscrollpane.js"></script> <!-- TODO: .min but needs update-->
-    <script src="/javascripts/underscore-min.js"></script>
-    <script src="/javascripts/hammer.min.js"></script>
-    <script src="/javascripts/common.js"></script>
+      <script src="/javascripts/jquery.mousewheel.min.js"></script>
+      <script src="/javascripts/jquery.jscrollpane.js"></script> <!-- TODO: .min but needs update-->
+      <script src="/javascripts/underscore-min.js"></script>
+      <script src="/javascripts/hammer.min.js"></script>
+      <script src="/javascripts/common.js"></script>
   </head>
   <body>
     <div id="logo">
       <div id="image"></div>
       <div id="links_background"></div>
       <div id="links">
-	<a href="http://new-edge.org">Home</a> | <a href="http://forum.new-edge.org">Forum</a> | <a href="http://stats.new-edge.org">Stats</a>
+        <a href="http://www.new-edge.org">home</a>
+	    <a href="http://stats.new-edge.org">stats</a>
       </div>
       <div id="left"></div>
       <div id="right"></div>
     </div>
     <div id="menu">
       <ul class="links">
-	<% FOREACH entry IN menu %>
-	<li><a href="<% entry.link %>"><% entry.title %></a></li>
-	<% END %>
+	    <% FOREACH entry IN menu %>
+	    <li><a href="<% entry.link %>"><% entry.title %></a></li>
+	    <% END %>
       </ul>
       <ul class="servers">
-	<% FOREACH s IN servers %>
-	<% IF s.id == server.id %><li class="selected"><% ELSE %><li><% END %>
-	<a class="server" href="?page=<% page %>&server=<% s.id %><% params %>"><% s.name.replace_all %></a>
-        <% END %>
-	</li>
+	    <% FOREACH s IN servers %>
+	    <% IF s.id == server.id %><li class="selected"><% ELSE %><li><% END %>
+	      <a class="server" href="?page=<% page %>&server=<% s.id %><% params %>"><% s.name.replace_all %></a>
+          <% END %>
+	    </li>
       </ul>
     </div>
     <div id="page">
       <div id="content_wrapper">
-	<% content %>
+	    <% content %>
       </div>
     </div>
     <!--   
-    <div id="loading">
-      <p class="loading">Loading...</p>
-    </div>
-    -->
+           <div id="loading">
+             <p class="loading">Loading...</p>
+           </div>
+           -->
     <div id="footer">
-      &copy; 2017 Tiusanen Consulting<!-- <a href="http://www.new-edge.org">New EDGE--></a>
+      &copy; Tiusanen Consulting<!-- <a href="http://www.new-edge.org">New EDGE--></a>
     </div>
   </body>
 </html>
