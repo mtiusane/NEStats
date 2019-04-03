@@ -21,8 +21,17 @@ __PACKAGE__->register_db(
     username => 'stats',
     password => 'stats',
 );
+__PACKAGE__->register_db(
+    domain   => 'development_realdb',
+    driver   => 'mysql',
+    database => 'stats',
+    host     => '127.0.0.1',
+    port     => 31337,
+    username => 'stats',
+    password => 'stats',
+);
 
-__PACKAGE__->default_domain((hostname =~ /\.new-edge\.org$/) ? 'production' : 'development');
+__PACKAGE__->default_domain((hostname =~ /\.new-edge\.org$/) ? 'production' : 'development_realdb');
 __PACKAGE__->default_connect_options({ mysql_auto_reconnect => 1 });
 
 1;

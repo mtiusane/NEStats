@@ -9,6 +9,9 @@ $(document).ready(function() {
 	        };
 	    },
 	    'a.data.map_id': function(href) {
+            $.get('/json/map/'+href,function(data) {
+                $('#content div#players').find('.f_map_name').html(data.name);
+            });
 	        return function(offset,limit) {
 		        return '/json/map/'+href+'/players/'+offset+'/'+limit;
 	        };

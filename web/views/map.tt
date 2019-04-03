@@ -1,60 +1,19 @@
-<div id="content">
+<div id="content" class="fullheight">
   <script src="/javascripts/map.js"></script>
   <script src="/javascripts/players.js"></script>
   <script src="/javascripts/games.js"></script>
-  <div id="map" class="fullwidth">
+  <div id="map">
     <a class="data map_id" href="<% map_id %>"></a>
     <div id="map_overall">
       <h1>Map: <span class="f_displayname"></span></h1>
     </div>
-    <div id="players" class="container halfheight">
-      <a class="data map_id" href="<% map_id %>"></a>
-      <table>
-	<thead>
-      	  <tr class="title"><th colspan="8">Top Players</th></tr>
-	  <tr class="title">
-	    <th>#</th>
-	    <th>Ranking</th>
-	    <th>Name</th>
-	    <th>Play Time<br>(Games)</th>
-	    <th>Kills & Deaths</th>
-	    <th>Buildings<br>Building Kills / Deaths</th>
-	    <th>Team Preference</th>
-	    <th class="fill_column"></th>
-	  </tr>
-	</thead>
-	<tbody>
-	  <tr class="template" style="min-width: 60vw">
-	    <td class="indexField"><span class="f_index"></span></td>
-	    <td class="rankingField"><span class="f_rank"></span></td>
-	    <td class="nameField"><span class="f_name"></span></td>
-	    <td class="countField durationField"><span class="f_total_playtime"></span><br>
-	      <span class="small">
-		(<span class="f_total_games"></span> games)
-	      </span>
-	    </td>
-	    <td class="barField">
-	      <span class="f_kills"></span>
-	      <span class="small">
-		<span class="f_kills_count"></span> : <span small class="f_deaths_count"></span> (<span class="f_assists"></span> assists)
-	      </span>
-	    </td>
-	    <td class="barField">
-	      <span class="f_buildings"></span>
-	      <span class="small">
-		<span class="f_build_count"></span> : <span class="f_bkills_count"></span>
-		(<span class="f_building_kd"></span> bk / death)
-	      </span>
-	    </td>
-	    <td class="barField"><span class="f_team_preference"></span></td>
-	    <td class="fill_column"></td>
-	  </tr>
-	</tbody>
-      </table>
-    </div>
-    <div id="games" class="container fullheight" style="min-width: 80vw">
-      <a class="data map_id" href="<% map_id %>"></a>
-      <% INCLUDE "parts/games_list.tt" %>
-    </div>
+  </div>
+  <div id="players" class="container halfheight fullwidth">
+    <a class="data map_id" href="<% map_id %>"></a>
+    <% INCLUDE "parts/players_list.tt" %>
+  </div>
+  <div id="games" class="container halfheight fullwidth">
+    <a class="data map_id" href="<% map_id %>"></a>
+    <% INCLUDE "parts/games_list.tt" %>
   </div>
 </div>

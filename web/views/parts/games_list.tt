@@ -1,7 +1,14 @@
     <table>
       <thead class="sticky">
 	    <tr class="title">
-	      <th colspan="6"><span class="f__parent f_server"><a class="f_url" href=""><span class="f_server_name"></span></a> - Games</span></th>
+	      <th colspan="6">
+            <span class="f__parent f_server">
+              <a class="f_url" href=""><span class="f_server_name"></span></a>
+            </span>
+            <span class="f__parent f_map">
+              <a class="f_url" href=""><span class="f_map_name"></span></a>
+            </span>
+              - Games</span></th>
 	    </tr>
 	    <tr class="title">
 	      <th>Start</th>

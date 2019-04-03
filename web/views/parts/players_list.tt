@@ -1,0 +1,55 @@
+    <table>
+      <thead class="sticky">
+      	<tr class="title">
+          <th colspan="4">
+            <span class="f__parent f_server">
+              <a class="f_url" href=""><span class="f_server_name"></span></a>
+            </span>
+            <span class="f__parent f_map">
+              <a class="f_url" href=""><span class="f_map_name"></span></a>
+            </span>
+             - Players</th>
+          </th>
+        </tr>
+	    <tr class="title">
+          <th class="indexField">#</th>
+          <th class="rankingField">Player</th>
+          <th class="barField">Stats</th>
+          <th class="fill_column"></th>
+        </tr>
+      </thead>
+      <tbody>
+	    <tr class="template">
+	      <td class="indexField"><span class="f_index"></span></td>
+	      <td class="top rankingField">
+            <span class="row nameField"><b><span class="f_name"></span></b></span>
+            <span class="rankingField f_rank"></span>
+            <span class="title dim">Total Games</span>
+	        <span class="small countField durationField"><span class="f_total_playtime"></span> (<span class="f_total_games"></span> games)</span><br>
+          </td>
+	      <td>
+            <div class="barFieldWithCaptions">
+              <span class="title dim">Team Preference</span>
+              <span class="row f_team_preference"></span>
+              <span class="small">(<span class="f_total_time_h"></span> : <span class="f_total_time_a"></span>)</span>
+            </div>
+            <div class="barFieldWithCaptions">
+              <span class="title dim">Kills and Deaths</span>
+	          <span class="row f_kills"></span><br>
+	          <span class="small">
+	            <span class="f_kills_count"></span> : <span small class="f_deaths_count"></span> (<span class="f_assists"></span> assists)
+	          </span>
+	        </div>
+            <div class="barFieldWithCaptions">
+              <span class="title dim">Buildings and Building Kills</span>
+	          <span class="row f_buildings"></span><br>
+	          <span class="small">
+	            <span class="f_build_count"></span> : <span class="f_bkills_count"></span>
+	            (<span class="f_building_kd"></span> bk / death)
+	          </span>
+            </div>
+	      </td>
+	      <td class="fill_column"></td>
+	    </tr>
+      </tbody>
+    </table>
