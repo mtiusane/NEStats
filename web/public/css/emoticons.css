@@ -36,7 +36,9 @@ span.color_n { margin: 0px; padding: 0px; color: #ffffbf; }
 span.color_o { margin: 0px; padding: 0px; color: #ffff7f; }
 
 /* Default smiley (used when no real definition found) */
-span.smiley { margin-left: 0px; margin-right: 0px; margin-top: 0px; margin-bottom: -4px; padding-bottom: 0px; padding-left: 0px; padding-right: 0px; padding-top: 0px; display: inline-block; width: 1em; height: 1em; background-color: transparent; background-origin: content-box; background-repeat: no-repeat; background-size: contain; }
+span.smiley { margin-left: 0px; margin-right: 0px; margin-top: 0px; margin-bottom: -4px; padding-bottom: 0px; padding-left: 0px; padding-right: 0px; padding-top: 0px; display: inline-block; width: 1em; height: 1em; background-color: transparent; background-origin: content-box; background-repeat: no-repeat; background-size: contain; background-position: center center; }
+span.smiley.left { min-width: 3em; background-position: right center; }
+span.smiley.right { min-width: 3em; background-position: left center; }
 
 /* Tremulous smileys */
 span.smiley_acidtube { display: inline-block; background-image: url("/images/emoticons/acidtube.png"); background-color: transparent; width: 1em; height: 1em; }

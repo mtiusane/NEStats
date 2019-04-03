@@ -408,16 +408,16 @@ Common = {
 	        var rangeMin = Number(g.min_range);
 	        var rangeMax = Number(g.max_range);
 	        var rangeDelta = rangeMax - rangeMin;
-	        var rMin = Number(g.min_rating);
-	        var rMax = Number(g.max_rating);
-	        var rDelta = rMax - rMin;
+	        //var rMin = Number(g.min_rating);
+	        //var rMax = Number(g.max_rating);
+	        //var rDelta = rMax - rMin;
 	        var r = Number(g.rating);
 	        var rd = Number(g.rd);
-	        var rdScale = rd / (rangeDelta - rDelta);
+	        var rdScale = 0.5; // rd / (rangeDelta - 3/2 * rDelta);
 	        var fill_color = 'rgba(100,63,51,0.66)';
 	        var empty_color = 'transparent';
 	        var stroke_color = '#642e1d';
-	        var rd_fill_left = cw * (r - rangeMin - (2.0 /*- 0.25*/) * rd * rdScale) / rangeDelta;
+	        var rd_fill_left = cw * (r - rangeMin - (2.0/* - 0.25*/) * rd * rdScale) / rangeDelta;
 	        var rd_fill_width = cw * (4.0 * rd * rdScale) / rangeDelta;
 	        var x0 =       rd_fill_width /  4.0,x1 = 3.0*rd_fill_width / 10.0,x2 = rd_fill_width / 2.0;
 	        var x3 = 2.0 * rd_fill_width / 10.0,x4 =     rd_fill_width /  4.0,x5 = rd_fill_width / 2.0;
@@ -427,14 +427,23 @@ Common = {
 	        var extra = '';//'m '+rd_fill_middle.toFixed(2)+' 0 l '+rd_fill_middle.toFixed(2)+' '+ch.toFixed(2);
 	        var graph = move+' '+curve+' '+extra;
 	        var result = $('<div class="rating"></div>');
-            var text = '<text style="font-size: '+Number(ch/3).toFixed(2)+'px; fill: white" text-anchor="middle" dominant-baseline="middle" x="50%" y="50%">'+Number(r).toFixed(2)+'</text>';
+            var fontSize = '2.5em';
+            var ratingStyle = 'font-size: '+fontSize+'; fill: white'; // Number(ch/3).toFixed(2)+'px';
+            var infoStyle = 'font-size: 0.6em; fill: #dfdddc';
+            var text = '';
+            text += '<text style="'+infoStyle+'" text-anchor="start" dominant-baseline="hanging" x="0.5%" y="2%">'+rangeMin.toFixed(2)+'</text>';
+            text += '<text style="'+infoStyle+'" text-anchor="end" dominant-baseline="hanging" x="99.5%" y="2%">'+rangeMax.toFixed(2)+'</text>';
+
+            text += '<text style="'+infoStyle+'" text-anchor="start" dominant-baseline="bottom" x="'+(0.5 + (r-rd-rangeMin)/rangeDelta*99.0).toFixed(2)+'%" y="98%">'+(r - rd).toFixed(2)+'</text>';
+            text += '<text style="'+infoStyle+'" text-anchor="end" dominant-baseline="bottom" x="'+(0.5 + (r+rd-rangeMin)/rangeDelta*99.0).toFixed(2)+'%" y="98%">'+(r + rd).toFixed(2)+'</text>';
+            text += '<text style="'+ratingStyle+'" text-anchor="middle" dominant-baseline="middle" x="50%" y="50%">'+r.toFixed(2)+'</text>';
 	        var svg = $('<svg width="'+cw+'" height="'+ch+'" viewbox="0 0 '+cw+' '+ch+'" style="background: '+empty_color+'"><path d="'+graph+'" fill="'+fill_color+'" stroke="'+stroke_color+'" stroke-width="1"></path>'+text+'</svg>');
 	        result.append(svg);
 	        return result;
 	    } else {
             var empty_color = 'transparent';
             var fill_color = '#6f6767';
-            var text = '<text style="font-size: '+Number(ch/3).toFixed(2)+'px; fill: '+fill_color+'" text-anchor="middle" dominant-baseline="middle" x="50%" y="50%">N/A</text>';
+            var text = '<text style="font-size: '+fontSize+'; fill: '+fill_color+'" text-anchor="middle" dominant-baseline="middle" x="50%" y="50%">N/A</text>';
             return $('<div class="rating"><svg width="'+cw+'" height="'+ch+'" viewbox="0 0 '+cw+' '+ch+'" style="background: '+empty_color+'">'+text+'</svg></div>');
         }
     },

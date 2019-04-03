@@ -20,7 +20,9 @@ span.color6 { margin: 0px; padding: 0px; color: #ff00ff; }
 span.color7 { margin: 0px; padding: 0px; color: #ffffff; }
 
 /* Default smiley (used when no real definition found) */
-span.smiley { margin-left: 0px; margin-right: 0px; margin-top: 2px; margin-bottom: -2px; display: inline-block; width: 1em; height: 1em; background-color: transparent; }
+span.smiley { margin-left: 0px; margin-right: 0px; margin-top: 0px; margin-bottom: -4px; padding-bottom: 0px; padding-left: 0px; padding-right: 0px; padding-top: 0px; display: inline-block; width: 1em; height: 1em; background-color: transparent; background-origin: content-box; background-repeat: no-repeat; background-size: contain; background-position: center center; }
+span.smiley.left { min-width: 3em; background-position: right center; }
+span.smiley.right { min-width: 3em; background-position: left center; }
 
 /* Tremulous smileys */
 |;

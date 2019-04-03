@@ -35,14 +35,14 @@
             </div>
             <div class="barFieldWithCaptions">
               <span class="title dim">Kills and Deaths</span>
-	          <span class="row f_kills"></span><br>
+	          <span class="row f_kills"></span>
 	          <span class="small">
 	            <span class="f_kills_count"></span> : <span small class="f_deaths_count"></span> (<span class="f_assists"></span> assists)
 	          </span>
 	        </div>
             <div class="barFieldWithCaptions">
               <span class="title dim">Buildings and Building Kills</span>
-	          <span class="row f_buildings"></span><br>
+	          <span class="row f_buildings"></span>
 	          <span class="small">
 	            <span class="f_build_count"></span> : <span class="f_bkills_count"></span>
 	            (<span class="f_building_kd"></span> bk / death)

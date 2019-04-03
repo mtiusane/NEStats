@@ -15,10 +15,10 @@ sub get_rating_range {
     my ($minRating,$maxRating,$minRange,$maxRange) = $sth->fetchrow_array;
     $sth->finish;
     return {
-	min_rating => $minRating,
-	max_rating => $maxRating,
-	min_range  => $minRange,
-	max_range  => $maxRange
+        min_rating => $minRating,
+        max_rating => $maxRating,
+        min_range  => $minRange,
+        max_range  => $maxRange
     }
 }
 

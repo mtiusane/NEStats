@@ -29,6 +29,8 @@ $(document).ready(function() {
 	    entry.find('.f_kills').html(Common.bar({
 	        value: player.total_kills,
 	        total: Common.sum([player.total_kills,player.total_deaths,player.total_bdeaths]),
+            prefix: '<span class="smiley left"></span>',
+            suffix: '<span class="smiley right"></span>',
 	        fill_color: 'rgba(100,63,51,0.66)',
 	        empty_color: 'rgba(0,0,0,0.15)'
 	    }));
@@ -38,8 +40,8 @@ $(document).ready(function() {
 	    entry.find('.f_buildings').html(Common.bar({
 	        value: player.total_built,
 	        total: Common.sum([player.total_built,player.total_bkills]),
-            prefix: '<span class="smiley smiley_ckit"></span>',
-            suffix: '<span class="smiley smiley_lcannon"></span>',
+            prefix: '<span class="smiley smiley_ckit left"></span>',
+            suffix: '<span class="smiley smiley_lcannon right"></span>',
 	        fill_color: 'rgba(100,100,63,0.66)',
 	        empty_color: 'rgba(100,63,51,0.66)'
 	    }));
@@ -49,8 +51,8 @@ $(document).ready(function() {
 	    entry.find('.f_team_preference').html(Common.bar({
 	        value: player.total_time_h,
 	        total: player.total_time,
-	        prefix: '<span class="smiley smiley_bsuit"></span>',
-	        suffix: '<span class="smiley smiley_tyrant"></span>',
+	        prefix: '<span class="smiley smiley_bsuit left"></span>',
+	        suffix: '<span class="smiley smiley_tyrant right"></span>',
 	        fill_color: 'rgba(51,63,100,0.66)',
 	        empty_color: 'rgba(63,100,51,0.66)'
 	    }));

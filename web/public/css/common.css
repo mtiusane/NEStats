@@ -317,10 +317,10 @@ div#content {
     left: 0px;
     top: 0px;
     width: 100%;
-    min-width: 62vh;
+    min-width: calc(100wv - 2em);
     height: 62vh;
     margin: 0px;
-    padding: 2vh;
+    padding: 1em;
     min-height: 62vh;
 }
 
