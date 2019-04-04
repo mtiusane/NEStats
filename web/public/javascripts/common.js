@@ -28,8 +28,10 @@ Common = {
 		        });
                 if (offset <= 0) {
                     table.find('.sticky').each(function() {
-                        $(this).data('sticky_top', $(this).position().top)
-                        $(this).data('sticky_offset', table.offset().top + $(this).position().top);
+                        $(this).data('sticky',{
+                            top: $(this).position().top,
+                            offset: table.offset().top + $(this).position().top - table.offsetParent().offset().top
+                        });
                     });
                 }
 		        table.data('total',data.total);
@@ -53,24 +55,14 @@ Common = {
 		        loadPage();
 	        }
             table.find('.sticky').each(function() {
-                if (top >= $(this).data('sticky_top')) {
+                var sticky = $(this).data('sticky');
+                if (top > sticky.top) {
                     $(this).addClass('hold');
-                    $(this).offset({ top: $(this).data('sticky_offset') });
+                    $(this).offset({ top: table.offsetParent().offset().top + sticky.offset + top });
                 } else {
                     $(this).removeClass('hold');
                 }
             });
-	        /*
-	          thead.css({
-		      position: 'absolute',
-		      top: top
-	          });
-	          tbody.css({
-		      position: 'absolute',
-		      top: thead.height(),
-		      width: '100%'
-	          });
-	        */
 	    });
 	    loadPage();
     },
@@ -254,6 +246,7 @@ Common = {
 	        empty_color = empty_color.length ? empty_color.text() : null;
 	        var neutral_color = field.find('.bar_neutralcolor');
 	        neutral_color = neutral_color.length ? neutral_color.text() : null;
+            var center_fill_text = field.hasClass('.bar_center_text');
 	        Common.replaceField(field,Common.bar({
 		        value: field.find('.bar_value').text(),
 		        total: field.find('.bar_total').text(),
@@ -263,7 +256,8 @@ Common = {
 		        suffix: suffix,
 		        fill_color: fill_color,
 		        empty_color: empty_color,
-		        neutral_color: neutral_color
+		        neutral_color: neutral_color,
+                center_fill_text: center_fill_text
 	        }));
 	    });
     },
@@ -449,12 +443,14 @@ Common = {
     },
     
     bar: function(params) {
+        // TODO: Rename centerText as it's used to override default layout such that fill% is always shown but always at center
 	    var [cw,ch] = Common.bar_size();
 	    var fill_color = params.fill_color || '#3355ff';
 	    var empty_color = params.empty_color || '#ff5533';
 	    var neutral_color = params.neutral_color || '#555555';
 	    var resultWrapper = $('<div class="field barWithCaptions"></div>');
 	    var result = $('<div class="bar"></div>');
+        var centerText = Common.isDefined(params.center_fill_text);
 	    var hasText = Common.isDefined(params.text);
 	    var total = Number(params.total);
         var svg = '';
@@ -462,35 +458,40 @@ Common = {
 	        var fill = 100.0 * Number(params.value) / total;
 	        var neutral = Common.isDefined(params.neutral) ? 100.0 * Number(params.neutral) / total : 0.0;
 	        var empty = 100.0 - fill - neutral;
-	        var fill_text = hasText ? '' : ((fill >= 33.0) ? fill.toFixed(2)+'%' : '');
-	        var empty_text = hasText ? '' : ((empty >= 33.0) ? empty.toFixed(2)+'%' : '');
-	        var neutral_text = hasText ? '' : ((neutral >= 33.0) ? neutral.toFixed(2)+'%' : '');
+	        var fill_text = hasText ? '' : ((fill >= 33.0 || centerText) ? fill.toFixed(2)+'%' : '');
+	        var empty_text = hasText ? '' : ((empty >= 33.0 && !centerText) ? empty.toFixed(2)+'%' : '');
+	        var neutral_text = hasText ? '' : ((neutral >= 33.0 && !centerText) ? neutral.toFixed(2)+'%' : '');
 
             svg += '<svg width="'+cw+'" height="'+ch+'" viewbox="0 0 '+cw+' '+ch+'">';
             svg += '<rect x="0" y="0" width="'+Number(fill).toFixed(2)+'%" height="100%" fill="'+fill_color+'"></rect>';
-            if (fill_text != "") {
-                svg += '<text x="'+Number(fill/2).toFixed(2)+'%" y="50%" dominant-baseline="middle" text-anchor="middle" style="font-size: '+Number(ch/3).toFixed(2)+'px; fill: white">'+fill_text+'</text>';
-            }
-            if (neutral > 0.0) {
-                svg += '<rect x="'+Number(fill).toFixed(2)+'%" y="0" width="'+Number(neutral).toFixed(2)+'%" height="100%" fill="'+neutral_color+'"></rect>';
-                if (neutral_text != "") {
-                    svg += '<text x="'+Number(fill + neutral/2).toFixed(2)+'%" y="50%" dominant-baseline="middle" text-anchor="middle" style="font-size: '+Number(ch/3).toFixed(2)+'px; fill: white">'+neutral_text+'</text>';
+
+            if (!centerText) {
+                if (fill_text != "") {
+                    svg += '<text x="'+Number(fill/2).toFixed(2)+'%" y="50%" dominant-baseline="middle" text-anchor="middle" style="font-size: '+Number(ch/3).toFixed(2)+'px; fill: white">'+fill_text+'</text>';
                 }
-            }
-            svg += '<rect x="'+Number(fill+neutral).toFixed(2)+'%" y="0" width="'+Number(empty).toFixed(2)+'%" height="100%" fill="'+empty_color+'"></rect>';
-            if (empty_text != "") {
-                svg += '<text x="'+Number(fill+neutral+empty/2).toFixed(2)+'%" y="50%" dominant-baseline="middle" text-anchor="middle" style="font-size: '+Number(ch/3).toFixed(2)+'px; fill: white">'+empty_text+'</text>';
+                if (neutral > 0.0) {
+                    svg += '<rect x="'+Number(fill).toFixed(2)+'%" y="0" width="'+Number(neutral).toFixed(2)+'%" height="100%" fill="'+neutral_color+'"></rect>';
+                    if (neutral_text != "") {
+                        svg += '<text x="'+Number(fill + neutral/2).toFixed(2)+'%" y="50%" dominant-baseline="middle" text-anchor="middle" style="font-size: '+Number(ch/3).toFixed(2)+'px; fill: white">'+neutral_text+'</text>';
+                    }
+                }
+                svg += '<rect x="'+Number(fill+neutral).toFixed(2)+'%" y="0" width="'+Number(empty).toFixed(2)+'%" height="100%" fill="'+empty_color+'"></rect>';
+                if (empty_text != "") {
+                    svg += '<text x="'+Number(fill+neutral+empty/2).toFixed(2)+'%" y="50%" dominant-baseline="middle" text-anchor="middle" style="font-size: '+Number(ch/3).toFixed(2)+'px; fill: white">'+empty_text+'</text>';
+                }
+            } else {
+                svg += '<text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" style="font-size: '+Number(ch/3).toFixed(2)+'px; fill: white">'+fill_text+'</text>';
             }
 	    } else {
             //var empty_color = 'transparent';
             //var fill_color = '#6f6767';
-            var text = '<text style="font-size: '+Number(ch/3).toFixed(2)+'px; fill: '+fill_color+'" text-anchor="middle" dominant-baseline="middle" x="50%" y="50%">N/A</text>';
+            var text = '<text style="font-size: '+Number(ch/3).toFixed(2)+'px; fill: white" text-anchor="middle" dominant-baseline="middle" x="50%" y="50%">N/A</text>';
             svg += '<svg width="'+cw+'" height="'+ch+'" viewbox="0 0 '+cw+' '+ch+'" style="background: '+empty_color+'">'+text;
 	    }
         if (hasText) {
             //var empty_color = 'transparent';
             //var fill_color = '#6f6767';
-            svg += '<text style="font-size: '+Number(ch/3).toFixed(2)+'px; fill: '+fill_color+'" text-anchor="middle" dominant-baseline="middle" x="50%" y="50%">'+params.text+'</text>';      
+            svg += '<text style="font-size: '+Number(ch/3).toFixed(2)+'px; fill: white" text-anchor="middle" dominant-baseline="middle" x="50%" y="50%">'+params.text+'</text>';      
         }
         svg += '</svg>';
         result.append($(svg));

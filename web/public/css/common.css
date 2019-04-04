@@ -793,6 +793,11 @@ input[type="text"]:active, input[type="text"]:focus {
 
 /* The following initialize the element dimensions on js side. */
 
+.fill {
+    padding: 0px !important;
+    margin: 0px !important;
+}
+
 .fullheight {
     height: 79.5vh;
     /* min-height: 24em; */
@@ -807,17 +812,16 @@ input[type="text"]:active, input[type="text"]:focus {
     padding: 0px;
     margin-left: 0.5em;
     margin-right: 0.5em;
-    width: calc(100vw - 4vh); /*calc(60vh - 4.5em - 20px);*/
-    min-width: calc(100vw - 4vh); /*calc(60vh - 4.5em - 20px);*/
+    width: calc(100vw - 4vh);
+    min-width: calc(100vw - 4vh);
 }
 
 .halfwidth {
+    padding: 0px;
     margin-left: 0.5em;
     margin-right: 0.5em;
-    width: calc(30vh - 3em - 16px);
-    min-width: (30vh - 3em - 16px);
+    min-width: calc(50vw - 2vh);
 }
-
 
 .smallheight {
     height: 50%;
@@ -1012,10 +1016,12 @@ canvas {
 
 .graph {
     display: inline-block;
-    width: calc(120vh - 8em - 11px);
-    height: calc(60vh - 4em - 5.5px);
-    min-width: 800px;
-    min-height: 400px;
+    width: calc(100vw - 5em);
+    height: max(calc(100vw - 5em), 60vh);
+    /*width: calc(120vh - 8em - 11px);
+    height: calc(60vh - 4em - 5.5px);*/
+    /*min-width: 800px;
+    min-height: 400px;*/
     overflow: hidden;
     border-radius: var(--border-radius);
     /* border: 1px solid red; */
@@ -1087,7 +1093,7 @@ canvas {
     overflow: hidden;
 }
 
-.container table thead {
+.container table > thead {
     height: var(--thead-height);
 
     background: url('/images/metal_background.png') repeat scroll left top rgba(33, 177, 160, 0.8);
@@ -1097,31 +1103,34 @@ canvas {
     z-index: 500;
 }
 
-.container table thead tr th {
+.container table > thead > tr {
+}
+
+.container table > thead > tr > th {
     text-align: center;
     font-weight: bold;
-    padding-top: 3px;
+    /*padding-top: 3px;
     padding-bottom: 3px;
     padding-left: 6px;
-    padding-right: 6px;
+    padding-right: 6px;*/
 }
 
-.container table thead tr th.fill_column {
+.container table > thead > tr > th.fill_column {
 }
 
-.container table:not(.rows) tbody tr td:nth-child(odd) {
+.container table:not(.rows) > tbody > tr > td:nth-child(odd) {
     background: url('/images/metal_background.png') repeat scroll left top rgba(255,255,255,0.25);
 }
 
-.container table:not(.rows) tbody tr td:nth-child(even) {
+.container table:not(.rows) > tbody > tr > td:nth-child(even) {
     background: url('/images/metal_background.png') repeat scroll left top rgba(255,255,255,0.20);
 }
 
-.container table.rows tbody tr:nth-child(odd) {
+.container table.rows > tbody > tr:nth-child(odd) {
     background: url('/images/metal_background.png') repeat scroll left top rgba(255,255,255,0.25);
 }
 
-.container table.rows tbody tr:nth-child(even) {
+.container table.rows > tbody > tr:nth-child(even) {
     background: url('/images/metal_background.png') repeat scroll left top rgba(255,255,255,0.20);
 }
 
