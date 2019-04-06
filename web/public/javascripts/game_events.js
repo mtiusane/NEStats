@@ -146,6 +146,7 @@ $(document).ready(function() {
 			            label: set.session.name,
 			            borderColor: color,
 			            backgroundColor: color,
+                        /* lineTension: 0.2, */
 			            data: data,
 			            fill: false,
 			            hidden: hidden,
@@ -164,11 +165,7 @@ $(document).ready(function() {
 		            options: {
 			            responsive: true,
 			            maintainAspectRatio: true,
-			            title: {
-			                display: true,
-			                text: 'Game events',
-			                fontColor: 'lightgray'
-			            },
+			            title: { display: false, text: 'Game events', fontColor: 'lightgray' },
 			            scales: {
 			                xAxes: [
 				                {
@@ -181,7 +178,6 @@ $(document).ready(function() {
 					                    displayFormats: {
 					                        'minute': 'hh:mm'
 					                    },
-					                    /* unitStepSize: '1', */
 					                    min: game.start
 				                    },
 				                    ticks: {
@@ -192,7 +188,14 @@ $(document).ready(function() {
 					                    fontColor: 'lightgray'
 				                    },
 				                }
-			                ]
+			                ],
+                            yAxes: [
+                                {
+                                    ticks: {
+                                        fontColor: 'lightgray'
+                                    }
+                                }
+                            ]
 			            },
 			            hover: {
 			                mode: 'single',
@@ -212,7 +215,7 @@ $(document).ready(function() {
 			                rangeMax: maxRange
 			            },
 			            legend: {
-			                display: true,
+			                display: false/*true*/,
 			                position: 'bottom',
 			                labels: {
 				                boxWidth: 12,
