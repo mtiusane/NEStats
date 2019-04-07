@@ -319,6 +319,8 @@ $(document).ready(function() {
 			            ],
 		            }
 		        });
+                chart.render();
+                $(window).trigger('resize');
 		        
 		        canvas.hover(function() {
 		            Common.disableScroll();

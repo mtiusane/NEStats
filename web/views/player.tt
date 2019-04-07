@@ -132,7 +132,7 @@
 	      <tr class="title">
 	        <th>#</th>
 	        <th>Map</th>
-	        <th>Total Games</th>
+	        <th>Games</th>
 	        <th>Total Kills</th>
 	        <th class="fill_column"></th>
 	      </tr>

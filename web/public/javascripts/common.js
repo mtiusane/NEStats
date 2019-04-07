@@ -3,6 +3,7 @@ Common = {
     scroll_container: function(container,table,link,elements,line) {
 	    container = $(container);
 	    table = $(table);
+        // console.log("Initializing scroll container: ",container," table: ",table);
 	    var scroll = container.jScrollPane({
 	        autoReinitialise: false,
 	        showArrows: false,
@@ -27,10 +28,11 @@ Common = {
 		            tbody.append(line(template,element,offset+index));
 		        });
                 if (offset <= 0) {
-                    table.find('.sticky').each(function() {
+                    table.find('.sticky > tr > th').each(function() {
+                        var top = $(this).position().top;
                         $(this).data('sticky',{
-                            top: $(this).position().top,
-                            offset: table.offset().top + $(this).position().top - table.offsetParent().offset().top
+                            top: top,
+                            offset: table.offset().top + top - table.offsetParent().offset().top
                         });
                     });
                 }
@@ -39,7 +41,7 @@ Common = {
 		        table.data('loading',false);
 		        table.data('lastLoad',(new Date()).getTime());
 		        var oldWidth = table.width();
-		        scroll.reinitialise();
+                scroll.reinitialise();
 		        table.width(oldWidth,true); /* TODO: Without this the table keeps getting +10px at every new content row if scrolled to the rightmost position. */
 		        if (callback) callback();
 	        });
@@ -52,13 +54,14 @@ Common = {
 	        var timeSinceLastLoad = (new Date()).getTime() - table.data('lastLoad');
 	        if (table.data('offset') < table.data('total') && !table.data('loading') &&
 		        timeSinceLastLoad >= 500 && isAtBottom) {
+                // console.log("Loading page:" +table.data('offset') + ' < ' + table.data('total'));
 		        loadPage();
 	        }
-            table.find('.sticky').each(function() {
+            table.find('.sticky > tr > th').each(function() {
                 var sticky = $(this).data('sticky');
+                $(this).offset({ top: table.offsetParent().offset().top + sticky.offset + top });
                 if (top > sticky.top) {
                     $(this).addClass('hold');
-                    $(this).offset({ top: table.offsetParent().offset().top + sticky.offset + top });
                 } else {
                     $(this).removeClass('hold');
                 }
@@ -612,6 +615,18 @@ Common = {
 };
 
 $(document).ready(function() {
+    // Fixes jquery+chrome issues about passive/nonpassive event handlers
+    (function () {
+        var func = EventTarget.prototype.addEventListener;
+        
+        EventTarget.prototype.addEventListener = function (type, fn, capture) {
+            this.func = func;
+            capture = capture || {};
+            capture.passive = false;
+            this.func(type, fn, capture);
+        };
+    }());
+
     var win = $(window);
     var menu = $('#menu');
     var page = $('#page');
@@ -626,7 +641,7 @@ $(document).ready(function() {
 	        content.jScrollPane({ showArrows: true });
 	        // Common.updateFullSize(menu,page);
 	    }
-    }).trigger('resize');
+    }); // .trigger('resize');
     page.css('overflow','hidden');
     /* IE fix, retrigger due to incorrect initial size */
     if (content.width() != page.width()) {

@@ -202,7 +202,7 @@ $(document).ready(function() {
 				                fontFamily: tooltip._fontFamily,
 				                fontSize: tooltip.fontSize,
 				                fontStyle: tooltip._fontStyle,
-				                padding: tooltip.yPadding+'px '+tooltip.xPadding+'px',
+				                padding: tooltip.yPadding+'px '+tooltip.xPadding+'px'
 				            });
 			            },
 			            callbacks: {
@@ -214,6 +214,8 @@ $(document).ready(function() {
 		            }
 		        }
 	        });
+            chart.render();
+            $(window).trigger('resize');
 	        
 	        canvas.hover(function() {
 		        Common.disableScroll();

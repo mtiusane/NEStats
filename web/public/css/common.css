@@ -8,7 +8,7 @@
 */
 
 :root {
-    --field-width: 24vw;
+    --field-width: 22vw;
     --border-size: 1px;
     --border-radius: 6px;
     --thead-height: 4em;
@@ -51,6 +51,14 @@ h1:first-child, h2:first-child, h3:first-child, h4:first-child, h5:first-child, 
     color: #efefef;
 }
 
+h1.title, h2.title, h3.title, h4.title, h5.title, h6.title {
+    display: block;
+
+    background: rgba(59,198,184,0.75);
+    color: #efedec;
+    text-align: center;
+}
+
 table {
     border-collapse: collapse;
     border-radius: var(--border-radius);
@@ -59,14 +67,6 @@ table {
 tr {
     text-shadow: 0px 0px 5px #000;
     color: #efefef;
-}
-
-h1.title, h2.title, h3.title, h4.title, h5.title, h6.title {
-    display: block;
-
-    background: rgba(59,198,184,0.75);
-    color: #efedec;
-    text-align: center;
 }
 
 /*
@@ -87,10 +87,6 @@ tr td {
     margin: 0px;
     /*border-left: 1px solid #606060;
     border-right: 1px solid #606060;*/
-}
-
-.text {
-    text-align: left;
 }
 
 tr th {
@@ -368,6 +364,7 @@ div#loading {
 
 .list tr th {
     text-align: center;
+    padding: 0px;
     padding-top: 3px;
     padding-bottom: 3px;
     padding-left: 6px;
@@ -1035,7 +1032,7 @@ canvas {
     passing: 0px;
     display: inline-block;
     width: calc(100vw - 3em);
-    height: calc(3.0/4.0*(100vw - 5em));
+    /* height: calc(3.0/4.0*(100vw - 5em)); */
     overflow: hidden;
     border-radius: var(--border-radius);
 }
@@ -1105,27 +1102,29 @@ canvas {
 }
 
 .container table > thead {
-    height: var(--thead-height);
-
-    background: url('/images/metal_background.png') repeat scroll left top rgba(33, 177, 160, 0.8);
-    border-bottom: 2px solid rgba(72, 152, 143, 0.8);
-    margin: 2px;
-
-    z-index: 500;
+    /* border-bottom: 2px solid rgba(72, 152, 143, 0.8); */
 }
 
 .container table > thead > tr {
-    /* this definition required for chrome */
-    height: calc(var(--thead-height) / 2);
+    /* padding, margin needed since otherwise .xxxFields override it */
+    padding: 0px !important;
+    margin: 0px !important;
+    height: calc(var(--thead-height) / 2.0);
+    max-height: calc(var(--thead-height) / 2.0);
 }
 
 .container table > thead > tr > th {
+    padding: 0px !important;
+    margin: 0px !important;
+    background: url('/images/metal_background.png') repeat scroll left top rgba(33, 177, 160, 0.8);
     text-align: center;
     font-weight: bold;
-    /*padding-top: 3px;
-    padding-bottom: 3px;
-    padding-left: 6px;
-    padding-right: 6px;*/
+    height: calc(var(--thead-height) / 2.0);
+    max-height: calc(var(--thead-height) / 2.0);
+    z-index: 500;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .container table > thead > tr > th.fill_column {
@@ -1170,9 +1169,9 @@ div#chartjs-tooltip .container table
     padding: 0px;
     margin: 0px;
     width: 100%;
+    min-width: 12em;
     border-radius: var(--border-radius);
     border: 0px none transparent;
-    display: inline-block;
 }
 
 div#chartjs-tooltip .container table tr td {
@@ -1366,7 +1365,6 @@ div#chartjs-tooltip .container table tr:nth-child(even) td {
 
 .container .jspVerticalBar {
     background: transparent;
-    border-left: 2px solid rgba(0,0,0,0.25);
     border-top-left-radius: 0px;
     border-bottom-left-radius: 0px;
     border-top-right-radius: 6px;
@@ -1376,6 +1374,7 @@ div#chartjs-tooltip .container table tr:nth-child(even) td {
 
 .container .jspVerticalBar .jspTrack {
     background: rgba(255,255,255,0.25);
+    border-left: 2px solid rgba(0,0,0,0.25);
     border-top-left-radius: 0px;
     border-bottom-left-radius: 0px;
     border-top-right-radius: 6px;
@@ -1446,9 +1445,15 @@ div#chartjs-tooltip .container table tr:nth-child(even) td {
     border-bottom-right-radius: 6px;
 }
 
-.container .jspVerticalBar {
-    /* +2 px required for chrome */
-    margin-top: calc(var(--thead-height) + 2px);
+.container .jspVerticalBar .jspCapTop {
+    display: block;
+    background: transparent;
+    height: var(--thead-height);
+}
+
+.container .jspPane > table > tbody > tr:last-child td {
+    /* TODO: This partially fixes scrollable table layout issues, fix init order and this might not be needed... */
+    margin-bottom: calc(var(--thead-height) / 2.0);
 }
 
 /* common field styles */
@@ -1465,11 +1470,12 @@ div#chartjs-tooltip .container table tr:nth-child(even) td {
     padding-bottom: 0px;
 }
 
-.container .sticky {
+.container .sticky th {
+    position: relative;
 }
 
-.container .sticky.hold {
-    position: relative;
+.container .sticky.hold th {
+    position: fixed;
 }
 
 .container td .row {
@@ -1694,4 +1700,8 @@ a:visited:hover .roundcorners {
     height: 100%;
     background: #3f3f3f;
     text-align: center;
+}
+
+.text {
+    text-align: left;
 }

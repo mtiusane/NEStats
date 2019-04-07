@@ -483,7 +483,7 @@ get '/map/:id' => sub {
 get '/map/:id/players/:offset/:limit' => sub {
     my $map = Stats::DB::Map->new(id => params->{id});
     my $where = [ map_id => $map->id, total_kills => { gt => 0 } ];
-    my $count = Stats::DB::Game::Manager->get_games_count(where => $where);
+    my $count = Stats::DB::PlayerMap::Manager->get_player_maps_count(where => $where);
     my $range = Stats::DB::Glicko2::get_rating_range();
     my @players = map {
         my $killer = $_;
