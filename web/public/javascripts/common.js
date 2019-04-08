@@ -1,5 +1,30 @@
 Common = {
 
+    loadingCount: 0,
+    // loadingStart: 0,
+    onEndLoading: [],
+    beginLoading: function() {
+        /*if (Common.loadingCount <= 0) {
+            loadingStart = (new Date()).getTime();
+        }*/
+        ++Common.loadingCount;
+        // console.log("Loading started, requests: "+Common.loadingCount);
+    },
+    endLoading: function() {
+        --Common.loadingCount;
+        if (Common.loadingCount <= 0) {
+            // var loadingEnd = (new Date()).getTime();
+            // var loadingDuration = (loadingEnd - loadingStart) / 1000;
+            // console.log("Loading finished, total time: "+loadingDuration);
+            while(Common.onEndLoading.length > 0) {
+                var fn = Common.onEndLoading.shift();
+                fn();
+            }
+            Common.loadingCount = 0;
+            Common.loadingStart = 0;
+        }
+    },
+    
     scroll_container: function(container,table,link,elements,line) {
 	    container = $(container);
 	    table = $(table);
@@ -22,6 +47,7 @@ Common = {
 	        var limit = table.data('limit');
 	        var lastLoad = table.data('lastLoad');
 	        table.data('loading',true);
+            Common.beginLoading();
 	        $.get(link(offset,limit),function(data) {
 		        var lines = elements(data);
 		        $.each(lines,function(index,element) {
@@ -42,8 +68,9 @@ Common = {
 		        table.data('lastLoad',(new Date()).getTime());
 		        var oldWidth = table.width();
                 scroll.reinitialise();
-		        table.width(oldWidth,true); /* TODO: Without this the table keeps getting +10px at every new content row if scrolled to the rightmost position. */
+		        table.width(oldWidth,true); /* TODO: Without this the table keeps getting +10px at every new content row if scrolled to the rightmost position. Also required for current sticky table headers. */
 		        if (callback) callback();
+                Common.endLoading();
 	        });
 	    };
 	    table.data('offset',0);
@@ -468,21 +495,20 @@ Common = {
             svg += '<svg width="'+cw+'" height="'+ch+'" viewbox="0 0 '+cw+' '+ch+'">';
             svg += '<rect x="0" y="0" width="'+Number(fill).toFixed(2)+'%" height="100%" fill="'+fill_color+'"></rect>';
 
-            if (!centerText) {
-                if (fill_text != "") {
-                    svg += '<text x="'+Number(fill/2).toFixed(2)+'%" y="50%" dominant-baseline="middle" text-anchor="middle" style="font-size: '+Number(ch/3).toFixed(2)+'px; fill: white">'+fill_text+'</text>';
+            if (!centerText && fill_text != "") {
+                svg += '<text x="'+Number(fill/2).toFixed(2)+'%" y="50%" dominant-baseline="middle" text-anchor="middle" style="font-size: '+Number(ch/3).toFixed(2)+'px; fill: white">'+fill_text+'</text>';
+            }
+            if (neutral > 0.0) {
+                svg += '<rect x="'+Number(fill).toFixed(2)+'%" y="0" width="'+Number(neutral).toFixed(2)+'%" height="100%" fill="'+neutral_color+'"></rect>';
+                if (!centerText && neutral_text != "") {
+                    svg += '<text x="'+Number(fill + neutral/2).toFixed(2)+'%" y="50%" dominant-baseline="middle" text-anchor="middle" style="font-size: '+Number(ch/3).toFixed(2)+'px; fill: white">'+neutral_text+'</text>';
                 }
-                if (neutral > 0.0) {
-                    svg += '<rect x="'+Number(fill).toFixed(2)+'%" y="0" width="'+Number(neutral).toFixed(2)+'%" height="100%" fill="'+neutral_color+'"></rect>';
-                    if (neutral_text != "") {
-                        svg += '<text x="'+Number(fill + neutral/2).toFixed(2)+'%" y="50%" dominant-baseline="middle" text-anchor="middle" style="font-size: '+Number(ch/3).toFixed(2)+'px; fill: white">'+neutral_text+'</text>';
-                    }
-                }
-                svg += '<rect x="'+Number(fill+neutral).toFixed(2)+'%" y="0" width="'+Number(empty).toFixed(2)+'%" height="100%" fill="'+empty_color+'"></rect>';
-                if (empty_text != "") {
-                    svg += '<text x="'+Number(fill+neutral+empty/2).toFixed(2)+'%" y="50%" dominant-baseline="middle" text-anchor="middle" style="font-size: '+Number(ch/3).toFixed(2)+'px; fill: white">'+empty_text+'</text>';
-                }
-            } else {
+            }
+            svg += '<rect x="'+Number(fill+neutral).toFixed(2)+'%" y="0" width="'+Number(empty).toFixed(2)+'%" height="100%" fill="'+empty_color+'"></rect>';
+            if (!centerText && empty_text != "") {
+                svg += '<text x="'+Number(fill+neutral+empty/2).toFixed(2)+'%" y="50%" dominant-baseline="middle" text-anchor="middle" style="font-size: '+Number(ch/3).toFixed(2)+'px; fill: white">'+empty_text+'</text>';
+            }
+            if (centerText) {
                 svg += '<text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" style="font-size: '+Number(ch/3).toFixed(2)+'px; fill: white">'+fill_text+'</text>';
             }
 	    } else {
@@ -610,6 +636,44 @@ Common = {
 		        jsp.reinitialise();
 	        }
 	    });
+    },
+
+    isResizing: false,
+    mainScrollPane: undefined,
+    resizeWindow: function(content,menu,page) {
+	    if (!Common.isResizing) {
+	        Common.isResizing = true;
+	        content.css({ width: 1, height: 1 });
+	        content.css({ width: page.width(), height: page.height() });
+            if (Common.mainScrollPane !== undefined) {
+                Common.mainScrollPane.destroy();
+                Common.mainScrollPane = undefined;
+            }
+            Common.mainScrollPane = content.jScrollPane({
+	            autoReinitialise: false,
+                showArrows: false,
+	            maintainPosition: true,
+	            verticalGutter: 0,
+	            horizontalGutter: 0,
+	            contentWidth: '100%'
+            });
+	        Common.isResizing = false;
+	        // Common.updateFullSize(menu,page);
+	    }
+    },
+
+    resizePending: false,
+    resizeAfterAllLoads: function() {
+        if (!Common.resizePending) {
+            Common.resizePending = true;
+            Common.onEndLoading.push(function() {
+                var menu = $('#menu');
+                var page = $('#page');
+                var content = $('#content_wrapper');
+                Common.resizeWindow(content, menu, page);
+                Common.resizePending = false;
+            });
+        }
     }
    
 };
@@ -631,18 +695,11 @@ $(document).ready(function() {
     var menu = $('#menu');
     var page = $('#page');
     var content = $('#content_wrapper');
-    var isResizing = false;
     win.bind('resize',function() {
-	    if (!isResizing) {
-	        isResizing = true;
-	        content.css({ width: 1, height: 1 });
-	        content.css({ width: page.width(), height: page.height() });
-	        isResizing = false;
-	        content.jScrollPane({ showArrows: true });
-	        // Common.updateFullSize(menu,page);
-	    }
-    }); // .trigger('resize');
+        Common.resizeWindow(content, menu, page);
+    });
     page.css('overflow','hidden');
+    Common.resizeAfterAllLoads();
     /* IE fix, retrigger due to incorrect initial size */
     if (content.width() != page.width()) {
 	    win.trigger('resize');

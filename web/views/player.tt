@@ -62,17 +62,17 @@
 	        <td class="f_weapon_displayname"></td>
             <td>
 	          <span class="row f__bar">
-	            <!-- <span class="bar_text"><span class="f_total_kills"></span> : <span class="f_total_bkills"></span></span> -->
                 <span class="bar_value f_total_kills"></span>
-	            <span class="bar_total f__sum f_total_kills f_total_bkills"></span>
+	            <span class="bar_neutral f_total_bkills"></span>
+                <span class="bar_total f__sum f_total_kills f_total_bkills"></span>
 	            <span class="bar_prefix f__text">[bsuit][tyrant]</span>
 	            <span class="bar_suffix f__text">[reactor][overmind]</span>
 	            <span class="bar_fillcolor">rgba(51,63,100,0.66)</span>
-	            <span class="bar_emptycolor">rgba(63,100,51,0.66)</span>
-	            <span class="bar_neutralcolor">rgba(100,100,100,0.66)</span>
+                <span class="bar_neutralcolor">rgba(100,63,51,0.66)</span>
+                <span class="bar_emptycolor">rgba(100,100,100,0.66)</span>
 	          </span>
-              <span class="dim row f__text">
-                [bsuit][tyrant]: <span class="f_total_kills"></span> [reactor][overmind]: <span class="f_total_bkills"></span><!-- (<span class="f_num_fired"></span> shots)-->
+              <span class="dim row small">
+                <span class="f__text">[bsuit][tyrant]</span>: <span class="f_total_kills"></span> <span class="f__text">[reactor][overmind]</span>: <span class="f_total_bkills"></span><!-- (<span class="f_num_fired"></span> shots)-->
                 <!-- TODO: n/a yet <span class="f__sum f_damage_enemy f_damage_enemy_buildable"></span> <span class="f__sum f_damage_self f_damage_friendly f_damage_friendly_buildable"></span> -->
               </span>
               <!-- TODO: damage values not updated correctly for unv, fix this once those are available
@@ -116,9 +116,10 @@
 	            <!--<span class="bar_prefix f__text">[bsuit][tyrant]</span>
 	            <span class="bar_suffix f__text">[reactor][overmind]</span>-->
 	            <span class="bar_fillcolor">rgba(100,63,51,0.66)</span>
+                <span class="bar_neutralcolor">rgba(100,63,51,0.66)</span>
 	            <span class="bar_emptycolor">rgba(100,100,100,0.66)</span>
 	          </span>
-              <span class="dim row"><span class="f__sum f_total_deaths f_total_bdeaths"></span> deaths</span>
+              <span class="dim row small"><span class="f__sum f_total_deaths f_total_bdeaths"></span> deaths</span>
             </td>
 	        <td class="fill_column"></td>
 	      </tr>
@@ -150,8 +151,9 @@
 		        <span class="bar_suffix f__text">[tyrant]</span>
 		        <span class="bar_fillcolor">rgba(51,63,100,0.66)</span>
 		        <span class="bar_emptycolor">rgba(63,100,51,0.66)</span>
+                <span class="bar_neutralcolor">rgba(100,63,51,0.66)</span>
 	          </span>
-	          <span class="small">
+	          <span class="dim row small">
 		        <span class="f_total_kills_h"></span> : <span class="f_total_kills_a"></span>
 	          </span>
 	        </td>
@@ -185,7 +187,7 @@
 		        <span class="bar_fillcolor">rgba(51,63,100,0.66)</span>
 		        <span class="bar_emptycolor">rgba(63,100,51,0.66)</span>
 	          </span>
-	          <span class="small">
+	          <span class="dimrow small">
 		        <span class="f_total_kills_h"></span> : <span class="f_total_kills_a"></span>
 	          </span>
 	        </td>
@@ -218,7 +220,7 @@
 		        <span class="bar_fillcolor">rgba(51,63,100,0.66)</span>
 		        <span class="bar_emptycolor">rgba(63,100,51,0.66)</span>
 	          </span>
-	          <span class="small">
+	          <span class="dim row small">
 		        <span class="f_total_kills_h"></span> : <span class="f_total_kills_a"></span>
 	          </span>
 	        </td>

@@ -13,6 +13,15 @@
     --border-radius: 6px;
     --thead-height: 4em;
     --scrollbar-size: 12px;
+
+    --logo-height: 10.5vh;
+    --menu-height: 5vh;
+
+    --content-width: calc(100vw - 16px);
+    --content-height: calc(100vh - var(--logo-height) - var(--menu-height));
+
+    --content-inner-width: calc(var(--content-width) - 2em);
+    --content-inner-height: calc(var(--content-height) - 2.6em - 0.5vh);
 }
 
 * {
@@ -69,15 +78,6 @@ tr {
     color: #efefef;
 }
 
-/*
-tr:nth-child(odd) td {
-    background: #000;
-}
-
-tr:nth-child(even) td {
-    background: rgba(59,198,184,0.75);
-}
-*/
 tr td {
     text-align: center;
     padding-left: 6px;
@@ -85,21 +85,12 @@ tr td {
     padding-top: 6px;
     padding-bottom: 6px;
     margin: 0px;
-    /*border-left: 1px solid #606060;
-    border-right: 1px solid #606060;*/
 }
 
 tr th {
     text-align: left;
     font-weight: bold;
-    /*border-left: 1px solid #606060;
-    border-right: 1px solid #606060;*/
 }
-
-tr.header {
-    /*border-bottom: 1px solid #606060;*/
-}
-
 
 div#logo {
     position: absolute;
@@ -112,7 +103,7 @@ div#logo {
     background-image: -ms-radial-gradient(50% 92%,ellipse farthest-corner, #343434, #0a0a0a);
     background-image: -o-radial-gradient(50% 92%,ellipse farthest-corner, #343434, #0a0a0a);
   
-    height: 10.5vh;
+    height: var(--logo-height);
     min-width: 100vw;
     width: 100%;
     top: 0%;
@@ -221,8 +212,8 @@ div#menu {
     text-shadow: 0px 0px 5px #000;
     color: #efefef;
     width: 100%;
-    height: 5vh;
-    top: 10.5vh;
+    height: var(--menu-height);
+    top: var(--logo-height);
     min-width: 100vw;
 
     background-color: #3D3C3A;
@@ -313,20 +304,23 @@ div#content {
     display: inline-block;
     left: 0px;
     top: 0px;
-    width: calc(100vw - 16px);
-    min-width: calc(100wv - 16px);
+    width: var(--content-width);
+    min-width: var(--content-width);
     margin: 0px;
     padding: 1em;
-    min-height: 79.5vh;
+    min-height: var(--content-height);
 }
 
 div#footer {
+    font-size: 0.6em;
     position: absolute;
     bottom: 0.5vh;
     right: calc(0.5vh + 16px);
-    color: #5f5f56;
-    z-index: 1000;
+    color: rgba(96,96,96,0.7);
+    z-index: -1000;
 }
+
+/* loading */
 
 div#loading {
     display: block;
@@ -335,13 +329,25 @@ div#loading {
     background: #252525;
     left: 0px;
     right: 0px;
-    top: 15.5vh;
-    height: 84.5vh;
+    top: calc(var(--logo-height) + var(--menu-height));
+    height: var(--content-height);
     /* bottom: -245px; */
     z-index: 1000;
     font-size: 1.25em;
     margin: 0px;
     padding: 0px;
+}
+
+p.loading {
+    display: block;
+    overflow: auto;
+    margin: 0px;
+    padding: 0px;
+    color: rgba(59,198,184,1);
+    width: 100%;
+    height: 100%;
+    text-align: center;
+    vertical-align: center;
 }
 
 /* common containers */
@@ -587,23 +593,6 @@ svg.rating {
     overflow: hidden;
 }
 
-.wrapper {
-    display: inline-block;
-    vertical-align: top;
-    padding: 0px;
-    margin: 0px;
-    overflow: hidden;
-}
-
-div#stats {
-    display: block;
-    background: #252525;
-    width: 80vw;
-    height: 50vh;
-    padding: 0px;
-    margin: 0px;
-}
-
 div.tools {
     display: block;
     padding: 8px;
@@ -630,18 +619,6 @@ div.tools > a:visited {
 div.tools > a:hover {
     color: rgba(59,198,184,0.75);
     text-decoration: none;
-}
-
-p.loading {
-    display: block;
-    overflow: auto;
-    margin: 0px;
-    padding: 0px;
-    color: rgba(59,198,184,1);
-    width: 100%;
-    height: 100%;
-    text-align: center;
-    vertical-align: center;
 }
 
 div#graph {
@@ -789,7 +766,7 @@ input[type="text"]:active, input[type="text"]:focus {
     overflow: scroll !important;
 }
 
-/* The following initialize the element dimensions on js side. */
+/* Element size controls */
 
 .fill {
     padding: 0px !important;
@@ -797,41 +774,29 @@ input[type="text"]:active, input[type="text"]:focus {
 }
 
 .fullheight {
-    height: 79.5vh;
-    /* min-height: 24em; */
-    /* max-height: 34em !important; */
+    height: var(--content-inner-height);
+    min-height: var(--content-inner-height) !important;
 }
 
 .halfheight {
-    height: 36.5vh;
+    height: calc(var(--content-inner-height) / 2.0 - 1em);
+    min-height: calc(var(--content-inner-width) / 1.5 - 1em) !important;
 }
 
 .fullwidth {
     padding: 0px;
     margin-left: 0.5em;
     margin-right: 0.5em;
-    width: calc(100vw - 16px - 2em);
-    min-width: calc(100vw - 16px - 2em) !important;
+    width: var(--content-inner-width);
+    min-width: var(--content-inner-width) !important;
 }
 
 .halfwidth {
     padding: 0px;
     margin-left: 0.5em;
     margin-right: 0.5em;
-    width: 48vw;
-    min-width: 48vh !important;
-}
-
-.smallheight {
-    height: 50%;
-}
-
-.fullheight_limit {
-    max-height: 100%;
-}
-
-.height75 {
-    max-height: 75%;
+    width: calc(var(--content-inner-width) / 2.0 - 1em);
+    min-width: calc(var(--content-inner-height) / 1.5 - 1em) !important;
 }
 
 /* Field type based dimension controls */
@@ -1041,16 +1006,12 @@ canvas {
     word-wrap: break-word;
     font-size: 0.9em;
     display: inline-block;
-    min-height: 30vh;
-    min-width: 46vw;
-    padding-left: 0px;
-    padding-right: 0px;
-    padding-top: 0em;
-    padding-bottom: 0em;
-    margin-left: 0em;
-    margin-right: 0em;
-    margin-top: 0.5em;
-    margin-bottom: 0.5em;
+
+    min-height: calc(var(--content-inner-height) / 2.5 - 1em);
+    min-width: calc(var(--content-inner-width) / 2.0 - 1em);
+    
+    padding: 0px;
+    margin: 0px;
     overflow-x: auto;
     overflow-y: scroll;
     border-top-left-radius: 6px;
