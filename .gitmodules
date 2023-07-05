@@ -15,4 +15,4 @@
 	url = https://github.com/vitch/jScrollPane
 [submodule "externals/crunch"]
 	path = externals/crunch
-	url = https://github.com/Unvanquished/crunch
+	url = https://github.com/DaemonEngine/crunch
