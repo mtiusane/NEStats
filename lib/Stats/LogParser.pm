@@ -327,7 +327,6 @@ sub handleClientConnect
                 $db_player->name("[BOT]");
                 $db_player->displayname("(bot)"); 
             }
-            $db_player->is_bot($is_bot);
             $db_player->save;
         } elsif ($db_player->displayname ne $fields{name} && !$is_bot) {
             $db_player->displayname($fields{name});
@@ -385,7 +384,7 @@ sub handleClientConnect
         total_deaths => [ ],
     };
     push @{$self->{game}->{players}->{$fields{guid}}->{sessions}},$self->parseTime($fields{time}) if (defined $db_player);
-    if (defined($db_player) && $db_player->is_bot) {
+    if (defined($db_player) && $is_bot) { # $db_player->is_bot
         $self->{db_game}->max_bots(max($self->{db_game}->max_bots,++$self->{cache}->{total_bots}));
     } else {
         $self->{db_game}->max_players(max($self->{db_game}->max_players,++$self->{cache}->{total_players}));
@@ -781,11 +780,12 @@ sub handleScore {
     #   name  => $fields{name},
     # };
     # print "SCORE: ".join(" ",map { "$_ = $fields{$_}" } keys(%fields))."\n";
-    my $db_session = $self->{slots}->[$fields{slot}]->{db_session};
-    $db_session->score($fields{score});
-    $db_session->ping($fields{ping});
-    # $db_session->name($fields{name});
-    $db_session->save;
+    if (my $db_session = $self->{slots}->[$fields{slot}]->{db_session}) {
+  	$db_session->score($fields{score});
+    	$db_session->ping($fields{ping});
+    	# $db_session->name($fields{name});
+    	$db_session->save;
+    }
 }
 
 sub handleChangeTeam {
@@ -833,7 +833,8 @@ sub handleClientRename {
         return;
     }
     if (my $player = $self->loadPlayer($db_session->player_id)) {
-        if (!$player->is_bot && $player->displayname ne $fields{newnameformatted}) {
+	# TODO: !$player->is_bot && ... below
+        if ($player->displayname ne $fields{newnameformatted}) {
             $player->displayname($fields{newnameformatted});
             $player->save;
         }
@@ -1006,33 +1007,32 @@ sub updateGlicko2 {
     }
     return 0 unless(scalar(@{$teams{human}}) && scalar(@{$teams{alien}}));
     my $game_duration = $self->getDuration($game->end - $game->start);
+    my $cutoff_factor = 0.55;
+    my $cutoff_duration = $cutoff_factor*$game_duration;
     foreach my $team ('human','alien') {
 	my $comp = $teams{$team.'_composite'} = Glicko2::Player->new(rating => 0,rd => 0,volatility => 0);
-	my $team_duration = 0.0;
+	my $team_count = 0;
 	foreach my $session (@{$teams{$team}}) {
 	    my $session_duration = $self->getDuration($session->{session}->end - $session->{session}->start);
-	    my $relative_duration = max(1.0, $session_duration/$game_duration);
-	    $team_duration += $relative_duration;
+	    next if ($session_duration < $cutoff_duration);
 	    $comp->rating($comp->rating+$session->{glicko}->rating);
 	    $comp->rd($comp->rd+$session->{glicko}->rd);
 	    $comp->volatility($comp->volatility+$session->{glicko}->volatility);
+	    ++$team_count;
 	}
-	if ($team_duration < 0.95) {
-	    $self->log->warn("One team with less than 95 percent game time, skipping rankings update.");
-	    return 0;
-	}
-	my $team_count = scalar(@{$teams{$team}});
+	return 0 unless ($team_count > 0);
 	$comp->rating($comp->rating/$team_count);
 	$comp->rd($comp->rd/$team_count);
 	$comp->volatility($comp->volatility/$team_count);
     }
     my %opponents = (human => $teams{alien_composite},alien => $teams{human_composite});
     foreach my $team ('human','alien') {
-	foreach my $entry (@{$teams{$team}}) {
-	    # print "Append queue: ".((defined $entry->{db}) ? $entry->{db}->id : 'null')."\n";
-	    next unless (defined $entry->{db});
-	    Stats::DB::Glicko2Score->new(glicko2_id          => $entry->{db}->id,
-                                     session_id          => $entry->{session}->id,
+	foreach my $session (@{$teams{$team}}) {
+	    # print "Append queue: ".((defined $session->{db}) ? $session->{db}->id : 'null')."\n";
+	    next unless (defined $session->{db});
+	    next if ($self->getDuration($session->{session}->end - $session->{session}->start) < $cutoff_duration);
+	    Stats::DB::Glicko2Score->new(glicko2_id          => $session->{db}->id,
+                                     session_id          => $session->{session}->id,
                                      score               => $score_values->{$team},
                                      opponent_rating     => $opponents{$team}->rating,
                                      opponent_rd         => $opponents{$team}->rd,

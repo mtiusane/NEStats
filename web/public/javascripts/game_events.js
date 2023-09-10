@@ -43,7 +43,9 @@ $(document).ready(function() {
 			                Common.format_text(s.name),
 			                'killed',
 			                Common.format_text(eventsBySession[e.killed_id].session.name),
-			            ].concat((e.assist_id != null && eventsBySession[e.assist_id] != null) ? [
+					'with',
+                                        Common.format_text(e.weapon)
+				    ].concat((e.assist_id != null && eventsBySession[e.assist_id] != null) ? [
 			                'assisted by',
 			                Common.format_text(eventsBySession[e.assist_id].session.name)
 			            ] : [ ]));

@@ -1,8 +1,7 @@
-requires 'Dancer2';
-requires 'Template';
 requires 'Rose::DB::Object';
-requires 'Plack';
 requires 'DateTime';
 requires 'DateTime::Format::Duration';
 requires 'DBD::mysql';
-requires 'CGI';
+requires 'Log::Log4perl';
+requires 'File::Tail';
+requires 'Log::Dispatch::FileRotate';

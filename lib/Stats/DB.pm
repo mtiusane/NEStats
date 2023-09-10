@@ -12,26 +12,20 @@ __PACKAGE__->register_db(
     host     => 'localhost',
     username => 'stats',
     password => 'stats',
+    mysql_enable_utf8 => 1,
 );
 __PACKAGE__->register_db(
     domain   => 'production',
-    driver   => 'mysql',
-    database => 'stats',
-    host     => '10.129.233.222',
-    username => 'stats',
-    password => 'stats',
-);
-__PACKAGE__->register_db(
-    domain   => 'development_realdb',
-    driver   => 'mysql',
-    database => 'stats',
-    host     => '127.0.0.1',
-    port     => 31337,
-    username => 'stats',
-    password => 'stats',
+    driver   => $ENV{STATS_DB_DRIVER} // 'mysql',
+    database => $ENV{STATS_DB_DATABASE} // 'stats',
+    host     => $ENV{STATS_DB_HOST} // 'localhost',
+    port     => $ENV{STATS_DB_PORT} // 3306,
+    username => $ENV{STATS_DB_USER} // 'stats',
+    password => $ENV{STATS_DB_PASSWORD} // 'stats',
+    mysql_enable_utf8 => 1,
 );
 
-__PACKAGE__->default_domain((hostname =~ /\.new-edge\.org$/) ? 'production' : 'development_realdb');
+__PACKAGE__->default_domain($ENV{STATS_DB_DOMAIN} // 'development');
 __PACKAGE__->default_connect_options({ mysql_auto_reconnect => 1 });
 
 1;

@@ -646,7 +646,7 @@ Common = {
 	        content.css({ width: 1, height: 1 });
 	        content.css({ width: page.width(), height: page.height() });
             if (Common.mainScrollPane !== undefined) {
-                Common.mainScrollPane.destroy();
+                // Common.mainScrollPane.destroy();
                 Common.mainScrollPane = undefined;
             }
             Common.mainScrollPane = content.jScrollPane({

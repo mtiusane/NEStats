@@ -5,7 +5,7 @@ use warnings;
 
 use lib '../lib';
 
-use Stats::DB::Map;
+# use Stats::DB::Map;
 use File::Path qw/mkpath/;
 use File::Temp qw/tempfile tempdir/;
 use File::Copy qw/copy/;
@@ -13,18 +13,30 @@ use Archive::Zip qw/:ERROR_CODES :CONSTANTS/;
 use Fcntl qw/SEEK_SET SEEK_END/;
 use Image::Magick;
 
-my $previewGeometry = '256x144'; # '512x288';
+chomp(my $crunch = `which crunch`) or '../externals/crunch/bin_linux/crunch' or die "crunch not found.";
+chomp(my $dwebp = `which dwebp`) or die "dwebp not found, install libwebp.";
 
-my $unvPath = shift || die "Syntax: $0 path-to-unv";
-my $pkgPath = "$unvPath/pkg";
+print "Using:\n - crunch: $crunch\n - dwebp: $dwebp\n";
+
+my $previewGeometry = '512x288';
+
+my @errors;
+sub error 
+{
+    my ($message) = @_;
+    push @errors, "$message\n";
+    print "$message\n";
+}
+
+my $pkgPath = shift || die "Syntax: $0 path-to-pkg";
 my $outputDir = "../web/public/images/maps";
 mkpath $outputDir;
 opendir DIR,$pkgPath;
 while (my $path = readdir DIR) {
     next if ($path =~ /^\./);
     next if (-d $path);
-    next unless ($path =~ /^map-.+\.pk3$/);
-    if ($path =~ /^map-(.+)_.+\.pk3$/) {
+    next unless ($path =~ /^map-.+\.(?:pk3|dpk)$/);
+    if ($path =~ /^map-(.+)_.+\.(?:pk3|dpk)$/) {
 	my $mapname = $1;
 	my $fullpath = join('/',$pkgPath,$path);
 	my $zip = Archive::Zip->new;
@@ -44,24 +56,36 @@ while (my $path = readdir DIR) {
 		my ($fh,$tempfile) = tempfile(DIR => $tempdir);
 		$zipimage->extractToFileNamed($tempfile);
 		if ($imagename =~ /\.webp$/) {
-		    `dwebp $tempfile -o $tempfile.png`;
+		    system $dwebp, $tempfile, "-o", "$tempfile.png";
 		    my $readResult = $image->Read(filename => "$tempfile.png");
-		    die "Failed to read extracted file: $readResult" if ("$readResult");
+		    if ("$readResult") {
+		        error("Failed to read extracted file for $mapname: $readResult");
+			next;
+		    }
 		    unlink "$tempfile.png";
 		} elsif ($imagename =~ /\.crn$/) {
 		    copy($tempfile,"$tempfile.crn");
-		    `../externals/crunch/bin_linux/crunch -file $tempfile.crn -out $tempfile.png -fileformat png`;
+		    system $crunch, "-file", "$tempfile.crn", "-out", "$tempfile.png", "-fileformat", "png";
 		    my $readResult = $image->Read(filename => "$tempfile.png");
-		    die "Failed to read extracted file: $readResult" if ("$readResult");
+		    if ("$readResult") {
+		        error("Failed to read extracted file for $mapname: $readResult");
+			next;
+		    }
 		    unlink "$tempfile.png";
 		    unlink "$tempfile.crn";
 		} else {
 		    my $readResult = $image->Read(filename => $tempfile);
-		    die "Failed to read extracted file: $readResult" if ("$readResult");
-		}
+		    if ("$readResult") {
+		        error("Failed to read extracted file for $mapname: $readResult");
+		        next;
+	            }
+	        }
 		$image->Resize(geometry => $previewGeometry);
 		my $writeResult = $image->Write(filename => $outputName);
-		die "Failed to write output file: $writeResult" if ("$writeResult");
+		if ("$writeResult") {
+		    error("Failed to write output file: for $mapname: $writeResult");
+		    next;
+	        }
 	    }
 	}
     } else {

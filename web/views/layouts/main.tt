@@ -3,21 +3,17 @@
   <head>
     <meta http-equiv="Content-type" content="text/html; charset=<% settings.charset %>">
     <title>New Edge Stats</title>
-    <link rel="stylesheet" href="<% request.uri_base %>/css/jquery.jscrollpane.css">
-    <link rel="stylesheet" href="<% request.uri_base %>/css/edgestats.css">
-    <link rel="stylesheet" href="<% request.uri_base %>/css/common.css">
-    <link rel="stylesheet" href="<% request.uri_base %>/css/tables.css">
-    <link rel="stylesheet" href="<% request.uri_base %>/css/emoticons.css">
-    <!-- Grab jQuery from a CDN, fall back to local if necessary -->
-    <script src="//code.jquery.com/jquery-3.2.1.min.js"></script>
-    <script type="text/javascript">/* <![CDATA[ */
-    !window.jQuery && document.write('<script type="text/javascript" src="<% request.uri_base %>/javascripts/jquery-3.2.1.min.js"><\/script>')
-    /* ]]> */</script>
-      <script src="/javascripts/jquery.mousewheel.min.js"></script>
-      <script src="/javascripts/jquery.jscrollpane.js"></script> <!-- TODO: .min but needs update-->
-      <script src="/javascripts/underscore-min.js"></script>
-      <script src="/javascripts/hammer.min.js"></script>
-      <script src="/javascripts/common.js"></script>
+    <link rel="stylesheet" href="/css/jquery.jscrollpane.css">
+    <link rel="stylesheet" href="/css/edgestats.css">
+    <link rel="stylesheet" href="/css/common.css">
+    <link rel="stylesheet" href="/css/tables.css">
+    <link rel="stylesheet" href="/css/emoticons.css">
+    <script src="/javascripts/jquery-3.2.1.min.js"></script>
+    <script src="/javascripts/jquery.mousewheel.min.js"></script>
+    <script src="/javascripts/jquery.jscrollpane.js"></script> <!-- TODO: .min but needs update-->
+    <script src="/javascripts/underscore-min.js"></script>
+    <script src="/javascripts/hammer.min.js"></script>
+    <script src="/javascripts/common.js"></script>
   </head>
   <body>
     <div id="logo">
