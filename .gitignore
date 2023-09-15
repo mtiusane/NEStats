@@ -3,3 +3,4 @@ web/sessions/*
 importer/*.log
 web/local/
 .bash_history
+web/public/images/maps/*
