@@ -10,9 +10,6 @@
 [submodule "externals/libglicko"]
 	path = externals/libglicko
 	url = https://bitbucket.org/coh/libglicko.git
-[submodule "externals/jScrollPane"]
-	path = externals/jScrollPane
-	url = https://github.com/vitch/jScrollPane
 [submodule "externals/crunch"]
 	path = externals/crunch
 	url = https://github.com/DaemonEngine/crunch
