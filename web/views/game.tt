@@ -1,6 +1,4 @@
 <div id="content">
-  <script src="/javascripts/Chart.bundle.min.js"></script>
-  <script src="/javascripts/chartjs-plugin-zoom.min.js"></script>
   <script src="/javascripts/game.js"></script>
   <script src="/javascripts/game_events.js"></script>
   <script src="/javascripts/game_statistics.js"></script>
@@ -9,86 +7,86 @@
     <a class="data game_id" href="<% game_id %>"></a>
     <table>
       <thead class="sticky">
-        <tr class="title"><th colspan="7">Game</th></tr>
-	    <tr class="title">
-	      <th>Start</th>
-	      <th>End</th>
-	      <th>Total Kills</th>
-	      <th>Total Deaths</th>
-	      <th>Total Buildings Killed</th>
-	      <th>Total Buildings Built</th>
-	      <th class="fill_column"></th>
-	    </tr>
+        <tr class="title"><th colspan="7"><span class="f__parent f_server"><a class="f_url" href=""><span class="f_server_name"></span></a> - Game</th></tr>
+        <tr class="title">
+          <th>Start</th>
+          <th>End</th>
+          <th>Total Kills</th>
+          <th>Total Deaths</th>
+          <th>Total Buildings Killed</th>
+          <th>Total Buildings Built</th>
+          <th class="fill_column"></th>
+        </tr>
       </thead>
       <tbody>
         <tr class="template">
-	      <td><span class="f__date f_start"></span> <span class="f__time f_start"></span></td>
-	      <td><span class="f__date f_end"></span> <span class="f__time f_end"></span></td>
-	      <td><span class="f_total_kills"></span></td>
-	      <td><span class="f__sum f_total_deaths f_total_bdeaths"></span></td>
-	      <td><span class="f_total_bkills"></span></td>
-	      <td><span class="f_total_built"></span></td>
-	      <td class="fill_column"></td>
-	    </tr>
+          <td><span class="f__date f_start"></span> <span class="f__time f_start"></span></td>
+          <td><span class="f__date f_end"></span> <span class="f__time f_end"></span></td>
+          <td><span class="f_total_kills"></span></td>
+          <td><span class="f__sum f_total_deaths f_total_bdeaths"></span></td>
+          <td><span class="f_total_bkills"></span></td>
+          <td><span class="f_total_built"></span></td>
+          <td class="fill_column"></td>
+        </tr>
       </tbody>
     </table>
   </div>
   <div class="container graph_wrapper">
     <table>
       <thead>
-	    <tr class="title"><th>Events</th></tr>
+        <tr class="title"><th>Events</th></tr>
       </thead>
       <tbody>
-	    <tr>
-	      <td>
-	        <div id="game_events" class="graph">
-	          <a class="data game_id" href="<% game_id %>"></a>
-	        </div>
-	      </td>
-	    </tr>
+        <tr>
+          <td>
+            <div id="game_events" class="graph fullwidth">
+              <a class="data game_id" href="<% game_id %>"></a>
+            </div>
+          </td>
+        </tr>
       </tbody>
     </table>
   </div>
-  <div class="container graph_wrapper">
-    <table>
-      <thead>
-	    <tr class="title"><th>Statistics</th></tr>
-      </thead>
-      <tbody>
-	    <tr>
-	      <td>
-	        <div id="game_statistics" class="graph">
-	          <a class="data game_id" href="<% game_id %>"></a>
-	        </div>
-	      </td>
-	    </tr>
-      </tbody>
-    </table>
-  </div>
+  <!--<div class="container graph_wrapper">
+      <table>
+        <thead>
+          <tr class="title"><th>Statistics</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>
+              <div id="game_statistics" class="graph">
+                <a class="data game_id" href="<% game_id %>"></a>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+  </div>-->
   <% FOREACH team in [ 'human', 'alien' ] %>
   <div id="sessions" class="container halfwidth">
     <a class="data game_id" href="<% game_id %>"></a>
     <a class="data team" href="<% team %>"></a>
     <table>
       <thead class="sticky">
-	    <tr class="title">
-	      <th colspan="7"><% team.ucfirst %>s</th>
-	    </tr>
         <tr class="title">
-	      <th>#</th><th>Player</th><th>Start</th><th>End</th><th>Ping</th><th>Score</th>
-	      <th class="fill_column"></th>
-	    </tr>
+          <th colspan="7"><% team.ucfirst %>s</th>
+        </tr>
+        <tr class="title">
+          <th>#</th><th>Player</th><th>Start</th><th>End</th><th>Ping</th><th>Score</th>
+          <th class="fill_column"></th>
+        </tr>
       </thead>
       <tbody>
         <tr class="template">
-	      <td><span class="number f__index"></span></td>
-	      <td><a class="f_player_url"><span class="name text f__text f_player_name"></span></a></td>
-	      <td><span class="f__time f_start"></span></td>
-	      <td><span class="f__time f_end"></span></td>
-	      <td><span class="number f_ping"></span></td>
-	      <td><span class="number f_score"></span></td>
-	      <td class="fill_column"></td>
-	    </tr>
+          <td><span class="number f__index"></span></td>
+          <td><a class="f_player_url"><span class="name text f__text f_player_name"></span></a></td>
+          <td><span class="f__time f_start"></span></td>
+          <td><span class="f__time f_end"></span></td>
+          <td><span class="number f_ping"></span></td>
+          <td><span class="number f_score"></span></td>
+          <td class="fill_column"></td>
+        </tr>
       </tbody>
     </table>
   </div>
@@ -98,19 +96,19 @@
     <a class="data team" href="spectator"></a>
     <table>
       <thead class="sticky">
-	    <tr class="title">
-	      <th colspan="2">Spectators</th>
-	    </tr>
         <tr class="title">
-	      <th>Player</th>
-	      <th class="fill_column"></th>
-	    </tr>
+          <th colspan="2">Spectators</th>
+        </tr>
+        <tr class="title">
+          <th>Player</th>
+          <th class="fill_column"></th>
+        </tr>
       </thead>
       <tbody>
         <tr class="template">
-	      <td><a class="f_player_url"><span class="name text f__text f_player_name"></span></a></td>
-	      <td class="fill_column"></td>
-	    </tr>
+          <td><a class="f_player_url"><span class="name text f__text f_player_name"></span></a></td>
+          <td class="fill_column"></td>
+        </tr>
       </tbody>
     </table>
   </div>

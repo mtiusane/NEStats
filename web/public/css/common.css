@@ -7,6 +7,18 @@
 }
 */
 
+* {
+    scrollbar-color: rgba(59,198,184,0.75) rgba(239, 239, 239, 0.25);
+    scrollbar-width: thin;
+}
+
+div[data-loading] .loading {
+    display: true;
+}
+div:not([data-loading]).loading {
+    display: false;
+}
+
 :root {
     --field-width: 22vw;
     --border-size: 1px;
@@ -780,14 +792,15 @@ input[type="text"]:active, input[type="text"]:focus {
 
 .halfheight {
     height: calc(var(--content-inner-height) / 2.0 - 1em);
-    min-height: calc(var(--content-inner-width) / 1.5 - 1em) !important;
+    max-height: calc(var(--content-inner-height) / 2.0 - 1em) !important;
+    min-height: calc(var(--content-inner-width) / 4.0 - 1em) !important;
 }
 
 .fullwidth {
     padding: 0px;
     margin-left: 0.5em;
     margin-right: 0.5em;
-    width: var(--content-inner-width);
+    width: calc(var(--content-inner-width) - 1.0em);
     min-width: var(--content-inner-width) !important;
 }
 
@@ -795,8 +808,10 @@ input[type="text"]:active, input[type="text"]:focus {
     padding: 0px;
     margin-left: 0.5em;
     margin-right: 0.5em;
-    width: calc(var(--content-inner-width) / 2.0 - 1em);
-    min-width: calc(var(--content-inner-height) / 1.5 - 1em) !important;
+    width: calc((var(--content-inner-width) - 1.0em) / 2.0);
+    max-width: calc((var(--content-inner-width) - 1.0em) / 2.0);
+    min-width: calc(var(--content-inner-width) / 2.0);
+    /*min-width: calc(var(--content-inner-height) / 1.5 - 0.5em) !important;*/
 }
 
 /* Field type based dimension controls */
@@ -888,14 +903,15 @@ canvas {
 #chartjs-tooltip {
     display: block;
     border: 1px solid white;
+    backdrop-filter: blur(3px);
     border-radius: 3px;
-    background: rgba(0.3,0.3,0.3,0.7); /* gray*/
     position: absolute;
     opacity: 1;
+    background: transparent;
     pointer-events: none;
     -webkit-transition: all .1s ease;
     transition: all .1s ease;
-    backdrop-filter: blur(3px);
+    border-radius: var(--border-radius);
     /*-webkit-transform: translate(50%,0);
     transform: translate(50%,0);*/
 }
@@ -912,7 +928,14 @@ canvas {
 }
 
 #chartjs-tooltip table > tbody > tr td {
-    padding: 4px;
+    /* padding: 4px; */
+}
+
+#chartjs-tooltip .container {
+    opacity: 0.8;
+    /*background: rgba(0.3,0.3,0.3,0.7); gray*/
+    backdrop-filter: blur(3px);
+    box-shadow: 4px 4px 2px rgba(0.1,0.1,0.1,0.7);
 }
 
 /*
@@ -986,8 +1009,8 @@ canvas {
     margin: 0px;
     padding: 0px;
     display: inline-block;
-    width: 100%;
-    height: 100%;
+    width: calc(var(--content-inner-width) - 1.0em);
+    aspect-ratio: 3.0;
     overflow: hidden;
     border-radius: var(--border-radius);
 }
@@ -996,8 +1019,7 @@ canvas {
     margin: 0px;
     passing: 0px;
     display: inline-block;
-    width: calc(100vw - 3em);
-    /* height: calc(3.0/4.0*(100vw - 5em)); */
+    max-width: calc(var(--content-inner-width) - 1.0em) !important;
     overflow: hidden;
     border-radius: var(--border-radius);
 }
@@ -1024,18 +1046,8 @@ canvas {
     margin-top: 0px;
 }
 
-.container.halfwidth:first-child,
-.container.halfwidth:nth-first-child(2) {
-    margin-top: 0.5em;
-}
-
 .container:last-child {
     margin-bottom: 0px;
-}
-
-.container.halfwidth:last-child,
-.container.halfwidth:nth-last-child(2) {
-    margin-bottom: 0.5em;
 }
 
 .container.noscroll {
@@ -1055,6 +1067,7 @@ canvas {
     margin-right: var(--scrollbar-size);
     border-spacing: 0px;
     overflow: hidden;
+    border-collapse: separate;
 
     border-top-left-radius: 6px;
     border-top-right-radius: 6px;
@@ -1148,275 +1161,6 @@ div#chartjs-tooltip .container table tr:nth-child(even) td {
     font-style: italic;
 }
 
-/* jquery.jScrollPane style overrides - content_wrapper */
-
-#content_wrapper > .jspContainer {
-    border-radius: 0px;
-}
-
-#content_wrapper > .jspContainer > .jspVerticalBar {
-    background: transparent;
-    border-radius: 0px;
-    width: var(--scrollbar-size);
-}
-
-#content_wrapper > .jspContainer > .jspVerticalBar .jspTrack {
-    background: rgba(255,255,255,0.25);
-    border-top-left-radius: 6px;
-    border-bottom-left-radius: 6px;
-    border-top-right-radius: 0px;
-    border-bottom-right-radius: 0px;
-}
-
-#content_wrapper > .jspContainer > .jspVerticalBar .jspDrag {
-    background: rgba(255,255,255,0.25);    
-    border-top-left-radius: 6px;
-    border-bottom-left-radius: 6px;
-    border-top-right-radius: 0px;
-    border-bottom-right-radius: 0px;
-}
-
-#content_wrapper > .jspContainer > .jspVerticalBar .jspDrag:hover,
-#content_wrapper > .jspContainer > .jspVerticalBar .jspDrag.jspActive {
-    background: rgba(59,198,184,0.5);
-}
-
-#content_wrapper > .jspContainer > .jspVerticalBar .jspCapTop,
-#content_wrapper > .jspContainer > .jspVerticalBar .jspCapBottom {
-}
-
-#content_wrapper > .jspContainer > .jspVerticalBar .jspArrow:not(.jspDisabled):hover {
-    background: rgba(59,198,184,0.5);
-}
-
-#content_wrapper > .jspContainer > .jspHorizontalBar {
-    background: transparent;
-    border-radius: 0px;
-    height: var(--scrollbar-size);
-}
-
-#content_wrapper > .jspContainer > .jspHorizontalBar .jspTrack {
-    background: rgba(255,255,255,0.25);
-    border-top-left-radius: 6px;
-    border-top-right-radius: 6px;
-    border-bottom-left-radius: 0px;
-    border-bottom-right-radius: 0px;
-}
-
-#content_wrapper > .jspContainer > .jspHorizontalBar .jspDrag {
-    background: rgba(255,255,255,0.25);
-    border-top-left-radius: 6px;
-    border-top-right-radius: 6px;
-    border-bottom-left-radius: 0px;
-    border-bottom-right-radius: 0px;
-}
-
-#content_wrapper > .jspContainer > .jspHorizontalBar .jspDrag:hover,
-#content_wrapper > .jspContainer > .jspHorizontalBar .jspDrag.jspActive {
-    background: rgba(59,198,184,0.5);
-}
-
-#content_wrapper > .jspContainer > .jspHorizontalBar .jspCapLeft,
-#content_wrapper > .jspContainer > .jspHorizontalBar .jspCapRight {
-}
-
-#content_wrapper > .jspContainer > .jspHorizontalBar .jspArrow:not(.jspDisabled):hover {
-    background: rgba(59,198,184,0.5);
-}
-
-#content_wrapper > .jspContainer > .jspVerticalBar .jspCorner,
-#content_wrapper > .jspContainer > .jspHorizontalBar .jspCorner {
-    background: rgba(255,255,255,0.25);
-    border-top-left-radius: 0px;
-    border-top-right-radius: 0px;
-    border-bottom-left-radius: 0px;
-    border-bottom-right-radius: 6px;
-}
-
-#content_wrapper > .jspContainer .jspArrowUp {
-    background: rgba(255,255,255,0.5);
-    width: var(--scrollbar-size);
-    height: var(--scrollbar-size);
-    border-top-left-radius: 0px;
-    border-top-right-radius: 0px;
-    border-bottom-left-radius: 6px;
-    border-bottom-right-radius: 0px;
-}
-
-#content_wrapper > .jspContainer .jspArrowDown {
-    background: rgba(255,255,255,0.5);
-    width: var(--scrollbar-size);    
-    height: var(--scrollbar-size);
-    border-top-left-radius: 6px;
-    border-top-right-radius: 0px;
-    border-bottom-left-radius: 0px;
-    border-bottom-right-radius: 0px;
-}
-
-#content_wrapper > .jspContainer .jspArrowLeft {
-    background: rgba(255,255,255,0.5);
-    width: var(--scrollbar-size);    
-    height: var(--scrollbar-size);
-    border-top-left-radius: 0px;
-    border-top-right-radius: 6px;
-    border-bottom-left-radius: 0px;
-    border-bottom-right-radius: 0px;
-}
-
-#content_wrapper > .jspContainer .jspArrowRight {
-    background: rgba(255,255,255,0.5);
-    width: var(--scrollbar-size);    
-    height: var(--scrollbar-size);
-    border-top-left-radius: 6px;
-    border-top-right-radius: 0px;
-    border-bottom-left-radius: 0px;
-    border-bottom-right-radius: 0px;
-}
-
-#content_wrapper > .jspContainer .jspArrowUp.jspDisabled {
-    background: rgba(255,255,255,0.25);
-    width: var(--scrollbar-size);
-    height: var(--scrollbar-size);
-    border-top-left-radius: 0px;
-    border-top-right-radius: 0px;
-    border-bottom-left-radius: 6px;
-    border-bottom-right-radius: 0px;
-}
-
-#content_wrapper > .jspContainer .jspArrowDown.jspDisabled {
-    background: rgba(255,255,255,0.25);
-    width: var(--scrollbar-size);
-    height: var(--scrollbar-size);
-    border-top-left-radius: 6px;
-    border-top-right-radius: 0px;
-    border-bottom-left-radius: 0px;
-    border-bottom-right-radius: 0px;
-}
-
-#content_wrapper > .jspContainer .jspArrowLeft.jspDisabled {
-    background: rgba(255,255,255,0.25);
-    width: var(--scrollbar-size);
-    height: var(--scrollbar-size);
-    border-top-left-radius: 0px;
-    border-top-right-radius: 6px;
-    border-bottom-left-radius: 0px;
-    border-bottom-right-radius: 0px;
-}
-
-#content_wrapper > .jspContainer .jspArrowRight.jspDisabled {
-    background: rgba(255,255,255,0.25);
-    width: var(--scrollbar-size);
-    height: var(--scrollbar-size);
-    border-top-left-radius: 6px;
-    border-top-right-radius: 0px;
-    border-bottom-left-radius: 0px;
-    border-bottom-right-radius: 0px;
-}
-
-/* jquery.jScrollPane style overrides - container */
-
-.jspScrollable,
-.jspScrollable:focus {
-    outline: none;
-}
-
-.container .jspContainer {
-    border-radius: var(--border-radius);
-}
-
-.container .jspVerticalBar {
-    background: transparent;
-    border-top-left-radius: 0px;
-    border-bottom-left-radius: 0px;
-    border-top-right-radius: 6px;
-    border-bottom-right-radius: 6px;
-    width: var(--scrollbar-size);
-}
-
-.container .jspVerticalBar .jspTrack {
-    background: rgba(255,255,255,0.25);
-    border-left: 2px solid rgba(0,0,0,0.25);
-    border-top-left-radius: 0px;
-    border-bottom-left-radius: 0px;
-    border-top-right-radius: 6px;
-    border-bottom-right-radius: 0px;
-}
-
-.container .jspVerticalBar .jspDrag {
-    background: rgba(255,255,255,0.25);    
-    border-top-left-radius: 0px;
-    border-bottom-left-radius: 0px;
-    border-top-right-radius: 6px;
-    border-bottom-right-radius: 6px;
-}
-
-.container .jspVerticalBar .jspDrag:hover,
-.container .jspVerticalBar .jspDrag.jspActive {
-    background: rgba(59,198,184,0.5);
-}
-
-.container .jspCapTop {
-}
-
-.container .jspCapBottom {
-}
-
-.container .jspHorizontalBar {
-    background: transparent;
-    border-top-left-radius: 0px;
-    border-top-right-radius: 0px;
-    border-bottom-left-radius: 6px;
-    border-bottom-right-radius: 6px;
-    border-top: 2px solid rgba(0,0,0,0.25);
-    height: var(--scrollbar-size);
-}
-
-.container .jspHorizontalBar .jspTrack {
-    background: rgba(255,255,255,0.25);
-    border-top-left-radius: 0px;
-    border-top-right-radius: 0px;
-    border-bottom-left-radius: 6px;
-    border-bottom-right-radius: 0px;
-}
-
-.container .jspHorizontalBar .jspDrag {
-    background: rgba(255,255,255,0.25);
-    border-top-left-radius: 0px;
-    border-top-right-radius: 0px;
-    border-bottom-left-radius: 6px;
-    border-bottom-right-radius: 6px;
-}
-
-.container .jspHorizontalBar .jspDrag:hover,
-.container .jspHorizontalBar .jspDrag.jspActive {
-    background: rgba(59,198,184,0.5);
-}
-
-.container .jspCapLeft {
-}
-
-.container .jspCapRight {
-}
-
-.container .jspCorner {
-    background: rgba(255,255,255,0.25);
-    border-top-left-radius: 0px;
-    border-top-right-radius: 0px;
-    border-bottom-left-radius: 0px;
-    border-bottom-right-radius: 6px;
-}
-
-.container .jspVerticalBar .jspCapTop {
-    display: block;
-    background: transparent;
-    height: var(--thead-height);
-}
-
-.container .jspPane > table > tbody > tr:last-child td {
-    /* TODO: This partially fixes scrollable table layout issues, fix init order and this might not be needed... */
-    margin-bottom: calc(var(--thead-height) / 2.0);
-}
-
 /* common field styles */
 
 .container td .title {
@@ -1432,7 +1176,9 @@ div#chartjs-tooltip .container table tr:nth-child(even) td {
 }
 
 .container .sticky th {
-    position: relative;
+    position: sticky;
+    z-index: 200;
+    top: 0px;
 }
 
 .container .sticky.hold th {

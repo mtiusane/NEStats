@@ -614,10 +614,17 @@ sub handleConstruct {
         guid => $fields{mod}
     };
     my $weapon = $self->loadWeapon($fields{mod});
-    my $building = $self->loadBuilding($fields{buildingname});
+
     my $session = $self->{slots}->[$fields{slot}]->{db_session};
     $session->total_built($session->total_built+1);
     $session->save;
+
+    my $building = $self->loadBuilding($fields{buildingname});
+    unless (defined $building->team) {
+        $building->team($session->team);
+        $building->displayname($building->name); # TODO: Remove this later
+        $building->save;
+    }
 
     my $event = Stats::DB::BuildingEvent->new(
         type => 'build',
@@ -625,9 +632,13 @@ sub handleConstruct {
         weapon_id => $weapon->id,
         session_id => $session->id,
         building_id => $building->id
+        # TODO: $fields{replacedids} should be included
     );
     $event->save;
 
+    my $game = $self->{db_game};
+    $game->total_built($game->total_built+1);
+    
     my $player = $self->loadPlayer($session->player_id);
     if ($player) {
 	$player->total_built($player->total_built+1);
@@ -679,6 +690,9 @@ sub handleDeconstruct {
     my $weapon = $self->loadWeapon($fields{mod});
     $weapon->total_bkills($weapon->total_bkills+1);
     $weapon->save;
+
+    my $game = $self->{db_game};
+    $game->total_bkills($game->total_bkills+1);
 
     my $building = $self->loadBuilding($fields{buildingname});
     my $deconner = (($fields{playerid} < 64) ? $self->{slots}->[$fields{playerid}]->{db_session} : undef);

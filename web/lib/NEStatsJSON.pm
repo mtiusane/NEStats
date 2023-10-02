@@ -29,11 +29,13 @@ use Stats::DB::PlayerMap;
 use Stats::DB::Clan;
 use Stats::DB::PlayerKill;
 
-use Stats::Util qw/replace_all db_to_hashref/;
+use Stats::Util qw/db_to_hashref/; # replace_all
 
 use Glicko2::Player;
 
 use Rose::DB::Object::Helpers qw/as_tree/;
+
+sub replace_all { return $_[0]; } # inline version as we're aiming to handle this on client (browser) side
 
 my @GAMES_FILTER = (
     or => [
@@ -85,10 +87,11 @@ get '/servers/:offset/:limit' => sub {
     # TODO: Order query by player count and/or name
     my $count = Stats::DB::Server::Manager->get_servers_count();
     # my $games_count = Stats::DB::Game::Manager->get_games_count(where => [ server_id => params->{server} ]);
-    # my $last_game = Stats::DB::Game::Manager->get_games
+    # my $last_game = Stats::DB::Game::Manager->get_games(where 
     my @servers = map +{
         id          => $_->id,
         name        => replace_all($_->name),
+        displayname => $_->name,
         ip          => $_->ip,
         url         => $_->url,
         map         => undef, # { id   => $_->map->id, name => $_->map->name },
@@ -234,9 +237,10 @@ get '/server/:id' => sub {
     my $server = Stats::DB::Server->new(id => params->{id});
     $server->load(speculative => 1);
     return {
-	id   => $server->id,
-	name => replace_all($server->name),
-	url  => $server->url
+	id          => $server->id,
+	name        => replace_all($server->name),
+        displayname => $server->name,
+	url         => $server->url
     };
 };
 
@@ -391,8 +395,17 @@ get '/session/:id/events' => sub {
     my $session = Stats::DB::Session->new(id => params->{id});
     $session->load(speculative => 1) || return { error => "No such session: ".params->{id} };
     my @weapons = @{Stats::DB::Weapon::Manager->get_weapons() // [ ]};
-    my %weapons_by_id = map { $_->id => replace_all($_->displayname) } @weapons;
-    my %buildings_by_id = map { $_->id => replace_all($_->name) } @{Stats::DB::Building::Manager->get_buildings() // [ ]};
+    my %weapons_by_id = map { $_->id => {
+        id          => $_->id,
+        name        => $_->name,
+        displayname => replace_all($_->displayname)
+    } } @weapons;
+    my %buildings_by_id = map { $_->id => {
+        id          => $_->id,
+        name        => $_->name,
+        team        => $_->team,
+        displayname => replace_all($_->name // $_->displayname)
+    } } @{Stats::DB::Building::Manager->get_buildings() // [ ]};
     return {
         id     => $session->id,
         name   => $session->name,
@@ -538,6 +551,20 @@ get '/map/:id/games/:offset/:limit' => sub {
         games => \@games,
         offset => params->{offset},
         total  => $count
+    };
+};
+
+get '/server/:id/buildings' => sub {
+    my @buildings = map {
+        id          => $_->id,
+        name        => $_->name,
+        team        => $_->team // 'spectator',
+        displayname => replace_all($_->displayname // $_->name)
+    },@{Stats::DB::Building::Manager->get_buildings(where => [ server_id => params->{id} ]) // [ ]};
+    return {
+        buildings => \@buildings,
+        offset => 0,
+        total => scalar(@buildings)
     };
 };
 

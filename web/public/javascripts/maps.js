@@ -1,13 +1,12 @@
-$(document).ready(function() {
-    $('#content div#maps').each(function(div_index,div) {
-	    var server_id = $(div).find('a.data.server_id').attr('href');
-	    $.get('/json/server/'+server_id,function(data) {
-	        $(div).find('.f_server_name').html(data.name);
+document.addEventListener("DOMContentLoaded", async event => {
+    document.querySelectorAll('#content div#maps').forEach(div => {
+	const el_server_id = div.querySelector('a.data.server_id');
+        if (el_server_id) {
+            const server_id = el_server_id.getAttribute('href');
+            fetch(`/json/server/${server_id}`).then(r => r.json()).then(data => {
+                div.querySelectorAll('.f_server_name').forEach(el => el.replaceWith(Common.createEl('SPAN', {}, "name text", Common.formatText(data.name))));
 	    });
-	    Common.scroll_table_generic(div,function(offset,limit) {
-	        return '/json/server/'+server_id+'/maps/'+offset+'/'+limit;
-	    },function(data) {
-	        return data.maps;
-	    });
+	    Common.scroll_table_generic(div, (offset, limit) => `/json/server/${server_id}/maps/${offset}/${limit}`, data => data.maps);
+        }
     });
 });

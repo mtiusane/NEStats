@@ -28,14 +28,20 @@ sub error
     print "$message\n";
 }
 
+my $skip_existing = 1;
+
 my $pkgPath = shift || die "Syntax: $0 path-to-pkg";
 my $outputDir = "../web/public/images/maps";
 mkpath $outputDir;
 opendir DIR,$pkgPath;
-while (my $path = readdir DIR) {
+my @paths = sort { $a cmp $b } readdir DIR;
+closedir DIR;
+foreach my $path (@paths) {
     next if ($path =~ /^\./);
-    next if (-d $path);
-    next unless ($path =~ /^map-.+\.(?:pk3|dpk)$/);
+    unless ($path =~ /^map-(.+)_.+\.(?:pk3|dpk)$/) {
+        # print "Skipping: $path\n";
+        next;
+    }
     if ($path =~ /^map-(.+)_.+\.(?:pk3|dpk)$/) {
 	my $mapname = $1;
 	my $fullpath = join('/',$pkgPath,$path);
@@ -44,14 +50,15 @@ while (my $path = readdir DIR) {
 	    print "Failed to read package: $fullpath\n";
 	    next;
 	}
-	print "$path\n";
 	# my $member = $zip->memberNamed("/meta/$mapname/$mapname.arena");
 	my $tempdir = tempdir(CLEANUP => 1);
 	my $image = Image::Magick->new;
-	foreach my $zipimage ($zip->membersMatching('meta/'.$mapname.'/'.$mapname.'\.(?:jpg|webp|tga|crn)$')) {
+        my $outputName = join('/',$outputDir,"$mapname.png");
+        next if ($skip_existing && -f $outputName);
+	foreach my $zipimage ($zip->membersMatching('meta/'.$mapname.'/'.$mapname.'\.(?:jpg|webp|tga|crn|png)$')) {
+            print $zipimage->fileName."\n";
 	    if ($zipimage->fileName =~ /\.(.+?)$/) {
 		my $imagename = "$mapname.$1";
-		my $outputName = join('/',$outputDir,"$mapname.png");
 		print "Image: $imagename -> $outputName\n";
 		my ($fh,$tempfile) = tempfile(DIR => $tempdir);
 		$zipimage->extractToFileNamed($tempfile);
@@ -59,6 +66,7 @@ while (my $path = readdir DIR) {
 		    system $dwebp, $tempfile, "-o", "$tempfile.png";
 		    my $readResult = $image->Read(filename => "$tempfile.png");
 		    if ("$readResult") {
+                        unlink "$tempfile.png";
 		        error("Failed to read extracted file for $mapname: $readResult");
 			next;
 		    }
@@ -68,28 +76,43 @@ while (my $path = readdir DIR) {
 		    system $crunch, "-file", "$tempfile.crn", "-out", "$tempfile.png", "-fileformat", "png";
 		    my $readResult = $image->Read(filename => "$tempfile.png");
 		    if ("$readResult") {
+                        unlink "$tempfile.png";
+                        unlink "$tempfile.crn";
 		        error("Failed to read extracted file for $mapname: $readResult");
 			next;
 		    }
 		    unlink "$tempfile.png";
 		    unlink "$tempfile.crn";
+                } elsif ($imagename =~ /\.tga$/) {
+                    copy($tempfile,"$tempfile.tga");
+                    my $readResult = $image->Read(filename => "$tempfile.tga");
+		    if ("$readResult") {
+                        unlink "$tempfile.tga";
+		        error("Failed to read extracted file for $mapname: $readResult");
+			next;
+		    }
+                    unlink "$tempfile.tga";
 		} else {
 		    my $readResult = $image->Read(filename => $tempfile);
 		    if ("$readResult") {
 		        error("Failed to read extracted file for $mapname: $readResult");
+                        system('identify', $tempfile);
+                        system('file', $tempfile);
 		        next;
 	            }
 	        }
+                $image->Colorspace('RGB');
 		$image->Resize(geometry => $previewGeometry);
 		my $writeResult = $image->Write(filename => $outputName);
 		if ("$writeResult") {
 		    error("Failed to write output file: for $mapname: $writeResult");
 		    next;
 	        }
-	    }
+            } else {
+                error("Invalid file name in zip: ".$zipimage->fileName);
+            }
 	}
     } else {
 	print "Fail: $path\n";
     }
 }
-closedir DIR;

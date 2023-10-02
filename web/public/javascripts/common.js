@@ -1,16 +1,63 @@
-Common = {
-
+Common = {   
     loadingCount: 0,
+
+    _loadingFieldData: new Map(),
+    _getFieldData: (element, name) => {
+        if (!Common._loadingFieldData.has(element)) {
+            return undefined;
+        }
+        let data = Common._loadingFieldData.get(element);
+        if (data === undefined) {
+            return undefined;
+        }
+        return data.get(name);
+    },
+    _setFieldData: (element, name, value = undefined) => {
+        let data = Common._loadingFieldData.get(element);
+        if (data === undefined) {
+            Common._loadingFieldData.set(element, data = new Map());
+        }
+        if (value === undefined) {
+            data.delete(name);
+        } else {
+            data.set(name, value);
+        }
+    },
+    _removeFieldData: (element, name) => Common._setFieldData(element, name),
+
+    _expandSelector: (selector) => {
+        if (typeof(selector) === 'string') {
+            selector = document.querySelectorAll(selector);
+        }
+        if (typeof(selector.forEach) !== 'function') {
+            selector = [ selector ];
+        }
+        return selector;
+    },
+    
     // loadingStart: 0,
     onEndLoading: [],
-    beginLoading: function() {
-        /*if (Common.loadingCount <= 0) {
-            loadingStart = (new Date()).getTime();
-        }*/
+    beginLoading: (element = undefined) => {
+        if (Common.loadingCount <= 0) {
+            // loadingStart = (new Date()).getTime();
+            // Common._loadingFieldData.clear(); -- TODO: need to do this somewhere
+        }
         ++Common.loadingCount;
+        if (element !== undefined) {
+            element.dataset.loading = true;
+            element.dataset.loadingCount = (element.dataset.loadingCount || 0) + 1;
+            // console.log("Begin loading data for element: "+element);
+        }
         // console.log("Loading started, requests: "+Common.loadingCount);
     },
-    endLoading: function() {
+    endLoading: (element = undefined) => {
+        if (element !== undefined && element.dataset.loadingCount !== undefined) {
+            if (--element.dataset.loadingCount <= 0) {
+                delete element.dataset.loadingCount;
+                delete element.dataset.loading;
+                // console.log("Finished loading data for element: "+element);
+            }
+        }
         --Common.loadingCount;
         if (Common.loadingCount <= 0) {
             // var loadingEnd = (new Date()).getTime();
@@ -24,684 +71,821 @@ Common = {
             Common.loadingStart = 0;
         }
     },
-    
-    scroll_container: function(container,table,link,elements,line) {
-	    container = $(container);
-	    table = $(table);
-        // console.log("Initializing scroll container: ",container," table: ",table);
-	    var scroll = container.jScrollPane({
-	        autoReinitialise: false,
-	        showArrows: false,
-	        maintainPosition: true,
-	        verticalGutter: 0,
-	        horizontalGutter: 0,
-	        contentWidth: '100%'
-	    }).data('jsp');
-	    var template = table.find('.template').detach();
-	    template.removeClass('template');
-	    var thead = table.find('thead');
-	    var tbody = table.find('tbody');
-	    var loadPage = function(callback) {
-	        var offset = table.data('offset');
-	        var total = table.data('total');
-	        var limit = table.data('limit');
-	        var lastLoad = table.data('lastLoad');
-	        table.data('loading',true);
-            Common.beginLoading();
-	        $.get(link(offset,limit),function(data) {
-		        var lines = elements(data);
-		        $.each(lines,function(index,element) {
-		            tbody.append(line(template,element,offset+index));
-		        });
-                if (offset <= 0) {
-                    table.find('.sticky > tr > th').each(function() {
-                        var top = $(this).position().top;
-                        $(this).data('sticky',{
-                            top: top,
-                            offset: table.offset().top + top - table.offsetParent().offset().top
-                        });
-                    });
-                }
-		        table.data('total',data.total);
-		        table.data('offset',table.data('offset')+lines.length);
-		        table.data('loading',false);
-		        table.data('lastLoad',(new Date()).getTime());
-		        var oldWidth = table.width();
-                scroll.reinitialise();
-		        table.width(oldWidth,true); /* TODO: Without this the table keeps getting +10px at every new content row if scrolled to the rightmost position. Also required for current sticky table headers. */
-		        if (callback) callback();
-                Common.endLoading();
-	        });
-	    };
-	    table.data('offset',0);
-	    table.data('total',0);
-	    table.data('limit',25);
-	    table.data('lastLoad',(new Date()).getTime());
-	    container.bind('jsp-scroll-y',function(event,top,isAtTop,isAtBottom) {
-	        var timeSinceLastLoad = (new Date()).getTime() - table.data('lastLoad');
-	        if (table.data('offset') < table.data('total') && !table.data('loading') &&
-		        timeSinceLastLoad >= 500 && isAtBottom) {
-                // console.log("Loading page:" +table.data('offset') + ' < ' + table.data('total'));
-		        loadPage();
-	        }
-            table.find('.sticky > tr > th').each(function() {
-                var sticky = $(this).data('sticky');
-                $(this).offset({ top: table.offsetParent().offset().top + sticky.offset + top });
-                if (top > sticky.top) {
-                    $(this).addClass('hold');
-                } else {
-                    $(this).removeClass('hold');
+    isLoading: (element = undefined) => {
+        if (element) {
+            return element.dataset.loading || false;
+        } else {
+            return Common.loadingCount > 0;
+        }
+    },
+
+    loadGraphLibraries: () => {
+        Common.beginLoading();
+        return import("/javascripts/chart.umd.min.js").then(
+            () => import("/javascripts/hammer.min.js")
+        ).then(
+            () => import("/javascripts/chartjs-plugin-zoom.min.js")
+        ).then(result => {
+            Common.endLoading();
+            return result;
+        });
+    },
+
+    scroll_container: (target, table, link, elements, line) => {
+        Common._expandSelector(target).forEach(container => {
+            // console.log("Initializing scroll container: ",container," table: ",table);
+            let scroll = {
+                root: container,
+                offset: 0
+            };
+            let template = table.querySelector('.template');
+            template = template.parentElement.removeChild(template);
+            template.classList.remove('template');
+            const thead = table.querySelector('thead');
+            const tbody = table.querySelector('tbody');
+            const loadPage = (callback) => {
+                const [ offset, total, limit, lastLoad ] = [ 'offset', 'total', 'limit', 'lastLoad' ].map(name => Common._getFieldData(table, name) || 0);
+                Common.beginLoading(table);
+                fetch(link(offset, limit)).then(r => r.json()).then(data => {
+                    let lines = elements(data);
+                    lines.forEach((element, index) => tbody.append(line(template, element, offset + index)));
+                    Common._setFieldData(table, 'offset', offset + lines.length);
+                    Common._setFieldData(table, 'total', data.total);
+                    Common._setFieldData(table, 'lastLoad', (new Date()).getTime());
+                    Common._setFieldData(table, 'limit', limit);
+                    if (callback) callback();
+                    Common.endLoading(table);
+                });
+            };
+            Object.entries({
+                'offset': 0,
+                'total': 0,
+                'limit': 25,
+                'lastLoad' : (new Date()).getTime()
+            }).forEach(([ name, value ]) => Common._setFieldData(table, name, value));
+            container.addEventListener("scroll", (event) => {
+                const timeSinceLastLoad = (new Date()).getTime() - Common._getFieldData(table, 'lastLoad');
+                if (Common._getFieldData(table, 'offset') < Common._getFieldData(table, 'total') && !Common.isLoading(table) &&
+                    timeSinceLastLoad >= 500 && container.scrollTop + container.offsetHeight >= container.scrollHeight) {
+                    // console.log("Loading page:" +table.data('offset') + ' < ' + table.data('total'));
+                    loadPage();
                 }
             });
-	    });
-	    loadPage();
+            loadPage();
+        });
     },
     
-    scroll_table: function(container,link,elements,line) {
-	    container = $(container);
-	    Common.scroll_container(container,container.find('table'),link,elements,line);
+    scroll_table: (target, link, elements, line) => {
+        Common._expandSelector(target).forEach(container => {
+            Common.scroll_container(container, container.querySelector('table'), link, elements, line);
+        });
     },
 
-    replaceField: function(field,value) {
-	    if (field.is('span') && field.attr('class') == '') {
-	        field.replaceWith(value);
-	    } else {
-	        field.html(value);
-	    }
+    replaceField: (field, value) => {
+        if (field.tagName == 'SPAN' && field.getAttribute('class') == '') {
+            field.replaceWith(value);
+        } else if (typeof(value) !== 'string') {
+            field.replaceChildren(value);
+        } else {
+            field.innerHTML = value;
+        }
     },
 
-    findFieldType: function(field) {
-	    var numericTypes = new Map([
-	        [ function(field) {
-		        return field.hasClass('f__date') ||
-		            field.hasClass('f__time') ||
-		            field.hasClass('f__duration') ||
-		            field.hasClass('f__duration_minutes') ||
-		            field.hasClass('f__duration_date');
-	        }, {
-		        parseValue: function(value) { return new Date(value); }
-	        } ],
-	        [ function(field) { return true }, {
-		        parseValue: function(value) { return new Number(value); }
-	        } ]
-	    ]);
-	    for(var [test,fns] of numericTypes.entries()) {
-	        if (test(field)) {
-		        return fns;
-	        }
-	    }
-	    return undefined;
+    findFieldType: field => {
+        const dateTypes = [
+            'f__date', 'f__time', 'f__duration', 'f__duration_minutes', 'f__duration_date'
+        ];
+        return (dateTypes.some(dt => field.classList.contains(dt))) ? {
+            parseValue: value => new Date(value)
+        } : {
+            parseValue: value => new Number(value)
+        };
+    },
+    loadFieldType: field => {
+        let fns = Common._getFieldData(field, 'f__fieldType');
+        if (fns === undefined) {
+            fns = Common.findFieldType(field);
+            Common._setFieldData(field, 'f__fieldType', fns);
+        }
+        return fns;
+    },
+    clearFieldType: field => Common._removeFieldData(field, 'f__fieldType'),
+
+    loadFieldValues: (target, data) => {
+        Common._expandSelector(target).forEach(selector => {
+            /*if (!data || !Array.isArray(data)) {
+              console.log("Invalid data...");
+              return;
+              }*/
+            selector.querySelectorAll('.f__parent').forEach(parent => {
+                parent.classList.remove('f__parent');
+                Object.entries(data).forEach(([ name, value ]) => {
+                    const selectorName = 'f_'+name;
+                    if (parent.classList.contains(selectorName)) {
+                        parent.classList.remove(selectorName);
+                        Common.loadFieldValues(parent, value);
+                    }
+                });
+            });
+            Object.entries(data).forEach(([ name, value ]) => {
+                const selectorName = 'f_'+name;
+                selector.querySelectorAll('.'+selectorName).forEach((field, fieldIndex) => {
+                    // console.log("Loading field: f_"+name, field);
+                    field.classList.remove(selectorName);
+                    if (field.tagName == 'A') {
+                        if (value != null) {
+                            field.setAttribute('href', value);
+                        } else {
+                            while(field.firstChild) {
+                                field.parentNode.appendChild(field.firstChild);
+                            }
+                            field.parentNode.removeChild(field);
+                        }
+                    } else if (field.tagName == 'IMG') {
+                        if (value != null && value != "") {
+                            field.setAttribute('src',value);
+                            field.parentNode.querySelectorAll('.imgNotFound').forEach(child => child.parentNode.removeChild(child));
+                        } else {
+                            field.parentNode.removeChild(field);
+                        }
+                    } else if (field.classList.contains('f__sum') || field.classList.contains('f__sub')) {
+                        let fns = Common.loadFieldType(field);
+                        let sum = Common._getFieldData(field, 'f__sum');
+                        let parsedValue = fns.parseValue(value);
+                        if (sum === undefined) {
+                            sum = parsedValue;
+                        } else {
+                            sum += parsedValue;
+                        }
+                        Common._setFieldData(field, 'f__sum', sum);
+                    } else {
+                        Common.replaceField(field, value);
+                    }
+                });
+            });
+        });
+    },
+    
+    load_fields_generic: (target, data) => {
+        // console.log("Loading generic fields: "+data._index);
+        // $.each(selector.find('a.data.field'),function(field_index,field) {
+        //     var name = field.attr('href');
+        //     if (_.has(data,name)) {
+        //      $(field).replaceWith(data[name]);
+        //     }
+        // });
+        return new Promise((resolve, reject) => {
+            const targets = Common._expandSelector(target);
+            targets.forEach(selector => {
+                Common.loadFieldValues(selector, data);
+                selector.querySelectorAll('.f__img').forEach((field, index) => {
+                    field.classList.remove('f__img');
+                    const commonStyle = 'display: inline-block; background: black';
+                    field.setAttribute('style', commonStyle);
+                });
+                selector.querySelectorAll('.f__sum').forEach((field, index) => {
+                    field.classList.remove('f__sum');
+                    const fns = Common.loadFieldType(field);
+                    const sum = Common._getFieldData(field, 'f__sum');
+                    Common._removeFieldData(field, 'f__sum');
+                    Common.clearFieldType(field);
+                    Common.replaceField(field, sum);
+                });
+                selector.querySelectorAll('.f__sub').forEach((field, index) => {
+                    field.classList.remove('f__sub');
+                    const fns = Common.loadFieldType(field);
+                    const sum = fns.parseValue(field.textContent) - Common._getFieldData(field, 'f__sum');
+                    Common._removeFieldData(field, 'f__sum');
+                    Common.clearFieldType(field);
+                    Common.replaceField(field, sum);
+                });
+                selector.querySelectorAll('.f__date').forEach((field, index) => {
+                    field.classList.remove('f__date');
+                    Common.replaceField(field, new Date(field.textContent).toLocaleDateString());
+                });
+                selector.querySelectorAll('.f__time').forEach((field, index) => {
+                    field.classList.remove('f__time');
+                    Common.replaceField(field, new Date(field.textContent).toLocaleTimeString());
+                });
+                selector.querySelectorAll('.f__utcdate').forEach((field, index) => {
+                    field.classList.remove('f__utcdate');
+                    Common.replaceField(field, new Date(field.textContent).toUTCString().replace(' GMT',''));
+                });
+                selector.querySelectorAll('.f__duration').forEach((field, index) => {
+                    field.classList.remove('f__duration');
+                    Common.replaceField(field, Common.format_duration(field.textContent));
+                });
+                selector.querySelectorAll('.f__duration_minutes').forEach((field, index) => {
+                    field.classList.remove('f__duration_minutes');
+                    Common.replaceField(field, Common.format_duration_minutes(field.textContent));
+                });
+                selector.querySelectorAll('.f__duration_date').forEach((field, index) => {
+                    field.classList.remove('f__duration_date');
+                    Common.replaceField(field, Common.format_duration_minutes(new Number(field.textContent).valueOf() / 1000.0));
+                });
+                selector.querySelectorAll('.f__text').forEach((field, index) => {
+                    field.classList.remove('f__text');
+                    Common.replaceField(field, Common.formatText(field.textContent));
+                });
+                selector.querySelectorAll('.f__bar').forEach((field, index) => {
+                    field.classList.remove('f__bar');
+                    let neutral = field.querySelector('.bar_neutral');
+                    neutral = neutral ? neutral.textContent : null;
+                    let text = field.querySelector('.bar_text');
+                    text = text ? text.innerHTML : null;
+                    let prefix = field.querySelector('.bar_prefix');
+                    // prefix = prefix ? prefix.innerHTML : null;
+                    let suffix = field.querySelector('.bar_suffix');
+                    // suffix = suffix ? suffix.innerHTML : null;
+                    let fill_color = field.querySelector('.bar_fillcolor');
+                    fill_color = fill_color ? fill_color.textContent : null;
+                    let empty_color = field.querySelector('.bar_emptycolor');
+                    empty_color = empty_color ? empty_color.textContent : null;
+                    let neutral_color = field.querySelector('.bar_neutralcolor');
+                    neutral_color = neutral_color ? neutral_color.textContent : null;
+                    let center_fill_text = field.classList.contains('bar_center_text');
+                    Common.replaceField(field, Common.bar({
+                        value: field.querySelector('.bar_value').textContent,
+                        total: field.querySelector('.bar_total').textContent,
+                        neutral: neutral,
+                        text: text,
+                        prefix: prefix,
+                        suffix: suffix,
+                        fill_color: fill_color,
+                        empty_color: empty_color,
+                        neutral_color: neutral_color,
+                        center_fill_text: center_fill_text
+                    }));
+                });
+            });
+            resolve(targets);
+        });
     },
 
-    loadFieldType: function(field) {
-	    var fns = field.data('f__fieldType');
-	    if (fns === undefined) {
-	        fns = Common.findFieldType(field);
-	        field.data('f__fieldType',fns);
-	    }
-	    return fns;
+    scroll_table_multi: (target, selectors, elements, line) => {
+        Common._expandSelector(target).forEach(div => {
+            for(const selector in selectors) {
+                div.querySelectorAll(selector).forEach(field_id => {
+                    const url = selectors[selector](field_id.getAttribute('href'));
+                    Common.scroll_table(div, url, elements, line);
+                    field_id.parentNode.removeChild(field_id);
+                });
+            }
+        });
     },
 
-    clearFieldType: function(field) {
-	    field.removeData('f__fieldType');
+    scroll_table_generic: (target, link, elements) => {
+        Common.scroll_table(target, link, elements, (template, data, index) => {
+            const entry = template.cloneNode(true);
+            data._index = 1+index;
+            Common.load_fields_generic(entry, data);
+            return entry;
+        });
     },
 
-    loadFieldValues: function(selector,data) {
-	    selector.find('.f__parent').each(function(index,parent) {
-	        parent = $(parent);
-	        parent.removeClass('f__parent');
-	        $.each(data,function(name,value) {
-		        var selectorName = 'f_'+name;
-		        if (parent.hasClass(selectorName)) {
-		            parent.removeClass(selectorName);
-		            Common.loadFieldValues(parent,value);
-		        }
-	        });
-	    });
-	    $.each(data,function(name,value) {
-	        var selectorName = 'f_'+name;
-	        selector.find('.'+selectorName).each(function(field_index,field) {
-		        // console.log("Loading field: f_"+name, field);
-		        field = $(field);
-		        field.removeClass(selectorName);
-		        if (field.is('a')) {
-		            if (value != null)
-			            field.attr('href',value);
-		            else
-			            field.children().unwrap();
-		        } else if (field.is('img')) {
-		            if (value != null && value != "") {
-			            field.attr('src',value);
-			            field.parent().children('.imgNotFound').remove();
-		            } else {
-			            field.remove();
-		            }
-		        } else if (field.hasClass('f__sum') || field.hasClass('f__sub')) {
-		            var fns = Common.loadFieldType(field);
-		            var sum = field.data('f__sum');
-		            var parsedValue = fns.parseValue(value);
-		            if (sum === undefined) {
-			            sum = parsedValue;
-		            } else {
-			            sum += parsedValue;
-		            }
-		            field.data('f__sum',sum);
-		        } else {
-		            Common.replaceField(field,value);
-		        }
-	        });
-	    });
-    },
-   
-    load_fields_generic: function(selector,data) {
-	    // console.log("Loading generic fields: "+data._index);
-	    // $.each(selector.find('a.data.field'),function(field_index,field) {
-	    //     var name = field.attr('href');
-	    //     if (_.has(data,name)) {
-	    // 	$(field).replaceWith(data[name]);
-	    //     }
-	    // });
-	    Common.loadFieldValues(selector,data);
-	    selector.find('.f__img').each(function(index,field) {
-	        field = $(field);
-	        field.removeClass('f__img');
-	        var commonStyle='display: inline-block; background: black';
-	        field.attr('style',commonStyle);
-	    });
-	    selector.find('.f__sum').each(function(index,field) {
-	        field = $(field);
-	        field.removeClass('f__sum');
-	        var sum = field.data('f__sum');
-	        field.removeData('f__sum');
-	        Common.replaceField(field,sum);
-	    });
-	    selector.find('.f__sub').each(function(index,field) {
-	        field = $(field);
-	        field.removeClass('f__sub');
-	        var fns = Common.loadFieldType(field);
-	        var sum = fns.parseValue(field.text()) - field.data('f__sum');
-	        field.removeData('f__sum');
-	        Common.clearFieldType(field);
-	        Common.replaceField(field,sum);
-	    });
-	    selector.find('.f__date').each(function(field_index,field) {
-	        field = $(field);
-	        field.removeClass('f__date');
-	        Common.replaceField(field,new Date($(field).text()).toLocaleDateString());
-	    });
-	    selector.find('.f__time').each(function(field_index,field) {
-	        field = $(field);
-	        field.removeClass('f__time');
-	        Common.replaceField(field,new Date($(field).text()).toLocaleTimeString());
-	    });
-	    selector.find('.f__utcdate').each(function(field_index,field) {
-	        field = $(field);
-	        field.removeClass('f__utcdate');
-	        Common.replaceField(field,new Date(field.text()).toUTCString().replace(' GMT',''));
-	    });
-	    selector.find('.f__duration').each(function(field_index,field) {
-	        field = $(field);
-	        field.removeClass('f__duration');
-	        Common.replaceField(field,Common.format_duration(field.text()));
-	    });
-	    selector.find('.f__duration_minutes').each(function(field_index,field) {
-	        field = $(field);
-	        field.removeClass('f__duration_minutes');
-	        Common.replaceField(field,Common.format_duration_minutes(field.text()));
-	    });
-	    selector.find('.f__duration_date').each(function(field_index,field) {
-	        field = $(field);
-	        field.removeClass('f__duration_date');
-	        Common.replaceField(field,Common.format_duration_minutes(new Number(field.text()).valueOf() / 1000.0));
-	    });
-	    selector.find('.f__text').each(function(field_index,field) {
-	        field = $(field);
-	        field.removeClass('f__text');
-	        Common.replaceField(field,Common.format_text(field.text()));
-	    });
-	    selector.find('.f__bar').each(function(field_index,field) {
-	        field = $(field);
-	        field.removeClass('f__bar');
-	        var neutral = field.find('.bar_neutral');
-	        neutral = neutral.length ? neutral.text() : null;
-	        var text = field.find('.bar_text');
-	        text = text.length ? text.html() : null;
-	        var prefix = field.find('.bar_prefix');
-	        prefix = prefix.length ? prefix.html() : null;
-	        var suffix = field.find('.bar_suffix');
-	        suffix = suffix.length ? suffix.html() : null;
-	        var fill_color = field.find('.bar_fillcolor');
-	        fill_color = fill_color.length ? fill_color.text() : null;
-	        var empty_color = field.find('.bar_emptycolor');
-	        empty_color = empty_color.length ? empty_color.text() : null;
-	        var neutral_color = field.find('.bar_neutralcolor');
-	        neutral_color = neutral_color.length ? neutral_color.text() : null;
-            var center_fill_text = field.hasClass('.bar_center_text');
-	        Common.replaceField(field,Common.bar({
-		        value: field.find('.bar_value').text(),
-		        total: field.find('.bar_total').text(),
-		        neutral: neutral,
-		        text: text,
-		        prefix: prefix,
-		        suffix: suffix,
-		        fill_color: fill_color,
-		        empty_color: empty_color,
-		        neutral_color: neutral_color,
-                center_fill_text: center_fill_text
-	        }));
-	    });
+    scroll_table_generic_multi: (target, selectors, elements) => {
+        Common._expandSelector(target).forEach(div => {
+            for(const selector in selectors) {
+                div.querySelectorAll(selector).forEach(field_id => {
+                    var url = selectors[selector](field_id.getAttribute('href'));
+                    field_id.parentNode.removeChild(field_id);
+                    Common.scroll_table_generic(div, url, elements);
+                    // return;
+                });
+            }
+        });
     },
 
-    scroll_table_multi: function(container,selectors,elements,line) {
-	    $(container).each(function(div_index,div) {
-	        for(var selector in selectors) {
-		        var field_id = $(div).find(selector);
-		        if (field_id.length) {
-		            var url = selectors[selector](field_id.attr('href'));
-		            Common.scroll_table(div,url,elements,line);
-		            field_id.remove();
-		            return;
-		        }
-	        }
-	    });
-    },
-
-    scroll_table_generic: function(container,link,elements) {
-    	Common.scroll_table(container,link,elements,function(template,data,index) {
-	        var entry = template.clone();
-	        data._index = 1+index;
-	        Common.load_fields_generic(entry,data);
-	        return entry;
-	    });
-    },
-
-    scroll_table_generic_multi: function(container,selectors,elements) {
-	    $(container).each(function(div_index,div) {
-	        for(var selector in selectors) {
-		        var field_id = $(div).find(selector);
-		        if (field_id.length) {
-		            var url = selectors[selector](field_id.attr('href'));
-		            field_id.remove();
-		            Common.scroll_table_generic(div,url,elements);
-		            return;
-		        }
-	        }
-	    });
-    },
-
-    format_percent: function(value) {
-	    return Number(100.0 * value).toFixed(2) + '%';
-    },
+    format_percent: value => Number(100.0 * value).toFixed(2) + '%',
 
     format_duration: function(seconds) {
-	    seconds = Number(seconds);
-	    var hours = Math.floor(seconds / 3600.0);
-	    seconds -= 3600.0 * hours;
-	    var minutes = Math.floor(seconds / 60.0);
-	    seconds -= 60.0 * minutes;
-	    seconds = Math.floor(seconds);
-	    seconds = (seconds > 0) ? ((minutes > 0) ? ' ' : '') + seconds + 's' : '';
-	    minutes = (minutes > 0) ? ((hours > 0) ? ' ' : '') + minutes + 'min' : '';
-	    hours = (hours > 0) ? hours + 'h' : '';
-	    return hours + minutes + seconds;
+        seconds = Number(seconds);
+        var hours = Math.floor(seconds / 3600.0);
+        seconds -= 3600.0 * hours;
+        var minutes = Math.floor(seconds / 60.0);
+        seconds -= 60.0 * minutes;
+        seconds = Math.floor(seconds);
+        seconds = (seconds > 0) ? ((minutes > 0) ? ' ' : '') + seconds + 's' : '';
+        minutes = (minutes > 0) ? ((hours > 0) ? ' ' : '') + minutes + 'min' : '';
+        hours = (hours > 0) ? hours + 'h' : '';
+        return hours + minutes + seconds;
     },
 
     format_duration_hm: function(seconds)
     {
-	    seconds = Number(seconds);
-	    var hours = Math.floor(seconds / 3600.0);
-	    seconds -= 3600.0 * hours;
-	    var minutes = Math.floor(seconds / 60.0);
-	    minutes = (minutes > 0) ? ((hours > 0) ? ' ' : '') + minutes + 'min' : '';
-	    hours = (hours > 0) ? hours + 'h' : '';
-	    return hours + minutes;
-    },	
+        seconds = Number(seconds);
+        var hours = Math.floor(seconds / 3600.0);
+        seconds -= 3600.0 * hours;
+        var minutes = Math.floor(seconds / 60.0);
+        minutes = (minutes > 0) ? ((hours > 0) ? ' ' : '') + minutes + 'min' : '';
+        hours = (hours > 0) ? hours + 'h' : '';
+        return hours + minutes;
+    },  
 
     format_duration_minutes: function(seconds) {
-	    return Common.format_duration(Math.ceil(Number(seconds) / 60.0) * 60.0);
+        return Common.format_duration(Math.ceil(Number(seconds) / 60.0) * 60.0);
     },
 
-    format_text: function(text) {
-	return '<span class="color7">'+text
-	    .replace(/\[(\S+?)\]/g,'<span class="smiley smiley_$1"></span>')
-	    .replace(/\^(.)([^\^]*)/gi,function(match,color,content) {
-		var n = (color.charCodeAt(0)-'0'.charCodeAt(0)) % 16;
-		return '<span class="color'+n+'">'+content+'</span>';
-	    })+'</span>';
+    format_text: text => {
+        if (text === undefined) {
+            text = "&lt;&lt;undefined&gt;&gt;";
+        }
+        const result = Common.createEl('SPAN', {}, [ "color7" ]);
+        result.innerHTML = '<span>' + text.replace(/\[([A-Za-z0-9]+?)\]|(?:\^([^\^]))|(\^\^)|(.+?)/g, (match, smiley, color, caret, text) => {
+            if (smiley) {
+                return `<span class=\"smiley smiley_${smiley}\"></span>`;
+            } else if (color) {
+                const n = (color.charCodeAt(0)-'0'.charCodeAt(0)) % 16;
+                return `</span><span class="color${n}">`;
+            } else if (caret) {
+                return '^';
+            } else if (text) {
+                return text;
+            }
+        }) + '</span>';
+        return result;
+        /*
+        return '<span class="color7">'+text
+            .replace(/\[(\S+?)\]/g, (match, id) => {
+                '<span class="smiley smiley_$1"></span>'
+            }
+            .replace(/\^(.)([^\^]*)/gi, (match, color, content) => {
+                const n = (color.charCodeAt(0)-'0'.charCodeAt(0)) % 16;
+                return `<span class="color${n}">${content}</span>`;
+            })+'</span>';*/
     },
+    formatText: text => Common.format_text(text),
 
     format_outcome: function(outcome) {
-    	return '<span class="'+outcome+'">'+outcome+'</span>';
+        return '<span class="'+outcome+'">'+outcome+'</span>';
     },
 
     sum: function(values) {
-	    return values.reduce(function(p,v) { return Number(p)+Number(v); });
+        return values.reduce(function(p,v) { return Number(p)+Number(v); });
     },
 
     isDefined: function(value) {
-	    return !(typeof value === 'undefined' || value === null);
+        return !(typeof value === 'undefined' || value === null);
     },
 
     percent: function(value,total) {
-	    if (total > 0)
-	        return Common.format_percent(value/total);
-	    else
-	        return "N/A";
+        if (total > 0)
+            return Common.format_percent(value/total);
+        else
+            return "N/A";
     },
 
     roundTo: function(v,m) {
-	    return Math.round(v / m) * m;
+        return Math.round(v / m) * m;
     },
 
-    rating_size: function(aspect,margin) {
-	    var a = (typeof aspect !== 'undefined') ? aspect : 4.0;
-	    var m = (typeof margin !== 'undefined') ? margin : 0.1;
-	    var ce = $('#page');
-        var pa = ce.width() / ce.height();
+    rating_size: (aspect, margin) => {
+        const a = (typeof aspect !== 'undefined') ? aspect : 4.0;
+        const m = (typeof margin !== 'undefined') ? margin : 0.1;
+        const ce = document.querySelector('#page');
+        const cr = ce.getBoundingClientRect();
+        const pa = ce.offsetWidth / ce.offsetHeight;
         if (pa < a) {
-	        wh = ce.height() / 8;
+            wh = ce.offsetHeight / 8;
             ww = a * wh;
         } else {
-            ww = ce.width() / 4;
+            ww = ce.offsetWidth / 4;
             wh = ww / a;
         }
-	    var ca = a - m;
-	    var window_a = ww / wh;
-	    if (ca < window_a) {
-	        var ch = Common.roundTo(wh, 8);
-	        return [ Common.roundTo(ch * ca, 16), ch ];
-	    } else {
-	        var cw = Common.roundTo(ww, 16);
-	        return [ cw, Common.roundTo(cw / ca, 8) ];
-	    }
-    },
-
-    bar_size: function() {
-	    var [w,h] = Common.rating_size(8.0);
-	    return [0.5*w,0.5*h];
-    },
-
-    image_size: function() {
-	    var [w,h] = Common.rating_size(8.0);
-	    return [0.25*w,1.2*h];
-    },
-
-    rating: function(g) {
-	    var [cw,ch] = Common.rating_size();
-	    if (g.update_count > 0) {
-	        var rangeMin = Number(g.min_range);
-	        var rangeMax = Number(g.max_range);
-	        var rangeDelta = rangeMax - rangeMin;
-	        //var rMin = Number(g.min_rating);
-	        //var rMax = Number(g.max_rating);
-	        //var rDelta = rMax - rMin;
-	        var r = Number(g.rating);
-	        var rd = Number(g.rd);
-	        var rdScale = 0.5; // rd / (rangeDelta - 3/2 * rDelta);
-	        var fill_color = 'rgba(100,63,51,0.66)';
-	        var empty_color = 'transparent';
-	        var stroke_color = '#642e1d';
-	        var rd_fill_left = cw * (r - rangeMin - (2.0/* - 0.25*/) * rd * rdScale) / rangeDelta;
-	        var rd_fill_width = cw * (4.0 * rd * rdScale) / rangeDelta;
-	        var x0 =       rd_fill_width /  4.0,x1 = 3.0*rd_fill_width / 10.0,x2 = rd_fill_width / 2.0;
-	        var x3 = 2.0 * rd_fill_width / 10.0,x4 =     rd_fill_width /  4.0,x5 = rd_fill_width / 2.0;
-	        var move = 'm '+$.each([ rd_fill_left, ch ], function(i,v) { return Number(v).toFixed(2); }).reduce(function(a,b) { return a + ' ' + b; });
-	        var curve = 'c '+$.each([ x0, 0.0, x1, -ch, x2, -ch, x3, 0, x4, ch, x5, ch ], function(i,v) { return Number(v).toFixed(2); }).reduce(function(a,b) { return a + ' ' + b; });
-	        var rd_fill_middle = rd_fill_left + 0.5 * rd_fill_width;
-	        var extra = '';//'m '+rd_fill_middle.toFixed(2)+' 0 l '+rd_fill_middle.toFixed(2)+' '+ch.toFixed(2);
-	        var graph = move+' '+curve+' '+extra;
-	        var result = $('<div class="rating"></div>');
-            var fontSize = '2.5em';
-            var ratingStyle = 'font-size: '+fontSize+'; fill: white'; // Number(ch/3).toFixed(2)+'px';
-            var infoStyle = 'font-size: 0.6em; fill: #dfdddc';
-            var text = '';
-            text += '<text style="'+infoStyle+'" text-anchor="start" dominant-baseline="hanging" x="0.5%" y="2%">'+rangeMin.toFixed(2)+'</text>';
-            text += '<text style="'+infoStyle+'" text-anchor="end" dominant-baseline="hanging" x="99.5%" y="2%">'+rangeMax.toFixed(2)+'</text>';
-
-            text += '<text style="'+infoStyle+'" text-anchor="start" dominant-baseline="bottom" x="'+(0.5 + (r-rd-rangeMin)/rangeDelta*99.0).toFixed(2)+'%" y="98%">'+(r - rd).toFixed(2)+'</text>';
-            text += '<text style="'+infoStyle+'" text-anchor="end" dominant-baseline="bottom" x="'+(0.5 + (r+rd-rangeMin)/rangeDelta*99.0).toFixed(2)+'%" y="98%">'+(r + rd).toFixed(2)+'</text>';
-            text += '<text style="'+ratingStyle+'" text-anchor="middle" dominant-baseline="middle" x="50%" y="50%">'+r.toFixed(2)+'</text>';
-	        var svg = $('<svg width="'+cw+'" height="'+ch+'" viewbox="0 0 '+cw+' '+ch+'" style="background: '+empty_color+'"><path d="'+graph+'" fill="'+fill_color+'" stroke="'+stroke_color+'" stroke-width="1"></path>'+text+'</svg>');
-	        result.append(svg);
-	        return result;
-	    } else {
-            var empty_color = 'transparent';
-            var fill_color = '#6f6767';
-            var text = '<text style="font-size: '+fontSize+'; fill: '+fill_color+'" text-anchor="middle" dominant-baseline="middle" x="50%" y="50%">N/A</text>';
-            return $('<div class="rating"><svg width="'+cw+'" height="'+ch+'" viewbox="0 0 '+cw+' '+ch+'" style="background: '+empty_color+'">'+text+'</svg></div>');
+        const ca = a - m;
+        const window_a = ww / wh;
+        if (ca < window_a) {
+            const ch = Common.roundTo(wh, 8);
+            return [ Common.roundTo(ch * ca, 16), ch ];
+        } else {
+            const cw = Common.roundTo(ww, 16);
+            return [ cw, Common.roundTo(cw / ca, 8) ];
         }
+    },
+
+    bar_size: () => {
+        const [ w, h ] = Common.rating_size(8.0);
+        return [ 0.5 * w, 0.5 * h ];
+    },
+
+    image_size: () => {
+        const [ w, h ] = Common.rating_size(8.0);
+        return [ 0.25 * w, 1.2 * h ];
+    },
+
+    createEl: (tag, attributes = {}, classList = [], text = undefined) => {
+        let el = document.createElement(tag);
+        for(const [ name, value ] of Object.entries(attributes)) {
+            el.setAttribute(name, value);
+        }
+        if (typeof(classList) === 'string') {
+            classList = classList.split(' ').filter(s => s !== '');
+        }
+        for(const cname of classList) {
+            el.classList.add(cname);
+        }
+        if (text !== undefined) {
+            if (Array.isArray(text)) {
+                text.forEach(child => el.appendChild(child));
+            } else if (typeof(text) === 'object') {
+                el.appendChild(text);
+            } else {
+                el.textContent = text;
+            }
+        }
+        return el;
+    },
+
+    createElXML: (tag, attributes = {}, classList = [], text = undefined) => {
+        let el = document.createElementNS("http://www.w3.org/2000/svg", tag);
+        for(const [ name, value ] of Object.entries(attributes)) {
+            el.setAttribute(name, value);
+        }
+        for(const cname of classList) {
+            el.classList.add(cname);
+        }
+        if (text !== undefined) {
+            el.textContent = text;
+        }
+        return el;
+    },
+
+    
+    rating: g => {
+        const [ cw, ch ] = Common.rating_size();
+        const result = Common.createEl("DIV", {}, [ "rating" ]);
+        const fontSize = 28; // Number(ch / 3).toFixed(2);
+        const fontSizeInfo = 9;
+        const empty_color = 'transparent';
+        const svg = Common.createElXML("svg", {
+            "width"  : cw,
+            "height" : ch,
+            "viewbox": `0 0 ${cw} ${ch}`,
+            "style"  : `background: ${empty_color}`
+        });
+        if (g.update_count > 0) {
+            const [ rangeMin, rangeMax ] = [ Number(g.min_range), Number(g.max_range) ];
+            const rangeDelta = rangeMax - rangeMin;
+            //var rMin = Number(g.min_rating);
+            //var rMax = Number(g.max_rating);
+            //var rDelta = rMax - rMin;
+            const r = Number(g.rating);
+            const rd = Number(g.rd);
+            const rdScale = 0.5; // rd / (rangeDelta - 3/2 * rDelta);
+            const fill_color = 'rgba(100,63,51,0.66)';
+            const stroke_color = '#642e1d';
+            const rd_fill_left = cw * (r - rangeMin - (2.0/* - 0.25*/) * rd * rdScale) / rangeDelta;
+            const rd_fill_width = cw * (4.0 * rd * rdScale) / rangeDelta;
+            const x0 =       rd_fill_width /  4.0,x1 = 3.0*rd_fill_width / 10.0,x2 = rd_fill_width / 2.0;
+            const x3 = 2.0 * rd_fill_width / 10.0,x4 =     rd_fill_width /  4.0,x5 = rd_fill_width / 2.0;
+            let graph = [ 'm' ].concat([
+                rd_fill_left, ch
+            ].map(v => Number(v).toFixed(2))).concat([ 'c' ]).concat([
+                x0, 0.0, x1, -ch, x2, -ch, x3, 0, x4, ch, x5, ch
+            ].map(v => Number(v).toFixed(2))).join(' ');
+            /*
+              const rd_fill_middle = rd_fill_left + 0.5 * rd_fill_width;
+              const extra = '';//'m '+rd_fill_middle.toFixed(2)+' 0 l '+rd_fill_middle.toFixed(2)+' '+ch.toFixed(2);
+            */
+            const ratingStyle = `font-size: ${fontSize}px; fill: white`;
+            const infoStyle = `font-size: ${fontSizeInfo}px; fill: #dfdddc`;
+            let text = [];
+            text.push(Common.createElXML("text", {
+                "style"            : infoStyle,
+                "text-anchor"      : "start",
+                "dominant-baseline": "hanging",
+                "x"                : 1,
+                "y"                : 1
+            }, [], rangeMin.toFixed(0)));
+            text.push(Common.createElXML("text", {
+                "style"            : infoStyle,
+                "text-anchor"      : "end",
+                "dominant-baseline": "hanging",
+                "x"                : cw - 1,
+                "y"                : 1
+            }, [], rangeMax.toFixed(0)));
+            text.push(Common.createElXML("text", {
+                "style"            : infoStyle,
+                "text-anchor"      : "end",
+                "dominant-baseline": "bottom",
+                "x"                : Math.min(90, (0.5 + (r - rd - rangeMin) / rangeDelta * 99.0 - 4.0)).toFixed(2)+"%",
+                "y"                : (ch - fontSizeInfo / 2).toFixed(2)
+            }, [], (r - rd).toFixed(0)));
+            text.push(Common.createElXML("text", {
+                "style"            : infoStyle,
+                "text-anchor"      : "start",
+                "dominant-baseline": "bottom",
+                "x"                : Math.min(90, (0.5 + (r + rd - rangeMin) / rangeDelta * 99.0)).toFixed(2)+"%",
+                "y"                : (ch - fontSizeInfo / 2).toFixed(2)
+            }, [], (r + rd).toFixed(0)));
+            text.push(Common.createElXML("text", {
+                "style"            : ratingStyle,
+                "text-anchor"      : "middle",
+                "dominant-baseline": "middle",
+                "x"                : "50%",
+                "y"                : "50%"
+            }, [], r.toFixed(0)));
+            const path = Common.createElXML("path", {
+                "d"           : graph,
+                "fill"        : fill_color,
+                "stroke"      : stroke_color,
+                "stroke-width": 1,
+            });
+            svg.appendChild(path);
+            text.forEach(el => svg.appendChild(el));
+        } else {
+            const empty_color = 'transparent';
+            const fill_color = '#6f6767';
+            const text = Common.createElXML("text", {
+                "style"            : `font-size: ${fontSize}; fill: ${fill_color}`,
+                "text-anchor"      : "middle",
+                "dominant-baseline": "middle",
+                "x"                : "50%",
+                "y"                : "50%"
+            }, [], "N/A");
+            svg.appendChild(text);
+        }
+        result.appendChild(svg);
+        return result;
     },
     
-    bar: function(params) {
+    bar: params => {
         // TODO: Rename centerText as it's used to override default layout such that fill% is always shown but always at center
-	    var [cw,ch] = Common.bar_size();
-	    var fill_color = params.fill_color || '#3355ff';
-	    var empty_color = params.empty_color || '#ff5533';
-	    var neutral_color = params.neutral_color || '#555555';
-	    var resultWrapper = $('<div class="field barWithCaptions"></div>');
-	    var result = $('<div class="bar"></div>');
-        var centerText = Common.isDefined(params.center_fill_text);
-	    var hasText = Common.isDefined(params.text);
-	    var total = Number(params.total);
-        var svg = '';
-	    if (total > 0.0) {
-	        var fill = 100.0 * Number(params.value) / total;
-	        var neutral = Common.isDefined(params.neutral) ? 100.0 * Number(params.neutral) / total : 0.0;
-	        var empty = 100.0 - fill - neutral;
-	        var fill_text = hasText ? '' : ((fill >= 33.0 || centerText) ? fill.toFixed(2)+'%' : '');
-	        var empty_text = hasText ? '' : ((empty >= 33.0 && !centerText) ? empty.toFixed(2)+'%' : '');
-	        var neutral_text = hasText ? '' : ((neutral >= 33.0 && !centerText) ? neutral.toFixed(2)+'%' : '');
-
-            svg += '<svg width="'+cw+'" height="'+ch+'" viewbox="0 0 '+cw+' '+ch+'">';
-            svg += '<rect x="0" y="0" width="'+Number(fill).toFixed(2)+'%" height="100%" fill="'+fill_color+'"></rect>';
-
+        const [ cw, ch ] = Common.bar_size();
+        const fill_color = params.fill_color || '#3355ff';
+        const empty_color = params.empty_color || '#ff5533';
+        const neutral_color = params.neutral_color || '#555555';
+        const resultWrapper = Common.createEl('SPAN', [], [ "field", "barWithCaptions" ]);
+        const result = Common.createEl('SPAN', {}, [ "bar" ]);
+        const centerText = Common.isDefined(params.center_fill_text);
+        const hasText = Common.isDefined(params.text);
+        const total = Number(params.total);
+        const svg = Common.createElXML('svg', { "width": cw, "height": ch, "viewbox": `0 0 ${cw} ${ch}` });
+        if (total > 0.0) {
+            const fill = 100.0 * Number(params.value) / total;
+            const neutral = Common.isDefined(params.neutral) ? 100.0 * Number(params.neutral) / total : 0.0;
+            const empty = 100.0 - fill - neutral;
+            const fill_text = hasText ? '' : ((fill >= 33.0 || centerText) ? fill.toFixed(2)+'%' : '');
+            const empty_text = hasText ? '' : ((empty >= 33.0 && !centerText) ? empty.toFixed(2)+'%' : '');
+            const neutral_text = hasText ? '' : ((neutral >= 33.0 && !centerText) ? neutral.toFixed(2)+'%' : '');
+            svg.appendChild(Common.createElXML('rect', {
+                "x": 0, "y": 0, "width": Number(fill).toFixed(2)+"%", "height": "100%", "fill": fill_color
+            }));
             if (!centerText && fill_text != "") {
-                svg += '<text x="'+Number(fill/2).toFixed(2)+'%" y="50%" dominant-baseline="middle" text-anchor="middle" style="font-size: '+Number(ch/3).toFixed(2)+'px; fill: white">'+fill_text+'</text>';
+                let el = Common.createElXML('text', {
+                    "x"                : Number(fill/2).toFixed(2)+"%",
+                    "y"                : "50%",
+                    "dominant-baseline": "middle",
+                    "text-anchor"      : "middle",
+                    "style"            : "font-size: "+Number(ch/3).toFixed(2)+"px; fill: white"
+                });
+                el.innerHTML = fill_text;
+                svg.appendChild(el);
             }
             if (neutral > 0.0) {
-                svg += '<rect x="'+Number(fill).toFixed(2)+'%" y="0" width="'+Number(neutral).toFixed(2)+'%" height="100%" fill="'+neutral_color+'"></rect>';
+                svg.appendChild(Common.createElXML('rect', {
+                    "x"     : Number(fill).toFixed(2)+"%",
+                    "y"     : "0",
+                    "width" : Number(neutral).toFixed(2)+"%",
+                    "height": "100%",
+                    "fill"  : neutral_color
+                }));
                 if (!centerText && neutral_text != "") {
-                    svg += '<text x="'+Number(fill + neutral/2).toFixed(2)+'%" y="50%" dominant-baseline="middle" text-anchor="middle" style="font-size: '+Number(ch/3).toFixed(2)+'px; fill: white">'+neutral_text+'</text>';
+                    let el = Common.createElXML('text', {
+                        "x": Number(fill + neutral/2).toFixed(2)+"%",
+                        "y": "50%",
+                        "dominant-baseline": "middle",
+                        "ext-anchor": "middle",
+                        "style": "font-size: "+Number(ch/3).toFixed(2)+"px; fill: white"
+                    });
+                    el.innerHTML = neutral_text;
+                    svg.appendChild(el);
                 }
             }
-            svg += '<rect x="'+Number(fill+neutral).toFixed(2)+'%" y="0" width="'+Number(empty).toFixed(2)+'%" height="100%" fill="'+empty_color+'"></rect>';
+            svg.appendChild(Common.createElXML('rect', {
+                "x"     : Number(fill+neutral).toFixed(2)+"%",
+                "y"     : "0",
+                "width" : Number(empty).toFixed(2)+"%",
+                "height": "100%",
+                "fill"  : empty_color
+            }));
             if (!centerText && empty_text != "") {
-                svg += '<text x="'+Number(fill+neutral+empty/2).toFixed(2)+'%" y="50%" dominant-baseline="middle" text-anchor="middle" style="font-size: '+Number(ch/3).toFixed(2)+'px; fill: white">'+empty_text+'</text>';
+                let el = Common.createElXML('text', {
+                    "x": Number(fill+neutral+empty/2).toFixed(2)+"%",
+                    "y": "50%",
+                    "dominant-baseline": "middle",
+                    "text-anchor": "middle",
+                    "style": "font-size: "+Number(ch/3).toFixed(2)+"px; fill: white"
+                });
+                el.innerHTML = empty_text;
+                svg.appendChild(el);
             }
             if (centerText) {
-                svg += '<text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" style="font-size: '+Number(ch/3).toFixed(2)+'px; fill: white">'+fill_text+'</text>';
+                let el = Common.createElXML('text', {
+                    "x": "50%",
+                    "y": "50%",
+                    "dominant-baseline": "middle",
+                    "text-anchor": "middle",
+                    "style": "font-size: "+Number(ch/3).toFixed(2)+"px; fill: white"
+                });
+                el.innerHTML = fill_text;
+                svg.appendChild(el);
             }
-	    } else {
-            //var empty_color = 'transparent';
-            //var fill_color = '#6f6767';
-            var text = '<text style="font-size: '+Number(ch/3).toFixed(2)+'px; fill: white" text-anchor="middle" dominant-baseline="middle" x="50%" y="50%">N/A</text>';
-            svg += '<svg width="'+cw+'" height="'+ch+'" viewbox="0 0 '+cw+' '+ch+'" style="background: '+empty_color+'">'+text;
-	    }
+        } else {
+            svg.setAttribute("style", `background: ${empty_color}`);
+            svg.appendChild(Common.createElXML('text', {
+                "style": "font-size: "+Number(ch/3).toFixed(2)+"px; fill: white",
+                "text-anchor": "middle",
+                "dominant-baseline": "middle",
+                "x": "50%",
+                "y": "50%"
+            }, [], "N/A"));
+        }
         if (hasText) {
-            //var empty_color = 'transparent';
-            //var fill_color = '#6f6767';
-            svg += '<text style="font-size: '+Number(ch/3).toFixed(2)+'px; fill: white" text-anchor="middle" dominant-baseline="middle" x="50%" y="50%">'+params.text+'</text>';      
+            let el = Common.createElXML('text', {
+                "style": "font-size: "+Number(ch/3).toFixed(2)+"px; fill: white",
+                "text-anchor": "middle",
+                "dominant-baseline": "middle",
+                "x":"50%",
+                "y":"50%"
+            });
+            el.innerHTML = params.text;
+            svg.appendChild(el);
         }
-        svg += '</svg>';
-        result.append($(svg));
-	    if (Common.isDefined(params.prefix)) {
-            resultWrapper.append('<span class="prefix">'+params.prefix+'</span>');
+        result.appendChild(svg);
+        if (Common.isDefined(params.prefix)) {
+            let el = Common.createEl('SPAN', {}, [ "prefix" ]);
+            if (typeof(params.prefix) === 'string') {
+                el.innerHTML = Common.format_text(params.prefix);
+            } else {
+                el.appendChild(params.prefix);
+            }
+            resultWrapper.appendChild(el);
         }
-	    resultWrapper.append(result);
-	    if (Common.isDefined(params.suffix)) {
-            resultWrapper.append('<span class="suffix">'+params.suffix+'</span>');
+        resultWrapper.append(result);
+        if (Common.isDefined(params.suffix)) {
+            let el = Common.createEl('SPAN', {}, [ "suffix" ]);
+            if (typeof(params.prefix) === 'string') {
+                el.innerHTML = Common.format_text(params.suffix);
+            } else {
+                el.appendChild(params.suffix);
+            }
+            resultWrapper.appendChild(el);
         }
-	    return resultWrapper;
+        return resultWrapper;
     },
 
     extractIcons: function(text, color) {
-	    /*
-	      var parts = [ ];
-	      var start = 0;
-	      while(start < text.length) {
-	      var next = text.indexOf('[', start);
-	      var 
-	      }
+        /*
+          var parts = [ ];
+          var start = 0;
+          while(start < text.length) {
+          var next = text.indexOf('[', start);
+          var 
+          }
         */
     },
 
-    extractColors: function(text) {
-	    var parts = [ ];
-	    var start=0;
-	    var color='7';
-	    while(start < text.length) {
-	        var next = text.indexOf('^', start);
-	        if (next != -1) {
-		        if (next > start) parts.push({ color: color, text: text.substr(start, next-start) });
-		        color = text.charAt(next+1);
-		        start = next+2;
-	        } else {
-		        parts.push({ color: color, text: text.substr(start) });
-		        start = text.length;
-	        }
-	    }
-	    return parts;
+    extractColors: text => {
+        var parts = [ ];
+        var start=0;
+        var color='7';
+        while(start < text.length) {
+            var next = text.indexOf('^', start);
+            if (next != -1) {
+                if (next > start) parts.push({ color: color, text: text.substr(start, next-start) });
+                color = text.charAt(next+1);
+                start = next+2;
+            } else {
+                parts.push({ color: color, text: text.substr(start) });
+                start = text.length;
+            }
+        }
+        return parts;
     },
 
-    combineTextFromColors: function(parts) {
-	    return $.map(parts, function(p) { return p.text; }).join('');
-    },
+    combineTextFromColors: parts => parts.map(p => p.text).join(''),
 
-    stripColors: function(text) {
-	    return Common.combineTextFromColors(Common.extractColors(text));
-    },
+    stripColors: text => Common.combineTextFromColors(Common.extractColors(text)),
 
-    mapColor: function(color) {
-	    var index = (color.charCodeAt(0)-'0'.charCodeAt(0)) % 16;
-	    var colors = [
-	        '#333333', '#ff0000', '#00ff00', '#ffff00',
-	        '#0000ff', '#00ffff', '#ff00ff', '#ffffff',
-	        '#ff7f00', '#7f7f7f', '#ff9919', '#007f7f',
-	        '#7f007f', '#007fff', '#7f00ff', '#3399cc'
-	    ];
-	    return colors[index];
+    mapColor: color => {
+        const index = (color.charCodeAt(0)-'0'.charCodeAt(0)) % 16;
+        const colors = [
+            '#333333', '#ff0000', '#00ff00', '#ffff00',
+            '#0000ff', '#00ffff', '#ff00ff', '#ffffff',
+            '#ff7f00', '#7f7f7f', '#ff9919', '#007f7f',
+            '#7f007f', '#007fff', '#7f00ff', '#3399cc'
+        ];
+        return colors[index];
     },
     
-    generateFillStyle: function(canvas,text) {
-	    var parts = Common.extractColors(text);
-	    var letters = Common.combineTextFromColors(parts);
-	    var ctx = $(canvas)[0].getContext("2d");
-	    var width = ctx.measureText(letters).width;
-	    var gradient = ctx.createLinearGradient(0,0,width,0);
-	    var offset = Number(0.0);
-	    for(var i=0;i<parts.length;++i) {
-	        gradient.addColorStop(offset, Common.mapColor(parts[i].color));
-	        offset += Number(parts[i].text.length)/Number(letters.length);
-	    }
-	    return gradient;
+    generateFillStyle: (canvas, text) => {
+        const parts = Common.extractColors(text);
+        const letters = Common.combineTextFromColors(parts);
+        const ctx = canvas.getContext("2d");
+        const width = ctx.measureText(letters).width;
+        const gradient = ctx.createLinearGradient(0, 0, width, 0);
+        var offset = Number(0.0);
+        parts.forEach(part => {
+            gradient.addColorStop(offset, Common.mapColor(parts[i].color));
+            offset += Number(part.text.length) / Number(letters.length);
+        })
+        return gradient;
     },
 
-    wrapSVG: function(text) {
-        var [cw,ch] = Common.rating_size();
-	    return [].concat(
-	        '<svg xmlns="http://www.w3.org/2000/svg"  >', // width="'+cw+'" height="'+ch+'"
-	        '<foreignObject width="100%" height="100%">',
-	        '<div xmlns="http://www.w3.org/1999/xhtml" style="font-size:40px">',
-	        text,
-	        '</div>',
-	        '</foreignObject>',
-	        '</svg>'
-	    );
+    wrapSVG: text => {
+        const [cw, ch] = Common.rating_size();
+        return [].concat(
+            '<svg xmlns="http://www.w3.org/2000/svg"  >', // width="'+cw+'" height="'+ch+'"
+            '<foreignObject width="100%" height="100%">',
+            '<div xmlns="http://www.w3.org/1999/xhtml" style="font-size:40px">',
+            text,
+            '</div>',
+            '</foreignObject>',
+            '</svg>'
+        );
     },
 
     disableScroll: function() {
-	    var content = $('#content_wrapper.jspScrollable:first');
-	    var container = content.find('.jspContainer');
-	    var jsp = content.data('jsp');
-	    if (jsp !== undefined) {
-	        jsp.disableMouseWheel();
-	    }
+        /*
+        var content = $('#content_wrapper.jspScrollable:first');
+        var container = content.find('.jspContainer');
+        var jsp = content.data('jsp');
+        if (jsp !== undefined) {
+            jsp.disableMouseWheel();
+            }
+        */
     },
     
     enableScroll: function() {
-	    var content = $('#content_wrapper.jspScrollable:first');
-	    var jsp = content.data('jsp');
-	    if (jsp !== undefined) {
-	        jsp.enableMouseWheel();
-	    }
+        /*
+        var content = $('#content_wrapper.jspScrollable:first');
+        var jsp = content.data('jsp');
+        if (jsp !== undefined) {
+            jsp.enableMouseWheel();
+            }
+        */
     },  
 
-    updateFullSize: function(menu,page) {
-	    $('.jspScrollable').each(function(index,field) {
-	        field = $(field);
-	        var jsp = field.data('jsp');
-	        if (jsp !== undefined) {
-		        field.outerHeight(field.parent().outerHeight());
-		        field.outerWidth(Math.min(field.parent().outerWidth(), $('#page').innerWidth()));
-		        jsp.reinitialise();
-	        }
-	    });
+    updateFullSize: (menu, page) => {
+        /*
+        $('.jspScrollable').each(function(index,field) {
+            field = $(field);
+            var jsp = field.data('jsp');
+            if (jsp !== undefined) {
+                field.outerHeight(field.parent().outerHeight());
+                field.outerWidth(Math.min(field.parent().outerWidth(), $('#page').innerWidth()));
+                jsp.reinitialise();
+            }
+            })OA;
+            */
     },
 
     isResizing: false,
-    mainScrollPane: undefined,
-    resizeWindow: function(content,menu,page) {
-	    if (!Common.isResizing) {
-	        Common.isResizing = true;
-	        content.css({ width: 1, height: 1 });
-	        content.css({ width: page.width(), height: page.height() });
+    // mainScrollPane: undefined,
+    resizeWindow: (content, menu, page) => {
+        if (!Common.isResizing) {
+            Common.isResizing = true;
+            /*
+            content.css({ width: 1, height: 1 });
+            content.css({ width: page.width(), height: page.height() });
             if (Common.mainScrollPane !== undefined) {
-                // Common.mainScrollPane.destroy();
+                // -- Common.mainScrollPane.destroy();
                 Common.mainScrollPane = undefined;
             }
             Common.mainScrollPane = content.jScrollPane({
-	            autoReinitialise: false,
+                autoReinitialise: false,
                 showArrows: false,
-	            maintainPosition: true,
-	            verticalGutter: 0,
-	            horizontalGutter: 0,
-	            contentWidth: '100%'
+                maintainPosition: true,
+                verticalGutter: 0,
+                horizontalGutter: 0,
+                contentWidth: '100%'
             });
-	        Common.isResizing = false;
-	        // Common.updateFullSize(menu,page);
-	    }
+            */
+            Common.isResizing = false;
+            // -- Common.updateFullSize(menu,page);
+        }
     },
 
     resizePending: false,
     resizeAfterAllLoads: function() {
         if (!Common.resizePending) {
             Common.resizePending = true;
-            Common.onEndLoading.push(function() {
-                var menu = $('#menu');
-                var page = $('#page');
-                var content = $('#content_wrapper');
+            Common.onEndLoading.push(() => {
+                const [ menu, page, content ] = [ '#menu', '#page', '#content_wrapper' ].map(id => document.querySelector(id));
                 Common.resizeWindow(content, menu, page);
                 Common.resizePending = false;
             });
         }
     }
-   
+    
 };
 
-$(document).ready(function() {
-    // Fixes jquery+chrome issues about passive/nonpassive event handlers
-    (function () {
-        var func = EventTarget.prototype.addEventListener;
-        
-        EventTarget.prototype.addEventListener = function (type, fn, capture) {
-            this.func = func;
-            capture = capture || {};
-            capture.passive = false;
-            this.func(type, fn, capture);
-        };
-    }());
-
-    var win = $(window);
-    var menu = $('#menu');
-    var page = $('#page');
-    var content = $('#content_wrapper');
-    win.bind('resize',function() {
+document.addEventListener("DOMContentLoaded", event => {
+    const [ menu, page, content ] = [ '#menu', '#page', '#content_wrapper' ].map(id => document.querySelector(id));
+    window.addEventListener("resize", event => {
         Common.resizeWindow(content, menu, page);
     });
-    page.css('overflow','hidden');
+    // page.css('overflow','hidden');
     Common.resizeAfterAllLoads();
-    /* IE fix, retrigger due to incorrect initial size */
-    if (content.width() != page.width()) {
-	    win.trigger('resize');
-    }
 });

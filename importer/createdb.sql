@@ -338,7 +338,8 @@ create table buildings (
        id int not null primary key auto_increment,
        server_id int not null references servers(id),
        name varchar(32) not null unique,
-
+       team enum('human','alien','spectator'),
+       displayname varchar(64),
        foreign key (server_id) references servers(id)
 );
 

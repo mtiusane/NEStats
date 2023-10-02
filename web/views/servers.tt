@@ -3,18 +3,18 @@
   <div id="servers" class="container">
     <table>
       <thead>
-	<tr class="title">
+        <tr class="title">
           <th>Server</th>
           <th>Map</th>
-	  <th>Players</th>
-	</tr>
+          <th>Players</th>
+        </tr>
       </thead>
       <tbody>
-	<tr class="template">
-          <td class="server"></td>
-          <td class="map"></td>
-          <td class="players"></td>
-	</tr>
+        <tr class="template">
+          <td><span class="server"></span></td>
+          <td><span class="map"></span></td>
+          <td><span class="players"></span></td>
+        </tr>
       </tbody>
     </table>
   </div>

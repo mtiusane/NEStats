@@ -1,349 +1,399 @@
-$(document).ready(function() {
-    var formatPopup = function(title,lines) {
-	    return [
-	        '<div class="container noscroll">',
-	        '<table>',
-	        '<thead><tr class="title"><th>',title,'</th></tr></thead>',
-	        '<tbody>'
-	    ].concat($.map(lines,function(line) { return '<tr><td>'+line+'</tr></td>'; })).concat([
-	        '</tbody>',
-	        '</table>',
-	        '</div>'
-	    ]).join('');
+const regions = {
+    id: 'regions',
+    defaults: {
+        markers: []
+    },
+    
+    beforeInit: function(chart) {
+        /*console.log("Plugin initialized 1: "+JSON.stringify(chart.options.plugins.regions));
+        chart.regions = options.regions;*/
+    },
+    beforeDatasetsDraw: function(chart,_,options) {
+        const ctx = chart.ctx;
+        const colors = {
+            reactor: 'rgba(192,64,64,0.1)',
+            overmind: 'rgba(64,64,192,0.1)'
+        };
+        ctx.save();
+        const xAxis = chart.scales.x,yAxis = chart.scales.y;
+        for(const [building, markers] of Object.entries(chart.options.plugins.regions.markers)) {
+            let start = undefined;
+            for(const marker of markers) {
+                ctx.fillStyle = colors[marker.building.name];
+                if (marker.type == 'destroy') {
+                    if (start === undefined) {
+                        start = xAxis.getPixelForValue(marker.time);
+                    }
+                } else if (start !== undefined) {
+                    let end = xAxis.getPixelForValue(marker.time);
+                    ctx.fillRect(Math.min(start,end), yAxis.top, Math.abs(end - start), yAxis.bottom - yAxis.top);
+                    start = undefined;
+                }
+            }
+        }
+        ctx.restore();
+    }
+};
+
+document.addEventListener("DOMContentLoaded", event => {
+    const formatPopup = (title, lines) => Common.createEl('DIV', {}, "container noscroll", Common.createEl('TABLE', {}, [], [
+        Common.createEl('THEAD', {}, [], Common.createEl('TR', {}, [], Common.createEl('TH', {}, [], title))),
+        Common.createEl('TBODY', {}, [], lines.map(line => Common.createEl('TR', {}, [], Common.createEl('TD', {}, [], line))))
+    ])).outerHTML;
+    const range = n => Array.from({ length: n }, (v, i) => i);
+    const teamColors = {
+        spectator: range(31).map(v => '#7f7f7f'),
+        alien:     range(31).map(v => 'rgb('+(7 + 8 * v)+','+(7 + 2 * v)+','+(7 + 2 * v)+')').reverse(),
+        human:     range(31).map(v => 'rgb('+(7 + 2 * v)+','+(7 + 2 * v)+','+(7 + 8 * v)+')').reverse()
     };
-    $('#content div#game_events').each(function(index) {
-	    var div = $(this);
-	    var anchor = div.find('a.data.game_id');
-	    var game_id = anchor.attr('href');
-	    anchor.remove();
-	    var graph = div.hasClass('graph') ? div : div.find('.graph');
-	    var canvas = $('<canvas />').appendTo(div);
-	    var game,sessions;
-	    // Chart.defaults.global.pointHitDetectionRadius = 1;
-	    Chart.defaults.line.aspectRatio = 2.0;
-	    $.when(
-	        $.getJSON('/json/game/'+game_id,function(data) { game = data.game; }),
-	        $.getJSON('/json/game/'+game_id+'/sessions',function(data) { sessions = data.sessions; })
-	    ).then(function() {
-    	    // console.log("Loading game sessions: "+game_id);
-	        var eventsBySession = { };
-	        var teamColors = {
-		        spectator: $.map(_.range(31), function(v) { return '#7f7f7f'; }),
-		        alien: $.map(_.range(31), function(v) { return 'rgb('+(7+8*v)+','+(7+2*v)+','+(7+2*v)+')'; }).reverse(),
-		        human: $.map(_.range(31), function(v) { return 'rgb('+(7+2*v)+','+(7+2*v)+','+(7+8*v)+')'; }).reverse()
-	        };
-	        var eventTypes = {
-		        kill   : {
-		            value  : function(v) { return v+1; },
-		            tooltip: function(s,e) {
-			            if (e.assist_id != null && eventsBySession[e.assist_id] == null) {
-			                console.log("Strange, assist with no session data for assistant.");
-			            }
-			            return formatPopup('Kill',[
-			                Common.format_text(s.name),
-			                'killed',
-			                Common.format_text(eventsBySession[e.killed_id].session.name),
-					'with',
-                                        Common.format_text(e.weapon)
-				    ].concat((e.assist_id != null && eventsBySession[e.assist_id] != null) ? [
-			                'assisted by',
-			                Common.format_text(eventsBySession[e.assist_id].session.name)
-			            ] : [ ]));
-		            }
-		        },
-		        death  : {
-		            value  : function(v) { return v-0.25; },
-		            tooltip: function(s,e) {
-			            if (e.killer_id != null) {
-			                if (e.assist_id != null && eventsBySession[e.assist_id] == null) {
-				                console.log("Strange, assisted death with no assistant.");
-			                }
-			                return formatPopup('Death',[
-				                Common.format_text(s.name),
-				                'killed by',
-				                Common.format_text(eventsBySession[e.killer_id].session.name),
-				                'with',
-				                Common.format_text(e.weapon)].concat((e.assist_id != null && eventsBySession[e.assist_id] != null) ? [
-				                    'assisted by',
-				                    Common.format_text(eventsBySession[e.assist_id].session.name)
-				                ] : [ ]));
-			            } else {
-			                return formatPopup('Death',[
-				                Common.format_text(s.name),
-				                'died of',
-				                e.weapon
-			                ]);
-			            }
-		            }
-		        },
-		        assist : {
-		            value  : function(v) { return v+0.25; },
-		            tooltip: function(s,e) {
-			            return formatPopup('Assist',[
-			                Common.format_text(s.name),
-			                ' assisted ',
-			                (e.killer_id != null ? Common.format_text(eventsBySession[e.killer_id].session.name) : '<i>world</i>'),
-			                ' vs ',
-			                Common.format_text(eventsBySession[e.killed_id].session.name)
-			            ]);
-		            }
-		        },
-		        build  : {
-		            value  : function(v) { return v+1; },
-		            tooltip: function(s,e) {
-			            return formatPopup('Build',[ Common.format_text(s.name),'built',Common.format_text(e.building) ]);
-		            }
-		        },
-		        destroy: {
-		            value  : function(v) { return v+2; },
-		            tooltip: function(s,e) {
-			            return formatPopup('Destroy',[ Common.format_text(s.name),'destroyed',Common.format_text(e.building),'with',Common.format_text(e.weapon) ]);
-		            }
-		        },
-		        team   : {
-		            value  : function(v) { return 0; },
-		            tooltip: function(s,e) {
-			            return formatPopup('Team',[ Common.format_text(s.name),'joined',e.team+'s' ]);
-		            }
-		        },
-		        end    : {
-		            value  : function(v) { return v; },
-		            tooltip: function(s,e) {
-			            return formatPopup('End',[ Common.format_text(s.name),'left',e.team+'s' ]);
-		            }
-		        }
-	        };
-	        var minTime = game.start, maxTime = game.start;
-	        var minScore = 0, maxScore = 0;
-	        $.when.apply($,$.map(sessions, function(s) {
-		        return $.getJSON('/json/session/'+s.id+'/events', function(data) {
-		            eventsBySession[s.id] = { session: s, events: data.events };
-		        });
-	        })).then(function() {
-		        var index = 0;
-		        var datasets = $.grep($.map(eventsBySession, function(set, id) {
-		            var events = set.events;
-		            events.sort(function(a,b) {
-			            return new Date(a.time) - new Date(b.time)
-		            });
-		            var score = Number(0);
-		            for(var i=0;i<events.length;++i) {
-			            score = eventTypes[events[i].type].value(score);
-			            events[i].score = score;
-		            }
-		            var data = $.map(events, function(e) {
-			            return {
-			                x: e.time,
-			                y: e.score,
-			                title: eventTypes[e.type].tooltip(set.session,e)
-			            };
-		            });
-		            var minTime = Math.min(minTime, $.map(data, function(e) { return e.x; }));
-		            var maxTime = Math.max(maxTime, $.map(data, function(e) { return e.x; }));
-		            var minScore = Math.min(minScore, $.map(data, function(e) { return e.y; }));
-		            var maxScore = Math.max(maxScore, $.map(data, function(e) { return e.y; }));
-		            var hidden = Math.abs(score) <= 0;
-		            var color = hidden ? '#7f7f7f' : teamColors[set.session.team][index++];
-		            return {
-			            label: set.session.name,
-			            borderColor: color,
-			            backgroundColor: color,
-                        /* lineTension: 0.2, */
-			            data: data,
-			            fill: false,
-			            hidden: hidden,
-			            score: score
-		            }
-		        }),function(set) {
-		            return !set.hidden;
-		        }).sort(function(a,b) { return b.score - a.score; });
-		        var minRange = { x: minTime, y: minScore };
-		        var maxRange = { x: maxTime, y: maxScore };
-		        var chart = new Chart(canvas, {
-		            type: 'line',
-		            data: {
-			            datasets: datasets,
-		            },
-		            options: {
-			            responsive: true,
-			            maintainAspectRatio: true,
-			            title: { display: false, text: 'Game events', fontColor: 'lightgray' },
-			            scales: {
-			                xAxes: [
-				                {
-				                    // display: false,
-				                    type: 'time',
-				                    time: {
-					                    round: 'second',
-					                    unit: 'minute',
-					                    minUnit: 'minute',
-					                    displayFormats: {
-					                        'minute': 'hh:mm'
-					                    },
-					                    min: game.start
-				                    },
-				                    ticks: {
-					                    autoSkip: true,
-					                    mode: 'linear',
-					                    source: 'auto', // 'data', 'labels'
-					                    bounds: 'data',
-					                    fontColor: 'lightgray'
-				                    },
-				                }
-			                ],
-                            yAxes: [
-                                {
-                                    ticks: {
-                                        fontColor: 'lightgray'
-                                    }
+    const eventTypes = {
+        kill: {
+            value: function(s,evs,e,v) { return s.team != evs[e.killed_id].session.team ? v + 1 : v - 1.5; },
+            tooltip: function(s,evs,e) {
+                if (e.assist_id != null && evs[e.assist_id] == null) {
+                    console.log("Strange, assist with no session data for assistant.");
+                }
+                return formatPopup('Kill',[
+                    Common.format_text(s.name),
+                    'killed',
+                    Common.format_text(evs[e.killed_id].session.name),
+                    'with',
+                    Common.format_text(e.weapon.displayname)
+                ].concat((e.assist_id != null && evs[e.assist_id] != null) ? [
+                    'assisted by',
+                    Common.format_text(evs[e.assist_id].session.name)
+                ] : [ ]));
+            }
+        },
+        death: {
+            value: function(s,evs,e,v) { return evs[e.killer_id] && s.team != evs[e.killer_id].session.team ? v - 0.25 : v; },
+            tooltip: function(s,evs,e) {
+                if (e.killer_id != null) {
+                    return formatPopup('Death',[
+                        Common.format_text(s.name),
+                        'killed by',
+                        Common.format_text(evs[e.killer_id].session.name || ""),
+                        'with',
+                        Common.format_text(e.weapon.displayname)].concat((e.assist_id != null && evs[e.assist_id] != null) ? [
+                            'assisted by',
+                            Common.format_text(evs[e.assist_id].session.name)
+                        ] : [ ]));
+                } else {
+                    return formatPopup('Death',[
+                        Common.format_text(s.name),
+                        'died of',
+                        Common.format_text(e.weapon.displayname)
+                    ]);
+                }
+            }
+        },
+        assist: {
+            value: function(s,evs,e,v) { return s.team != evs[e.killed_id].session.team ? v + 0.25 : v; },
+            tooltip: function(s,evs,e) {
+                return formatPopup('Assist',[
+                    Common.format_text(s.name),
+                    ' assisted ',
+                    (e.killer_id != null ? Common.format_text(evs[e.killer_id].session.name) : '<i>world</i>'),
+                    ' vs ',
+                    Common.format_text(evs[e.killed_id].session.name)
+                ]);
+            }
+        },
+        build: {
+            value: function(s,evs,e,v) { return v + (e.building.name == 'reactor' || e.building.name == 'overmind' ? 6 : 1); },
+            tooltip: function(s,evs,e) {
+                return formatPopup('Build',[ Common.format_text(s.name),'built',Common.format_text(e.building.displayname) ]);
+            }
+        },
+        destroy: {
+            value: function(s,evs,e,v) { return e.building.team != s.team ? v + (e.building.name == 'reactor' || e.building.name == 'overmind' ? 12 : 2) : (e.weapon.name == 'MOD_DECONSTRUCT' ? v : v - 3); },
+            tooltip: function(s,evs,e) {
+                return formatPopup('Destroy',[ Common.format_text(s.name),'destroyed',Common.format_text(e.building.displayname),'with',Common.format_text(e.weapon.displayname) ]);
+            }
+        },
+        team: {
+            value: function(s,evs,e,v) { return 0; },
+            tooltip: function(s,evs,e) {
+                return formatPopup('Team',[ Common.format_text(s.name),'joined',e.team+'s' ]);
+            }
+        },
+        end: {
+            value: function(s,evs,e,v) { return v; },
+            tooltip: function(s,evs,e) {
+                return formatPopup('End',[ Common.format_text(s.name),'left',e.team+'s' ]);
+            }
+        }
+    };
+    let buildGraphData = gameData => {
+        let colorIndex = 0;
+        let datasets = Object.values(gameData.sessions).sort((a,b) => a.index - b.index).map(s => {
+            const color = /*hidden ? '#7f7f7f' : */teamColors[s.session.team][(colorIndex++) % teamColors[s.session.team].length];
+            return {
+                type: 'line',
+                label: s.session.name,
+                borderColor: color,
+                backgroundColor: color,
+                // lineTension: 0.2,
+                data: s.events.map(e => ({
+                    x: e.time,
+                    y: e.score,
+                    title: eventTypes[e.type].tooltip(s.session, gameData.sessions, e)
+                })),
+                fill: false,
+                hidden: false, // todo
+                score: s.events.length ? s.events[s.events.length - 1].score : 0
+            };
+        });
+        let markers = { reactor: [], overmind: [] };
+        let minTime = Infinity, maxTime = -Infinity;
+        let minScore = 0, maxScore = 0
+        Object.values(gameData.sessions).forEach(session => {
+            Object.keys(markers).forEach(bname => markers[bname] = markers[bname].concat(session.markers[bname]));
+            minTime = Math.min(minTime, session.minTime);
+            maxTime = Math.max(maxTime, session.maxTime);
+            minScore = Math.min(minScore, session.minScore);
+            maxScore = Math.max(maxScore, session.maxScore);
+        });
+        Object.keys(markers).forEach(bname => {
+            markers[bname].sort((a,b) => a.time - b.time);
+            if (markers[bname].length <= 0 || markers[bname][0].type == 'destroy') {
+                // no building event or destroy as first - assume it exists
+                markers[bname].unshift({
+                    time: minTime,
+                    type: 'build',
+                    building: { name: bname }
+                });
+            } else if (markers[bname][0].type == 'build') {
+                // destroy as first event - mark building as dead from start
+                markers[bname].unshift({
+                    time: minTime,
+                    type: 'destroy',
+                    building: { name: bname }
+                });
+            }
+            if (markers[bname][markers[bname].length - 1].type == 'destroy') {
+                // building dead from marker to end of game
+                markers[bname].push({
+                    time: maxTime,
+                    type: 'build',
+                    building: { name: bname }
+                });
+            };
+        });
+        return {
+            "datasets": datasets,
+            "markers": markers,
+            "minTime": minTime,
+            "maxTime": maxTime,
+            "minScore": minScore,
+            "maxScore": maxScore
+        };
+    };
+    let loadGameData = game_id => {
+        return Promise.all([
+            fetch(`/json/game/${game_id}`).then(r => r.json()).then(data => data.game),
+            fetch(`/json/game/${game_id}/sessions`).then(r => r.json()).then(data => data.sessions)
+        ]).then(([ game, sessions ]) => {
+            let sessionsById = Object.fromEntries(sessions.map(s => [ s.id, { session: s } ]));
+            return Promise.all(sessions.map(async (s, sessionIndex) => fetch(`/json/session/${s.id}/events`).then(r => r.json()).then(eventData => {
+                let events = eventData.events.map(e => ({ ...e, time: Date.parse(e.time) })).sort((a,b) => a.time - b.time);
+                let markers = { reactor: [], overmind: [] };
+                let score = Number(0), minScore = score, maxScore = score;
+                for(let event of events) {
+                    score = event.score = eventTypes[event.type].value(s, sessionsById, event, score);
+                    minScore = Math.min(minScore, score);
+                    maxScore = Math.max(maxScore, score);
+                    if (event.type == 'build' || event.type == 'destroy') {
+                        if (markers[event.building.name] !== undefined) {
+                            markers[event.building.name].push({ time: event.time, type: event.type, building: { name: event.building.name } });
+                        }
+                    }
+                }
+                return {
+                    minScore: minScore,
+                    maxScore: maxScore,
+                    events: events,
+                    markers: markers
+                };
+            }).then(data => { return [ s.id, {
+                index: sessionIndex,
+                session: s,
+                events: data.events,
+                markers: data.markers,
+                minScore: data.minScore,
+                maxScore: data.maxScore,
+                minTime: data.events[0].time,
+                maxTime: data.events[1].time
+            } ]; })));
+        }).then(sessions => { return {
+            'game': game,
+            'sessions': Object.fromEntries(sessions)
+        }; });
+    };
+    let initializeGraph = div => {
+        Common.beginLoading(div);
+        const anchor = div.querySelector('a.data.game_id');
+        const game_id = anchor.getAttribute('href');
+        anchor.parentNode.removeChild(anchor);
+        const graph = div.classList.contains('graph') ? div : div.querySelector('.graph');
+        const wrapper = Common.createEl('DIV');
+        wrapper.style.position = 'relative';
+        wrapper.style.width = '100%';
+        wrapper.style.height = '100%';
+        const canvas = document.createElement('CANVAS');
+        wrapper.appendChild(canvas);
+        div.appendChild(wrapper);
+        let chart = loadGameData(game_id).then(data => buildGraphData(data)).then(({ datasets, markers, minTime, maxTime, minScore, maxScore }) => {
+            let chart = new Chart(canvas, {
+                type: 'line',
+                data: { "datasets": datasets },
+                plugins: [ regions ],
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    // aspectRatio: 3.0,
+                    scales: {
+                        x: {
+                            type: 'linear',
+                            ticks: {
+                                display: true,
+                                color: (context) => "#ffffff",
+                                callback: function(value,index,ticks) {
+                                    const delta = (value - minTime) / 60000;
+                                    const minutes = delta % 60;
+                                    return Math.floor(delta - minutes) + ":" + Math.floor(minutes);
                                 }
-                            ]
-			            },
-			            hover: {
-			                mode: 'single',
-			                animationDuration: 400,
-			            },
-			            pan: {
-			                enabled: true,
-			                mode: 'xy',
-			                rangeMin: minRange,
-			                rangeMax: maxRange
-			            },
-			            zoom: {
-			                enabled: true,
-			                /* drag: true, */
-			                mode: 'xy',
-			                rangeMin: minRange,
-			                rangeMax: maxRange
-			            },
-			            legend: {
-			                display: false/*true*/,
-			                position: 'bottom',
-			                labels: {
-				                boxWidth: 12,
-				                fontColor: 'white',
-				                usePointStyle: true,
-				                // fontSize: 10,
-				                // padding: 8,
-				                generateLabels: function(chart) {
-				                    var data = chart.data;
-				                    return $.map(data.datasets,function(dataset, i) {
-					                    return {
-					                        text: Common.stripColors(dataset.label),
-					                        fillStyle: dataset.backgroundColor, // Common.generateFillStyle(canvas,dataset.label),
-					                        hidden: !chart.isDatasetVisible(i),
-					                        lineCap: dataset.borderCapStyle,
-					                        lineDash: dataset.borderDash,
-					                        lineDashOffset: dataset.borderDashOffset,
-					                        lineJoin: dataset.borderJoinStyle,
-					                        lineWidth: dataset.borderWidth,
-					                        strokeStyle: dataset.borderColor,
-					                        pointStyle: dataset.pointStyle,
-				                            
-					                        // Below is extra data used for toggling the datasets
-					                        datasetIndex: i
-					                    };
-				                    });
-				                }
-			                }
-			            },
-			            tooltips: {
-			                enabled: false,
-			                custom: function(tooltip) {
-				                if (!tooltip) return;
-				                var el = $('#chartjs-tooltip');
-				                if (!el[0]) {
-				                    $('body').append('<div id="chartjs-tooltip"></div>');
-				                    el = $('#chartjs-tooltip');
-				                }
-				                if (!tooltip.opacity) {
-				                    el.css({ opacity: 0 });
-				                    $(canvas).each(function(index,el) {
-					                    $(el).css('cursor', 'default');
-				                    });
-				                    return;
-				                }
-				                $(canvas).css('cursor','pointer');
-				                el.removeClass('above below no-transform');
-				                if (tooltip.yAlign) {
-				                    el.addClass(tooltip.yAlign);
-				                } else {
-				                    el.addClass('no-transform');
-				                }
-				                if (tooltip.body) {
-				                    var innerHtml = [].concat(
-					                    tooltip.beforeTitle,
-					                    tooltip.title,
-					                    tooltip.afterTitle,
-					                    tooltip.beforeBody,
-					                    tooltip.body.before,
-					                    tooltip.body.lines,
-					                    tooltip.body.after,
-					                    tooltip.afterBody,
-					                    tooltip.beforeFooter,
-					                    tooltip.footer,
-					                    tooltip.afterFooter
-				                    );
-				                    el.html(innerHtml.join('\n'));
-				                }
-				                var top = $(window).scrollTop()+tooltip.caretY;
-				                if (tooltip.yAlign) {
-				                    if (tooltip.yAlign == 'above') {
-					                    top -= tooltip.caretSize+tooltip.caretPadding;
-				                    } else {
-					                    top += tooltip.caretSize+tooltip.caretPadding;
-				                    }
-				                }
-				                var position = $(canvas)[0].getBoundingClientRect();
-				                el.css({
-				                    opacity: 1,
-				                    width: 'auto', // tooltip.width ? (tooltip.width+'px') : 'auto',
-				                    left: (position.left+tooltip.caretX)+'px',
-				                    top: (position.top+top)+'px',
-				                    fontFamily: tooltip._fontFamily,
-				                    fontSize: tooltip.fontSize,
-				                    fontStyle: tooltip._fontStyle,
-				                    padding: tooltip.yPadding+'px '+tooltip.xPadding+'px',
-				                });
-			                },
-			                callbacks: {
-				                title: function(items, data) {
-				                    var itemData = data.datasets[items[0].datasetIndex].data[items[0].index];
-				                    return itemData.title;
-				                }
-			                }
-			            },
-			            events: [
-			                'mousewheel',
-			                'mousedown',
-			                'mousemove', 'click', 'mouseout',
-			                'touchstart', 'touchmove', 'touchend'
-			            ],
-		            }
-		        });
-                chart.render();
-                $(window).trigger('resize');
-		        
-		        canvas.hover(function() {
-		            Common.disableScroll();
-		            for(var eventName in [
-			            'mousewheel',
-			            'mousedown',
-			            'mousemove', 'click', 'mouseout',
-			            'touchstart', 'touchmove', 'touchend'
-		            ]) {
-			            canvas.on(eventName+'.game_events',false);
-		            }
-		        },function() {
-		            Common.enableScroll();
-		            canvas.off('.game_events');
-		        });
-		        /*
-		          $(window).bind('resize',function() {
-		          console.log("RESIZE: ",div.width()," ",div.height());
-		          canvas.width(div.width()).height(div.height());
-		          });*/
-	        });
-	    });
+                            }
+                        },
+                        y: {
+                            type: 'linear',
+                            ticks: {
+                                display: true,
+                                color: (context) => "#ffffff",
+                                callback: (value,index,ticks) => Math.floor(value),
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false, // true,
+                        },
+                        regions: {
+                            markers: markers
+                        },
+                        zoom: {
+                            zoom: {
+                                wheel: { enabled: true },
+                                pinch: { enabled: true },
+                                // scaleMode: 'y'
+                                mode: 'xy'
+                            },
+                            pan: {
+                                enabled: true,
+                                mode: 'xy'
+                                //scaleMode: 'xy'
+                            },
+                            limits: {
+                                x: { min: minTime, max: maxTime },
+                                y: { min: minScore, max: maxScore }
+                            }
+                        },
+                        tooltip: {
+                            enabled: false,
+                            position: 'nearest',
+                            external: function(context) {
+                                const tooltip = context.tooltip;
+                                if (!tooltip) return;
+                                let el = wrapper.parentNode.querySelector('div#chartjs-tooltip');
+                                if (!el) {
+                                    el = Common.createEl('DIV', {
+                                        id: 'chartjs-tooltip'
+                                    });
+                                    el.style.opacity = 1;
+                                    el.style.pointerEvents = 'none';
+                                    el.style.position = 'absolute';
+                                    el.style.transform = 'translate(-50%, -50% )';
+                                    el.style.transition = 'all .1s ease';
+                                    el.style.zIndex = 1000;
+                                    wrapper.parentNode.appendChild(el);
+                                }
+                                canvas.style.cursor = 'pointer';
+                                if (tooltip.opacity === 0) {
+                                    el.style.opacity = 0;
+                                    return;
+                                }
+                                el.classList.remove('above','below','no-transform');
+                                if (tooltip.yAlign) {
+                                    el.classList.add(tooltip.yAlign);
+                                } else {
+                                    el.classList.add('no-transform');
+                                }
+                                if (tooltip.body) {
+                                    el.innerHTML = tooltip.title;
+                                }
+                                let parentPos = wrapper.parentNode.getBoundingClientRect();
+                                el.style.opacity = 1;
+                                el.style.left = parentPos.left + tooltip.caretX + 'px';
+                                el.style.top = parentPos.top + tooltip.caretY + 'px';
+                                /*
+                                el.style.font = tooltip.options.bodyFont.string;
+                                el.style.padding = tooltip.options.padding + 'px ' + tooltip.options.padding + 'px';
+                                */
+                            },
+                            callbacks: {
+                                title: function(items) {
+                                    return items[0].dataset.data[items[0].dataIndex].title;
+                                }
+                            }                           
+                        }
+                    }
+                }
+            });
+            window.addEventListener("resize", event => {
+                const area = wrapper.getBoundingClientRect();
+                chart.canvas.width = area.innerWidth;
+                chart.canvas.height = area.innerHeight;
+                chart.resize();
+            });
+            Common.endLoading(div);
+        });
+        return canvas;
+    };
+    Common.loadGraphLibraries().then(() => {
+        document.querySelectorAll('#content div#game_events').forEach(div => {
+            let canvas = initializeGraph(div);
+            const active = [];
+            const enableDispatch = (el, eventName, selector, handler) => {
+                let eventFn = event => {
+                    const targetEl = event.target.closest(selector);
+                    if (targetEl) {
+                        handler.call(targetEl, event);
+                    }
+                };
+                el.addEventListener(eventName, eventFn);
+                active.push([ eventName, eventFn ]);
+            };
+            const disableDispatch = (el) => {
+                active.forEach(([ eventName, eventFn ]) => {
+                    el.removeEventListener(eventName, eventFn);
+                });
+            }
+            const eventNames = [
+                'mousewheel',
+                'mousedown',
+                'mousemove', 'click', 'mouseout',
+                'touchstart', 'touchmove', 'touchend'
+            ];
+            canvas.addEventListener("mouseover", event => {
+                // console.log("Event capture enabled...");
+                Common.disableScroll();
+                eventNames.forEach(eventName => enableDispatch(document, ".game_events", e => e.stopPropagation()));
+            });
+            canvas.addEventListener("mouseout", event => {
+                // console.log("Event capture disabled...");
+                Common.enableScroll();
+                eventNames.forEach(eventName => disableDispatch(document));
+            });
+        });
     });
 });

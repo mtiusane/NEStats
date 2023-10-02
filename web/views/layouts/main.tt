@@ -3,16 +3,10 @@
   <head>
     <meta http-equiv="Content-type" content="text/html; charset=<% settings.charset %>">
     <title>New Edge Stats</title>
-    <link rel="stylesheet" href="/css/jquery.jscrollpane.css">
     <link rel="stylesheet" href="/css/edgestats.css">
     <link rel="stylesheet" href="/css/common.css">
     <link rel="stylesheet" href="/css/tables.css">
     <link rel="stylesheet" href="/css/emoticons.css">
-    <script src="/javascripts/jquery-3.2.1.min.js"></script>
-    <script src="/javascripts/jquery.mousewheel.min.js"></script>
-    <script src="/javascripts/jquery.jscrollpane.js"></script> <!-- TODO: .min but needs update-->
-    <script src="/javascripts/underscore-min.js"></script>
-    <script src="/javascripts/hammer.min.js"></script>
     <script src="/javascripts/common.js"></script>
   </head>
   <body>
@@ -20,36 +14,36 @@
       <div id="image"></div>
       <div id="links_background"></div>
       <div id="links">
-        <a href="http://www.new-edge.org">home</a>
-	    <a href="http://stats.new-edge.org">stats</a>
+        <!--<a href="http://www.new-edge.org">home</a>
+        <a href="http://stats.new-edge.org">stats</a>-->
       </div>
       <div id="left"></div>
       <div id="right"></div>
     </div>
     <div id="menu">
       <ul class="links">
-	    <% FOREACH entry IN menu %>
-	    <li><a href="<% entry.link %>"><% entry.title %></a></li>
-	    <% END %>
+            <% FOREACH entry IN menu %>
+            <li><a href="<% entry.link %>"><% entry.title %></a></li>
+            <% END %>
       </ul>
       <ul class="servers">
-	    <% FOREACH s IN servers %>
-	    <% IF s.id == server.id %><li class="selected"><% ELSE %><li><% END %>
-	      <a class="server" href="?page=<% page %>&server=<% s.id %><% params %>"><% s.name.replace_all %></a>
+            <% FOREACH s IN servers %>
+            <% IF s.id == server.id %><li class="selected"><% ELSE %><li><% END %>
+              <a class="server" href="?page=<% page %>&server=<% s.id %><% params %>"><% s.name.replace_all %></a>
           <% END %>
-	    </li>
+            </li>
       </ul>
     </div>
     <div id="page">
       <div id="content_wrapper">
-	    <% content %>
+            <% content %>
       </div>
     </div>
     <!--   
-           <div id="loading">
-             <p class="loading">Loading...</p>
-           </div>
-           -->
+      <div id="loading">
+        <p class="loading">Loading...</p>
+      </div>
+    -->
     <div id="footer">
       &copy; Tiusanen Consulting<!-- <a href="http://www.new-edge.org">New EDGE--></a>
     </div>
