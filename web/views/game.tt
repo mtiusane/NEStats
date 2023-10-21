@@ -71,7 +71,6 @@
       <thead class="sticky">
         <tr class="title">
           <th colspan="7"><% team.ucfirst %>s</th>
-          <!-- TODO: Team's aggregate rank here! -->
         </tr>
         <tr class="title">
           <th>#</th><th>Player</th><th>Game Time</th><th>Rank</th><th class="fill_column"></th>
@@ -80,9 +79,9 @@
       <tbody>
         <tr class="template">
           <td><span class="number f__index"></span></td>
-          <td><a class="f_player_url"><span class="name text f__text f_player_name"></span></a></td>
-          <td><span class="bar2"><span class="f__sessions"></span></span></td>
-          <td><span class="rating2"><span class="f__rank"></span></span></td>
+          <td class="top"><a class="f_player_url"><span class="name text f__text f_player_name"></span></a></td>
+          <td class="top"><span class="bar2"><span class="f__sessions"></span></span></td>
+          <td class="top"><span class="rating2"><span class="f__rank"></span></span></td>
           <td class="fill_column"></td>
         </tr>
       </tbody>
