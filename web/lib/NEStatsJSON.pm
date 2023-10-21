@@ -456,23 +456,32 @@ get '/game/:id/events' => sub {
 
 get '/game/:id/sessions/:team/:offset/:limit' => sub {
     my $count = Stats::DB::Session::Manager->get_sessions_count(where => [ game_id => params->{id}, team => params->{team} ]);
-    my @sessions = @{Stats::DB::Session::Manager->get_sessions(where => [ game_id => params->{id}, team => params->{team} ],with_objects => [ 'player' ],offset => params->{offset},limit => min(25,params->{limit}),sort_by => [ 'score desc' ])};
+    my @sessions = map {
+        session => $_,
+        glicko2 => Stats::DB::Glicko2->new(player_id => $_->player->id)->load(speculative => 1),
+    }, @{Stats::DB::Session::Manager->get_sessions(where => [ game_id => params->{id}, team => params->{team} ], with_objects => [ 'player' ], offset => params->{offset}, limit => min(25,params->{limit}), sort_by => [ 'score desc' ])};
+    my $range = Stats::DB::Glicko2::get_rating_range();
     return {
         sessions => [ map {
             {
-                ($_->player ? (
-                     player_id   => $_->player->id,
-                     player_name => $_->player->displayname,
-                     player_url  => '/player/'.$_->player->id,
+                ($_->{session}->player ? (
+                     player_id   => $_->{session}->player->id,
+                     player_name => $_->{session}->player->displayname,
+                     player_url  => '/player/'.$_->{session}->player->id,                    
+                     glicko2     => {
+                         %{db_to_hashref($_->{glicko2})},
+                         %{$range}
+                     },
                 ) : (
                      player_id   => undef,
-                     player_name => $_->name,
+                     player_name => $_->{session}->name,
                      player_url  => undef,
+                     glicko2     => undef,
                 )),
-                ping  => $_->ping // 'N/A',
-                score => $_->score // 'N/A',
-                start => $_->start,
-                end   => $_->end
+                ping  => $_->{session}->ping // 'N/A',
+                score => $_->{session}->score // 'N/A',
+                start => $_->{session}->start,
+                end   => $_->{session}->end
             }
         } @sessions ],
         offset  => params->{offset},

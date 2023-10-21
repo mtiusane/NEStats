@@ -71,43 +71,39 @@
       <thead class="sticky">
         <tr class="title">
           <th colspan="7"><% team.ucfirst %>s</th>
+          <!-- TODO: Team's aggregate rank here! -->
         </tr>
         <tr class="title">
-          <th>#</th><th>Player</th><th>Start</th><th>End</th><th>Ping</th><th>Score</th>
-          <th class="fill_column"></th>
+          <th>#</th><th>Player</th><th>Game Time</th><th>Rank</th><th class="fill_column"></th>
         </tr>
       </thead>
       <tbody>
         <tr class="template">
           <td><span class="number f__index"></span></td>
           <td><a class="f_player_url"><span class="name text f__text f_player_name"></span></a></td>
-          <td><span class="f__time f_start"></span></td>
-          <td><span class="f__time f_end"></span></td>
-          <td><span class="number f_ping"></span></td>
-          <td><span class="number f_score"></span></td>
+          <td><span class="bar2"><span class="f__sessions"></span></span></td>
+          <td><span class="rating2"><span class="f__rank"></span></span></td>
           <td class="fill_column"></td>
         </tr>
       </tbody>
     </table>
   </div>
   <% END %>
-  <div id="sessions" class="container halfwidth">
+  <div id="sessions" class="container fullwidth">
     <a class="data game_id" href="<% game_id %>"></a>
     <a class="data team" href="spectator"></a>
+    <a class="data team exclude" href="human"></a>
+    <a class="data team exclude" href="alien"></a>
     <table>
       <thead class="sticky">
-        <tr class="title">
-          <th colspan="2">Spectators</th>
-        </tr>
-        <tr class="title">
-          <th>Player</th>
-          <th class="fill_column"></th>
-        </tr>
+        <tr class="title"><th colspan="2">Spectators</th></tr>
+        <tr class="title"><th></th></tr>
       </thead>
       <tbody>
-        <tr class="template">
-          <td><a class="f_player_url"><span class="name text f__text f_player_name"></span></a></td>
-          <td class="fill_column"></td>
+        <tr>
+          <td>
+            <span class="template player_name"><a class="f_player_url"><span class="name text f__text f_player_name"></span></a></span>
+          </td>
         </tr>
       </tbody>
     </table>

@@ -1137,8 +1137,12 @@ sub updateRankings {
     );
     my $db = Stats::DB->new_or_cached;
     foreach my $statement (@statements) {
-        # print "Q: $statement\n";
-        $db->dbh->do($statement);
+        eval {
+            # print "Q: $statement\n";
+            $db->dbh->do($statement);
+        };
+        # This happens when total_deaths = 0 <-> division by 0
+        # print "SQL statement failed: $statement, error: $@\n" if ($@);
     }
 }
 

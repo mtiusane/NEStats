@@ -142,6 +142,7 @@ Common = {
     },
 
     replaceField: (field, value) => {
+        // console.log("REPLACE: "+field+" with "+JSON.stringify(value));
         if (field.tagName == 'SPAN' && field.getAttribute('class') == '') {
             field.replaceWith(value);
         } else if (typeof(value) !== 'string') {
@@ -226,7 +227,7 @@ Common = {
         });
     },
     
-    load_fields_generic: (target, data) => {
+    load_fields_generic: (target, data, extraFields = {}) => {
         // console.log("Loading generic fields: "+data._index);
         // $.each(selector.find('a.data.field'),function(field_index,field) {
         //     var name = field.attr('href');
@@ -236,14 +237,14 @@ Common = {
         // });
         return new Promise((resolve, reject) => {
             const targets = Common._expandSelector(target);
-            targets.forEach(selector => {
-                Common.loadFieldValues(selector, data);
-                selector.querySelectorAll('.f__img').forEach((field, index) => {
+            targets.forEach(target => {               
+                Common.loadFieldValues(target, data);
+                target.querySelectorAll('.f__img').forEach((field, index) => {
                     field.classList.remove('f__img');
                     const commonStyle = 'display: inline-block; background: black';
                     field.setAttribute('style', commonStyle);
                 });
-                selector.querySelectorAll('.f__sum').forEach((field, index) => {
+                target.querySelectorAll('.f__sum').forEach((field, index) => {
                     field.classList.remove('f__sum');
                     const fns = Common.loadFieldType(field);
                     const sum = Common._getFieldData(field, 'f__sum');
@@ -251,7 +252,7 @@ Common = {
                     Common.clearFieldType(field);
                     Common.replaceField(field, sum);
                 });
-                selector.querySelectorAll('.f__sub').forEach((field, index) => {
+                target.querySelectorAll('.f__sub').forEach((field, index) => {
                     field.classList.remove('f__sub');
                     const fns = Common.loadFieldType(field);
                     const sum = fns.parseValue(field.textContent) - Common._getFieldData(field, 'f__sum');
@@ -259,35 +260,35 @@ Common = {
                     Common.clearFieldType(field);
                     Common.replaceField(field, sum);
                 });
-                selector.querySelectorAll('.f__date').forEach((field, index) => {
+                target.querySelectorAll('.f__date').forEach((field, index) => {
                     field.classList.remove('f__date');
                     Common.replaceField(field, new Date(field.textContent).toLocaleDateString());
                 });
-                selector.querySelectorAll('.f__time').forEach((field, index) => {
+                target.querySelectorAll('.f__time').forEach((field, index) => {
                     field.classList.remove('f__time');
                     Common.replaceField(field, new Date(field.textContent).toLocaleTimeString());
                 });
-                selector.querySelectorAll('.f__utcdate').forEach((field, index) => {
+                target.querySelectorAll('.f__utcdate').forEach((field, index) => {
                     field.classList.remove('f__utcdate');
                     Common.replaceField(field, new Date(field.textContent).toUTCString().replace(' GMT',''));
                 });
-                selector.querySelectorAll('.f__duration').forEach((field, index) => {
+                target.querySelectorAll('.f__duration').forEach((field, index) => {
                     field.classList.remove('f__duration');
                     Common.replaceField(field, Common.format_duration(field.textContent));
                 });
-                selector.querySelectorAll('.f__duration_minutes').forEach((field, index) => {
+                target.querySelectorAll('.f__duration_minutes').forEach((field, index) => {
                     field.classList.remove('f__duration_minutes');
                     Common.replaceField(field, Common.format_duration_minutes(field.textContent));
                 });
-                selector.querySelectorAll('.f__duration_date').forEach((field, index) => {
+                target.querySelectorAll('.f__duration_date').forEach((field, index) => {
                     field.classList.remove('f__duration_date');
                     Common.replaceField(field, Common.format_duration_minutes(new Number(field.textContent).valueOf() / 1000.0));
                 });
-                selector.querySelectorAll('.f__text').forEach((field, index) => {
+                target.querySelectorAll('.f__text').forEach((field, index) => {
                     field.classList.remove('f__text');
                     Common.replaceField(field, Common.formatText(field.textContent));
                 });
-                selector.querySelectorAll('.f__bar').forEach((field, index) => {
+                target.querySelectorAll('.f__bar').forEach((field, index) => {
                     field.classList.remove('f__bar');
                     let neutral = field.querySelector('.bar_neutral');
                     neutral = neutral ? neutral.textContent : null;
@@ -317,6 +318,10 @@ Common = {
                         center_fill_text: center_fill_text
                     }));
                 });
+                Object.entries(extraFields).forEach(([ kind, formatter ]) => target.querySelectorAll(kind).forEach(el => {
+                    const r = formatter(data, el);
+                    el.replaceWith(...(Array.isArray(r) ? r : [ r ]));
+                }));
             });
             resolve(targets);
         });
@@ -334,11 +339,11 @@ Common = {
         });
     },
 
-    scroll_table_generic: (target, link, elements) => {
+    scroll_table_generic: (target, link, elements, extraFields = {}) => {
         Common.scroll_table(target, link, elements, (template, data, index) => {
             const entry = template.cloneNode(true);
             data._index = 1+index;
-            Common.load_fields_generic(entry, data);
+            Common.load_fields_generic(entry, data, extraFields);
             return entry;
         });
     },
@@ -386,14 +391,34 @@ Common = {
         return Common.format_duration(Math.ceil(Number(seconds) / 60.0) * 60.0);
     },
 
+    _reText: null,
     format_text: text => {
+        if (!Common._reText) {
+            const emoticons = [];
+            for(const sheet of document.styleSheets) {
+                if (sheet.href.match(/emoticons.css$/)) {
+                    for(const rule of sheet.cssRules) {
+                        const name = rule.selectorText.match(/span\.smiley_(.+)/);
+                        if (name) {
+                            emoticons.push(name[1]);
+                        }
+                    }
+                }
+            }
+            if (emoticons) {
+                Common._reText = new RegExp(`\\[(${emoticons.join("|")})\\]|(?:\\^([^\\^]))|(\\^\\^)|(.+?)`, "g")
+            } else {
+                Common._reText = /\[([A-Za-z0-9]+?)\]|(?:\^([^\^]))|(\^\^)|(.+?)/g;
+            }
+        }
         if (text === undefined) {
             text = "&lt;&lt;undefined&gt;&gt;";
         }
         const result = Common.createEl('SPAN', {}, [ "color7" ]);
-        result.innerHTML = '<span>' + text.replace(/\[([A-Za-z0-9]+?)\]|(?:\^([^\^]))|(\^\^)|(.+?)/g, (match, smiley, color, caret, text) => {
-            if (smiley) {
-                return `<span class=\"smiley smiley_${smiley}\"></span>`;
+        
+        result.innerHTML = '<span>' + text.replace(Common._reText, (match, emoticon, color, caret, text) => {
+            if (emoticon) {
+                return `<span class=\"smiley smiley_${emoticon}\"></span>`;
             } else if (color) {
                 const n = (color.charCodeAt(0)-'0'.charCodeAt(0)) % 16;
                 return `</span><span class="color${n}">`;
@@ -404,15 +429,6 @@ Common = {
             }
         }) + '</span>';
         return result;
-        /*
-        return '<span class="color7">'+text
-            .replace(/\[(\S+?)\]/g, (match, id) => {
-                '<span class="smiley smiley_$1"></span>'
-            }
-            .replace(/\^(.)([^\^]*)/gi, (match, color, content) => {
-                const n = (color.charCodeAt(0)-'0'.charCodeAt(0)) % 16;
-                return `<span class="color${n}">${content}</span>`;
-            })+'</span>';*/
     },
     formatText: text => Common.format_text(text),
 
@@ -505,24 +521,24 @@ Common = {
             el.classList.add(cname);
         }
         if (text !== undefined) {
-            el.textContent = text;
+            if (Array.isArray(text)) {
+                text.forEach(child => el.appendChild(child));
+            } else if (typeof(text) === 'object') {
+                el.appendChild(text);
+            } else {
+                el.textContent = text;
+            }
         }
         return el;
     },
-
     
-    rating: g => {
-        const [ cw, ch ] = Common.rating_size();
-        const result = Common.createEl("DIV", {}, [ "rating" ]);
-        const fontSize = 28; // Number(ch / 3).toFixed(2);
+    rating: (g, size) => {
+        const [ cw, ch ] = size || Common.rating_size();
+        const result = Common.createEl("SPAN", {}, [ "fill", "grid" ]);
+        const fontSize = Math.min(Number(ch) / 3, 28).toFixed(2); // Number(ch / 3).toFixed(2);
         const fontSizeInfo = 9;
         const empty_color = 'transparent';
-        const svg = Common.createElXML("svg", {
-            "width"  : cw,
-            "height" : ch,
-            "viewbox": `0 0 ${cw} ${ch}`,
-            "style"  : `background: ${empty_color}`
-        });
+        const svg = Common.createElXML("svg", { "height" : "100%", "viewbox": `0 0 ${cw} ${ch}`, "style"  : `background: ${empty_color}` });
         if (g.update_count > 0) {
             const [ rangeMin, rangeMax ] = [ Number(g.min_range), Number(g.max_range) ];
             const rangeDelta = rangeMax - rangeMin;
@@ -605,6 +621,52 @@ Common = {
             }, [], "N/A");
             svg.appendChild(text);
         }
+        result.appendChild(svg);
+        return result;
+    },
+
+    fillBar: (regions, ranges, size) => {
+        const [ cw, ch ] = size || Common.bar_size();
+        const result = Common.createEl('SPAN', {}, [ "fill", "grid" ]);
+        const svg = Common.createElXML('svg', { "height": "100%", "viewbox": `0 0 ${cw} ${ch}` });
+        const start = ranges.min || Math.min(...regions.map(r => r.start));
+        const end = ranges.max || Math.max(...regions.map(r => r.end));
+        const range = Math.abs(end - start);
+        const activeRegions = regions.filter(r => ((r.end - r.start) / range * 100.0) > 0.05);
+        activeRegions.forEach(r => {
+            const x     = ((r.start - start) / range) * 100.0;
+            const width = (Math.abs(r.end - r.start) / range) * 100.0;
+            svg.appendChild(Common.createElXML('rect', { "x": x.toFixed(2)+"%", "y": 0, "width": width.toFixed(2)+"%", "height": "100%", "fill": r.color }));
+        });
+        activeRegions.filter(r => r.title).forEach((r, i) => {
+            const x     = ((r.start - start) / range) * 100.0;
+            const width = (Math.abs(r.end - r.start) / range) * 100.0;
+            const clip  = Common.createElXML('clipPath', { id: `r${i}` });
+            clip.appendChild(Common.createElXML('rect', { "x": x.toFixed(2)+"%", "y": 0, "width": width.toFixed(2)+"%", "height": "100%", "fill": r.color }));
+            svg.appendChild(clip);
+            if (typeof(r.title) === "object") {
+                svg.appendChild(Common.createElXML('foreignObject', {
+                    "clip-path"        : `url(#r${i})`,
+                    "style"            : `font-size: ${Number(ch/3).toFixed(2)}px; fill: ${r.titleColor || "white"}`,
+                    "x"                : x.toFixed(2)+"%",
+                    "y"                : "0%",
+                    "width"            : width.toFixed(2)+"%",
+                    "height"           : "100%"
+                }, [], Common.createEl('DIV', { "style": 'width: 100%; height: 100%; display: flex; align-items: center; justify-content: center' }, [], r.title)));
+
+            } else {
+                svg.appendChild(Common.createElXML('text', {
+                    "clip-path"        : `url(#r${i})`,
+                    "style"            : `font-size: ${Number(ch/3).toFixed(2)}px; fill: ${r.titleColor || "white"}`,                   
+                    "x"                : (x + 0.5 * width).toFixed(2)+"%",
+                    "y"                : "50%",
+                    "width"            : width.toFixed(2)+"%",
+                    "height"           : "100%",
+                    "dominant-baseline": "middle",
+                    "text-anchor"      : "middle"
+                }, [], r.title));
+            }
+        });
         result.appendChild(svg);
         return result;
     },
