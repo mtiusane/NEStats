@@ -78,7 +78,7 @@
       </thead>
       <tbody>
         <tr class="template">
-          <td><span class="number f__index"></span></td>
+          <td class="top"><span class="number f__index"></span></td>
           <td class="top"><a class="f_player_url"><span class="name text f__text f_player_name"></span></a></td>
           <td class="top"><span class="bar2"><span class="f__sessions"></span></span></td>
           <td class="top"><span class="rating2"><span class="f__rank"></span></span></td>
