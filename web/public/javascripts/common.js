@@ -606,19 +606,19 @@ Common = {
             "x"                : (cw - fontSizeInfo / 2).toFixed(2),
             "y"                : (fontSizeInfo / 2).toFixed(2)
         }, [], rangeMax.toFixed(0)));
-        svg.appendChild(Common.createElXML("text", {
-            "style"            : infoStyle,
-            "text-anchor"      : "middle",
-            "dominant-baseline": "bottom",
-            "x"                : ((r - rangeMin) / rangeDelta * cw).toFixed(2),
-            "y"                : (ch - fontSizeInfo).toFixed(2)
-        }, [], rd.toFixed(0)));
         svg.appendChild(Common.createElXML("path", {
             "d"           : graph,
             "fill"        : fill_color,
             "stroke"      : stroke_color,
             "stroke-width": 1,
         }));
+        svg.appendChild(Common.createElXML("text", {
+            "style"            : infoStyle,
+            "text-anchor"      : "middle",
+            "dominant-baseline": "bottom",
+            "x"                : ((r - rangeMin) / rangeDelta * cw).toFixed(2),
+            "y"                : (ch - fontSizeInfo / 2).toFixed(2)
+        }, [], rd.toFixed(0)));
         svg.appendChild(Common.createElXML("text", {
             "style"            : ratingStyle,
             "text-anchor"      : "middle",
