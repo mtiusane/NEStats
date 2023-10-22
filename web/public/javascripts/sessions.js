@@ -1,8 +1,6 @@
 document.addEventListener("DOMContentLoaded", event => {
     document.querySelectorAll("#content div#sessions").forEach(async div => {
-        const game_id = div.querySelector("a.game_id").getAttribute("href");
-        const team = div.querySelector("a.team").getAttribute("href");
-        const excludeTeams = [...div.querySelectorAll("a.team.exclude")].map(a => a.getAttribute("href"));
+        const [ game_id, team, excludeTeams ] = [ Common.anchorValue(div, "game_id"), Common.anchorValue(div, "team"), Common.anchorValues(div, "team.exclude") ];
         const template = div.querySelector(".template");
         const container = template.parentElement;
         template.classList.remove('template');        
@@ -64,9 +62,9 @@ document.addEventListener("DOMContentLoaded", event => {
             }
             sessionsByPlayer.forEach((combinedSession, index) => {
                 const teamDisplay = {
-                    human:     { color: 'rgba(51,85,128,0.4)', title: '[bsuit] humans' },
-                    alien:     { color: 'rgba(128,85,51,0.4)', title: '[tyrant] aliens' },
-                    spectator: { color: 'rgba(51,85,51,0.4)' , title: "" }
+                    human:     { color: Common.color("team_human")    , title: '[bsuit] humans' },
+                    alien:     { color: Common.color("team_alien")    , title: '[tyrant] aliens' },
+                    spectator: { color: Common.color("team_spectator"), title: "" }
                 };
                 const entry = template.cloneNode(true);
                 Common.load_fields_generic(entry, combinedSession, {
@@ -81,7 +79,7 @@ document.addEventListener("DOMContentLoaded", event => {
                         if (!session.sessions) {
                             return "";
                         }
-                        const sessions = session.sessions.some(s => session.sessions.some(t => s !== t && s.start <= t.end && s.start >= t.start))
+                        const sessions = session.sessions.some(s => session.sessions.some(t => s !== t && s.start < t.end && s.end > t.start))
                               ? session.sessions.map(s => [ s ])
                               : [ session.sessions ];
                         return sessions.map(sessions => {

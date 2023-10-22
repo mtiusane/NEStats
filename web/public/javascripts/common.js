@@ -34,6 +34,19 @@ Common = {
         }
         return selector;
     },
+
+    _colors: {
+        team_human:      'rgba(51,85,128,0.4)',
+        team_alien:      'rgba(128,85,51,0.4)',
+        team_spectator:  'rgba(51,85,51,0.4)',
+        player_kills:    'rgba(51,128,51,0.4)',
+        player_deaths:   'rgba(128,51,51,0.4)',
+        building_builds: 'rgba(51,128,51,0.4)',
+        building_kills:  'rgba(128,51,51,0.4)',
+        building_deaths: 'rgba(128,128,51,0.4)'
+    },
+    // TODO: Load common colors from css?
+    color: (name) => Common._colors[name] || "white",
     
     // loadingStart: 0,
     onEndLoading: [],
@@ -91,6 +104,12 @@ Common = {
         });
     },
 
+    deferEl: (contentFn) => {
+        const loading = Common.createEl('SPAN', {}, "fill loading");
+        setTimeout(() => loading.replaceWith(contentFn(loading)), 0);
+        return loading;
+    },
+
     scroll_container: (target, table, link, elements, line) => {
         Common._expandSelector(target).forEach(container => {
             // console.log("Initializing scroll container: ",container," table: ",table);
@@ -139,6 +158,19 @@ Common = {
         Common._expandSelector(target).forEach(container => {
             Common.scroll_container(container, container.querySelector('table'), link, elements, line);
         });
+    },
+
+    anchorValue: (el, selector) => {
+        const anchor = el.querySelector(`a.${selector}`);
+        const result = anchor.getAttribute("href");
+        anchor.remove();
+        return result;
+    },
+    anchorValues: (el, selector) => {
+        const anchors = el.querySelectorAll(`a.${selector}`);
+        const result = Array.from(anchors).map(a => a.getAttribute("href"));
+        anchors.forEach(a => a.remove());
+        return result;
     },
 
     replaceField: (field, value) => {
@@ -530,107 +562,84 @@ Common = {
             }
         }
         return el;
-    },
+    },  
     
     rating: (g, size) => {
         const [ cw, ch ] = size || Common.rating_size();
         const result = Common.createEl("SPAN", {}, [ "fill", "grid" ]);
         const fontSize = Math.min(Number(ch) / 3, 28).toFixed(2); // Number(ch / 3).toFixed(2);
         const fontSizeInfo = 9;
+        const ratingStyle = `font-size: ${fontSize}px; fill: white`;
+        const infoStyle = `font-size: ${fontSizeInfo}px; fill: #dfdddc`;
         const empty_color = 'transparent';
-        const svg = Common.createElXML("svg", { "height" : "100%", "viewbox": `0 0 ${cw} ${ch}`, "style"  : `background: ${empty_color}` });
-        if (g.update_count > 0) {
-            const [ rangeMin, rangeMax ] = [ Number(g.min_range), Number(g.max_range) ];
-            const rangeDelta = rangeMax - rangeMin;
-            //var rMin = Number(g.min_rating);
-            //var rMax = Number(g.max_rating);
-            //var rDelta = rMax - rMin;
-            const r = Number(g.rating);
-            const rd = Number(g.rd);
-            const rdScale = 0.5; // rd / (rangeDelta - 3/2 * rDelta);
-            const fill_color = 'rgba(100,63,51,0.66)';
-            const stroke_color = '#642e1d';
-            const rd_fill_left = cw * (r - rangeMin - (2.0/* - 0.25*/) * rd * rdScale) / rangeDelta;
-            const rd_fill_width = cw * (4.0 * rd * rdScale) / rangeDelta;
-            const x0 =       rd_fill_width /  4.0,x1 = 3.0*rd_fill_width / 10.0,x2 = rd_fill_width / 2.0;
-            const x3 = 2.0 * rd_fill_width / 10.0,x4 =     rd_fill_width /  4.0,x5 = rd_fill_width / 2.0;
-            let graph = [ 'm' ].concat([
-                rd_fill_left, ch
-            ].map(v => Number(v).toFixed(2))).concat([ 'c' ]).concat([
-                x0, 0.0, x1, -ch, x2, -ch, x3, 0, x4, ch, x5, ch
-            ].map(v => Number(v).toFixed(2))).join(' ');
-            /*
-              const rd_fill_middle = rd_fill_left + 0.5 * rd_fill_width;
-              const extra = '';//'m '+rd_fill_middle.toFixed(2)+' 0 l '+rd_fill_middle.toFixed(2)+' '+ch.toFixed(2);
-            */
-            const ratingStyle = `font-size: ${fontSize}px; fill: white`;
-            const infoStyle = `font-size: ${fontSizeInfo}px; fill: #dfdddc`;
-            let text = [];
-            text.push(Common.createElXML("text", {
-                "style"            : infoStyle,
-                "text-anchor"      : "start",
-                "dominant-baseline": "hanging",
-                "x"                : 1,
-                "y"                : 1
-            }, [], rangeMin.toFixed(0)));
-            text.push(Common.createElXML("text", {
-                "style"            : infoStyle,
-                "text-anchor"      : "end",
-                "dominant-baseline": "hanging",
-                "x"                : cw - 1,
-                "y"                : 1
-            }, [], rangeMax.toFixed(0)));
-            text.push(Common.createElXML("text", {
-                "style"            : infoStyle,
-                "text-anchor"      : "end",
-                "dominant-baseline": "bottom",
-                "x"                : Math.min(90, (0.5 + (r - rd - rangeMin) / rangeDelta * 99.0 - 4.0)).toFixed(2)+"%",
-                "y"                : (ch - fontSizeInfo / 2).toFixed(2)
-            }, [], (r - rd).toFixed(0)));
-            text.push(Common.createElXML("text", {
-                "style"            : infoStyle,
-                "text-anchor"      : "start",
-                "dominant-baseline": "bottom",
-                "x"                : Math.min(90, (0.5 + (r + rd - rangeMin) / rangeDelta * 99.0)).toFixed(2)+"%",
-                "y"                : (ch - fontSizeInfo / 2).toFixed(2)
-            }, [], (r + rd).toFixed(0)));
-            text.push(Common.createElXML("text", {
-                "style"            : ratingStyle,
-                "text-anchor"      : "middle",
-                "dominant-baseline": "middle",
-                "x"                : "50%",
-                "y"                : "50%"
-            }, [], r.toFixed(0)));
-            const path = Common.createElXML("path", {
-                "d"           : graph,
-                "fill"        : fill_color,
-                "stroke"      : stroke_color,
-                "stroke-width": 1,
-            });
-            svg.appendChild(path);
-            text.forEach(el => svg.appendChild(el));
-        } else {
-            const empty_color = 'transparent';
-            const fill_color = '#6f6767';
-            const text = Common.createElXML("text", {
-                "style"            : `font-size: ${fontSize}; fill: ${fill_color}`,
-                "text-anchor"      : "middle",
-                "dominant-baseline": "middle",
-                "x"                : "50%",
-                "y"                : "50%"
-            }, [], "N/A");
-            svg.appendChild(text);
-        }
+        const svg = Common.createElXML("svg", { "width": "100%", "height" : "100%", "viewbox": `0 0 ${cw} ${ch}`, "style"  : `background: ${empty_color}` });
+        const [ rangeMin, rangeMax ] = [ Number(g.min_range), Number(g.max_range) ];
+        const rangeDelta = rangeMax - rangeMin;
+        const r = Number(g.rating);
+        const rd = Number(g.rd);
+        const fill_color = 'rgba(100,63,51,0.66)';
+        const stroke_color = '#642e1d';
+        const rd_fill_left = cw * (r - rangeMin - 2.0 * rd) / rangeDelta;
+        const rd_fill_width = cw * (4.0 * rd) / rangeDelta;
+        const x0 =       rd_fill_width /  4.0,x1 = 3.0*rd_fill_width / 10.0,x2 = rd_fill_width / 2.0;
+        const x3 = 2.0 * rd_fill_width / 10.0,x4 =     rd_fill_width /  4.0,x5 = rd_fill_width / 2.0;
+        let graph = [ 'm' ].concat([
+            rd_fill_left, ch
+        ].map(v => Number(v).toFixed(2))).concat([ 'c' ]).concat([
+            x0, 0.0, x1, -ch, x2, -ch, x3, 0, x4, ch, x5, ch
+        ].map(v => Number(v).toFixed(2))).join(' ');
+        /*
+          const rd_fill_middle = rd_fill_left + 0.5 * rd_fill_width;
+          const extra = '';//'m '+rd_fill_middle.toFixed(2)+' 0 l '+rd_fill_middle.toFixed(2)+' '+ch.toFixed(2);
+        */
+        svg.appendChild(Common.createElXML("text", {
+            "style"            : infoStyle,
+            "text-anchor"      : "start",
+            "dominant-baseline": "hanging",
+            "x"                : (fontSizeInfo / 2).toFixed(2),
+            "y"                : (fontSizeInfo / 2).toFixed(2)
+        }, [], rangeMin.toFixed(0)));
+        svg.appendChild(Common.createElXML("text", {
+            "style"            : infoStyle,
+            "text-anchor"      : "end",
+            "dominant-baseline": "hanging",
+            "x"                : (cw - fontSizeInfo / 2).toFixed(2),
+            "y"                : (fontSizeInfo / 2).toFixed(2)
+        }, [], rangeMax.toFixed(0)));
+        svg.appendChild(Common.createElXML("text", {
+            "style"            : infoStyle,
+            "text-anchor"      : "middle",
+            "dominant-baseline": "bottom",
+            "x"                : ((r - rangeMin) / rangeDelta * cw).toFixed(2),
+            "y"                : (ch - fontSizeInfo).toFixed(2)
+        }, [], rd.toFixed(0)));
+        svg.appendChild(Common.createElXML("path", {
+            "d"           : graph,
+            "fill"        : fill_color,
+            "stroke"      : stroke_color,
+            "stroke-width": 1,
+        }));
+        svg.appendChild(Common.createElXML("text", {
+            "style"            : ratingStyle,
+            "text-anchor"      : "middle",
+            "dominant-baseline": "middle",
+            "x"                : "50%",
+            "y"                : "50%"
+        }, [], r.toFixed(0)));
         result.appendChild(svg);
         return result;
     },
 
+    regions: (stops, start) => stops.reduce((a, n) => a.concat(Object.fromEntries([
+        [ "start" , (a.length ? a[a.length - 1].end : (start || 0))           ],
+        [ "end"   , (a.length ? a[a.length - 1].end : (start || 0)) + n.value ]
+    ].concat(Object.entries(n).filter(([k, v]) => k != "value")))), []),
     fillBar: (regions, ranges, size) => {
         const [ cw, ch ] = size || Common.bar_size();
         const result = Common.createEl('SPAN', {}, [ "fill", "grid" ]);
-        const svg = Common.createElXML('svg', { "height": "100%", "viewbox": `0 0 ${cw} ${ch}` });
-        const start = ranges.min || Math.min(...regions.map(r => r.start));
-        const end = ranges.max || Math.max(...regions.map(r => r.end));
+        const svg = Common.createElXML('svg', { "width": "100%", "height": "100%", "viewbox": `0 0 ${cw} ${ch}` });
+        const start = ranges && ranges.min || Math.min(...regions.map(r => r.start));
+        const end = ranges && ranges.max || Math.max(...regions.map(r => r.end));
         const range = Math.abs(end - start);
         const activeRegions = regions.filter(r => ((r.end - r.start) / range * 100.0) > 0.05);
         activeRegions.forEach(r => {

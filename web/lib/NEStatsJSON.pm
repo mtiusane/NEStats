@@ -254,7 +254,7 @@ get '/server/:id/players/:offset/:limit' => sub {
             player  => db_to_hashref($_->player),
             glicko2 => {
                 %{db_to_hashref($_->glicko2)},
-                    %{$range}
+                %{$range}
             }
         }
     } @{Stats::DB::PlayerRanking::Manager->get_player_rankings(
