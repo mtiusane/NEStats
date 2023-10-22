@@ -126,12 +126,14 @@ Common = {
                 const [ offset, total, limit, lastLoad ] = [ 'offset', 'total', 'limit', 'lastLoad' ].map(name => Common._getFieldData(table, name) || 0);
                 Common.beginLoading(table);
                 fetch(link(offset, limit)).then(r => r.json()).then(data => {
-                    let lines = elements(data);
-                    lines.forEach((element, index) => tbody.append(line(template, element, offset + index)));
-                    Common._setFieldData(table, 'offset', offset + lines.length);
-                    Common._setFieldData(table, 'total', data.total);
-                    Common._setFieldData(table, 'lastLoad', (new Date()).getTime());
-                    Common._setFieldData(table, 'limit', limit);
+                    const lines = elements(data);
+                    if (lines) {
+                        lines.forEach((element, index) => tbody.append(line(template, element, offset + index)));
+                        Common._setFieldData(table, 'offset', offset + lines.length);
+                        Common._setFieldData(table, 'total', data.total);
+                        Common._setFieldData(table, 'lastLoad', (new Date()).getTime());
+                        Common._setFieldData(table, 'limit', limit);
+                    }
                     if (callback) callback();
                     Common.endLoading(table);
                 });

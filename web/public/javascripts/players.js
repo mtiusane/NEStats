@@ -5,7 +5,12 @@ document.addEventListener("DOMContentLoaded", async event => {
                 fetch(`/json/server/${href}`).then(r => r.json()).then(data => div.querySelectorAll('.f_server_name').forEach(el => {
                     el.replaceWith(Common.createEl("span", {}, "", Common.format_text(data.name)));
                 }));
-                return (offset, limit) => `/json/server/${href}/players/${offset}/${limit}`;
+                const playerName = document.querySelector('a.data.player_name');
+                if (playerName && playerName.getAttribute("href")) {
+                    return (offset, limit) => `/json/server/${href}/players/name=${playerName.getAttribute("href")}`;
+                } else {
+                    return (offset, limit) => `/json/server/${href}/players/${offset}/${limit}`;
+                }
             },
             'a.data.map_id': href => {
                 fetch(`/json/map/${href}`).then(r => r.json()).then(data => div.querySelectorAll('.f_map_name').forEach(el => {

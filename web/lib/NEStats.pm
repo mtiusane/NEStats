@@ -84,6 +84,10 @@ get '/server/:id/players' => sub {
     template 'players',{ menu => $global_menu, server_id => params->{id} };
 };
 
+get '/server/:id/players/name=:name' => sub {
+    template 'players',{ menu => $global_menu, server_id => params->{id}, name => params->{name} };
+};
+
 get '/server/:id/maps' => sub {
     template 'maps',{ menu => $global_menu, server_id => params->{id} };
 };

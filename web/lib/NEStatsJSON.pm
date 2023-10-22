@@ -271,6 +271,33 @@ get '/server/:id/players/:offset/:limit' => sub {
     };
 };
 
+get '/server/:id/players/name=:name' => sub {
+    my $where = [ 'player.server_id' => params->{id}, 'player.name' => { regexp => params->{name} } ];
+    my $count = Stats::DB::PlayerRanking::Manager->get_player_rankings_count(where => $where,require_objects => [ 'player' ]);
+    my $limit = min(25,params->{limit});
+    my $range = Stats::DB::Glicko2::get_rating_range();
+    my @players = map {
+        +{
+            player  => db_to_hashref($_->player),
+            glicko2 => {
+                %{db_to_hashref($_->glicko2)},
+                %{$range}
+            }
+        }
+    } @{Stats::DB::PlayerRanking::Manager->get_player_rankings(
+        where        => $where,
+        sort_by      => 'by_glicko2 asc, by_kills asc',
+        limit        => $limit,
+        offset       => params->{offset},
+        with_objects => [ 'player', 'glicko2' ],
+    )};
+    return +{
+        players => \@players,
+        offset  => params->{offset},
+        total   => $count
+    };    
+};
+
 get '/server/:id/games/:offset/:limit' => sub {
     my $server = Stats::DB::Server->new(id => params->{id});
     $server->load(speculative => 1);
