@@ -1,11 +1,11 @@
 <div id="content">
   <script src="/javascripts/player.js"></script>
-  <div id="player" class="fullwidth fullheight fill">
+  <div id="player" class="fill">
     <a class="data player_id" href="<% player_id %>"></a>
     <div id="player_header" class="player_totals">
       <h1>Player: <span class="f__text f_displayname"></span></h1>
     </div>
-    <div id="player_overall" class="container noscroll player_totals">
+    <div id="player_overall" class="container halfwidth noscroll player_totals">
       <table>
         <thead>
           <tr class="title"><th colspan="4">Totals</th></tr>
@@ -61,15 +61,19 @@
             <td><b><span class="f__index"></span></b></td>
             <td><span class="f__text f_weapon_displayname"></span></td>
             <td>
-              <span class="row f__bar">
-                <span class="bar_value f_total_kills"></span>
-                <span class="bar_neutral f_total_bkills"></span>
-                <span class="bar_total f__sum f_total_kills f_total_bkills"></span>
-                <span class="bar_prefix f__text">[bsuit][tyrant]</span>
-                <span class="bar_suffix f__text">[reactor][overmind]</span>
-                <span class="bar_fillcolor">rgba(51,63,100,0.66)</span>
-                <span class="bar_neutralcolor">rgba(100,63,51,0.66)</span>
-                <span class="bar_emptycolor">rgba(100,100,100,0.66)</span>
+              <span class="row f__fillBar">
+                <span class="bar_region">
+                  <span class="value f_total_kills"></span>
+                  <span class="color">rgba(51,63,100,0.66)</span>
+                  <span class="title"><span class="small">
+                      <span class="f__text">[bsuit][tyrant] <span class="f__percent_inv f__div f_total_kills"><span class="f__sum f_total_kills f_total_bkills"></span></span></span>
+                  </span></span>
+                </span>
+                <span class="bar_region">
+                  <span class="value f_total_bkills"></span>
+                  <span class="color">rgba(63,100,51,0.66)</span>
+                  <span class="title f__text">[reactor][overmind]</span>
+                </span>
               </span>
               <span class="dim row small">
                 <span class="f__text">[bsuit][tyrant]</span>: <span class="f_total_kills"></span> <span class="f__text">[reactor][overmind]</span>: <span class="f_total_bkills"></span><!-- (<span class="f_num_fired"></span> shots)-->
@@ -110,14 +114,17 @@
             <td><b><span class="f__index"></span></b></td>
             <td><span class="f__text f_weapon_displayname"></span></td>
             <td>
-              <span class="row f__bar center_fill_text">
-                <span class="bar_value f__sum f_total_deaths f_total_bdeaths"></span>
-                <span class="bar_total player_totals"><span class="f__sum f_total_deaths f_total_bdeaths"></span></span>
-                <!--<span class="bar_prefix f__text">[bsuit][tyrant]</span>
-                    <span class="bar_suffix f__text">[reactor][overmind]</span>-->
-                    <span class="bar_fillcolor">rgba(100,63,51,0.66)</span>
-                    <span class="bar_neutralcolor">rgba(100,63,51,0.66)</span>
-                    <span class="bar_emptycolor">rgba(100,100,100,0.66)</span>
+              <span class="row f__fillBar center_fill_text">
+                <span class="bar_region">
+                  <span class="value f_total_deaths"></span>
+                  <span class="color">rgba(100,63,51,0.66)</span>
+                  <span class="title f__text">[bsuit][tyrant]</span>
+                </span>
+                <span class="bar_region">
+                  <span class="value f_total_bdeaths"></span>
+                  <span class="color">rgba(100,63,51,0.66)</span>
+                  <span class="title f__text">[reactor][overmind]</span>
+                </span>                
               </span>
               <span class="dim row small"><span class="f__sum f_total_deaths f_total_bdeaths"></span> deaths</span>
             </td>
@@ -179,7 +186,7 @@
             <td class="f__index"></td>
             <td><a class="f_url"><span class="name text f__text f_name"></span></a></td>
             <td>
-              <span class="f__bar">
+              <span class="row f__bar">
                 <span class="bar_value f_total_kills_h"></span>
                 <span class="bar_total f_total_kills"></span>
                 <span class="bar_prefix f__text">[bsuit]</span>

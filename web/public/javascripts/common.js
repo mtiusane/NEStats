@@ -253,6 +253,16 @@ Common = {
                             sum += parsedValue;
                         }
                         Common._setFieldData(field, 'f__sum', sum);
+                    } else if (field.classList.contains('f__div')) {
+                        let fns = Common.loadFieldType(field);
+                        let sum = Common._getFieldData(field, 'f__sum');
+                        let parsedValue = fns.parseValue(value);
+                        if (sum === undefined) {
+                            sum = parsedValue;
+                        } else {
+                            sum /= parsedValue;
+                        }
+                        Common._setFieldData(field, 'f__sum', sum);
                     } else {
                         Common.replaceField(field, value);
                     }
@@ -294,6 +304,19 @@ Common = {
                     Common.clearFieldType(field);
                     Common.replaceField(field, sum);
                 });
+                target.querySelectorAll('.f__div').forEach((field, index) => {
+                    field.classList.remove('f__div');
+                    const fns = Common.loadFieldType(field);
+                    const sum = fns.parseValue(field.textContent) / Common._getFieldData(field, 'f__sum');
+                    Common._removeFieldData(field, 'f__sum');
+                    Common.clearFieldType(field);
+                    Common.replaceField(field, sum);
+                });
+                target.querySelectorAll('.f__percent_inv').forEach((field, index) => {
+                    // NOTE: inverse needed since f__div requires sums as divisor and current approach doesnt allow that
+                    field.classList.remove('f__percent_inv');
+                    Common.replaceField(field, (1.0 / Number(field.textContent) * 100).toFixed(2)+'%');
+                });
                 target.querySelectorAll('.f__date').forEach((field, index) => {
                     field.classList.remove('f__date');
                     Common.replaceField(field, new Date(field.textContent).toLocaleDateString());
@@ -322,8 +345,31 @@ Common = {
                     field.classList.remove('f__text');
                     Common.replaceField(field, Common.formatText(field.textContent));
                 });
+                target.querySelectorAll('.f__fillBar').forEach((field, index) => {
+                    field.classList.remove('f__fillBar');
+                    const result = Common.createEl('SPAN', {}, "bar");
+                    result.appendChild(Common.fillBar(Common.regions(Array.from(field.querySelectorAll(".bar_region")).map(region => Object.fromEntries([
+                        'title', 'value', 'color'
+                    ].map(key => {
+                        const value = region.querySelector(`.${key}`);
+                        return (value !== undefined) && [ key, (key == 'title') ? value : value.textContent ];
+                    }).filter(v => v !== undefined))))));
+                    Common.replaceField(field, result);
+                });
                 target.querySelectorAll('.f__bar').forEach((field, index) => {
                     field.classList.remove('f__bar');
+                    const [ value, neutral, total ] = [ '.bar_value', '.bar_neutral', '.bar_total' ].map(s => Number(field.querySelector(s)?.textContent || -1));
+                    const [ prefix, suffix, emptyColor ] = [ '.bar_prefix', '.bar_suffix', '.bar_emptycolor' ].map(s => field.querySelector(s));
+                    const result = Common.createEl('SPAN', {}, "bar");
+                    // if (prefix) { result.appendChild(Common.createEl('SPAN', {}, "prefix", Common.formatText(prefix.textContent))); }
+                    result.appendChild(Common.fillBar(Common.regions([
+                        { value: value                                         , color: field.querySelector('.bar_fillcolor').textContent    , title: field.querySelector('.bar_text') || prefix },
+                        { value: neutral                                       , color: field.querySelector('.bar_neutralcolor')?.textContent, title: field.querySelector('.neutral_text') || (emptyColor ? "" : suffix) },
+                        { value: emptyColor && (total - value - (neutral || 0)), color: emptyColor?.textContent                              , title: suffix },
+                    ].filter(r => r.value >= 0)), total && { min: 0, max: total }));
+                    // if (suffix) { result.appendChild(Common.createEl('SPAN', {}, "suffix", Common.formatText(suffix.textContent))); }
+                    Common.replaceField(field, result);
+                    /*
                     let neutral = field.querySelector('.bar_neutral');
                     neutral = neutral ? neutral.textContent : null;
                     let text = field.querySelector('.bar_text');
@@ -350,7 +396,8 @@ Common = {
                         empty_color: empty_color,
                         neutral_color: neutral_color,
                         center_fill_text: center_fill_text
-                    }));
+                        }));
+                    */
                 });
                 Object.entries(extraFields).forEach(([ kind, formatter ]) => target.querySelectorAll(kind).forEach(el => {
                     const r = formatter(data, el);
@@ -427,6 +474,9 @@ Common = {
 
     _reText: null,
     format_text: text => {
+        if (text === undefined || text === null) {
+            return "";
+        }
         if (!Common._reText) {
             const emoticons = [];
             for(const sheet of document.styleSheets) {
@@ -445,12 +495,9 @@ Common = {
                 Common._reText = /\[([A-Za-z0-9]+?)\]|(?:\^([^\^]))|(\^\^)|(.+?)/g;
             }
         }
-        if (text === undefined) {
-            text = "&lt;&lt;undefined&gt;&gt;";
-        }
         const result = Common.createEl('SPAN', {}, [ "color7" ]);
         
-        result.innerHTML = '<span>' + text.replace(Common._reText, (match, emoticon, color, caret, text) => {
+        result.innerHTML = '<span>' + text.toString().replace(Common._reText, (match, emoticon, color, caret, text) => {
             if (emoticon) {
                 return `<span class=\"smiley smiley_${emoticon}\"></span>`;
             } else if (color) {
@@ -633,15 +680,15 @@ Common = {
     },
 
     regions: (stops, start) => stops.reduce((a, n) => a.concat(Object.fromEntries([
-        [ "start" , (a.length ? a[a.length - 1].end : (start || 0))           ],
-        [ "end"   , (a.length ? a[a.length - 1].end : (start || 0)) + n.value ]
+        [ "start" , Number(a.length ? a[a.length - 1].end : (start || 0))                        ],
+        [ "end"   , Number(a.length ? a[a.length - 1].end : (start || 0)) + Number(n.value || 0) ]
     ].concat(Object.entries(n).filter(([k, v]) => k != "value")))), []),
     fillBar: (regions, ranges, size) => {
         const [ cw, ch ] = size || Common.bar_size();
         const result = Common.createEl('SPAN', {}, [ "fill", "grid" ]);
         const svg = Common.createElXML('svg', { "width": "100%", "height": "100%", "viewbox": `0 0 ${cw} ${ch}` });
-        const start = ranges && ranges.min || Math.min(...regions.map(r => r.start));
-        const end = ranges && ranges.max || Math.max(...regions.map(r => r.end));
+        const start = ranges?.min || Math.min(...regions.map(r => r.start));
+        const end = ranges?.max || Math.max(...regions.map(r => r.end));
         const range = Math.abs(end - start);
         const activeRegions = regions.filter(r => ((r.end - r.start) / range * 100.0) > 0.05);
         activeRegions.forEach(r => {

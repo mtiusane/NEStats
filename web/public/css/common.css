@@ -965,8 +965,9 @@ canvas {
     border-radius: var(--border-radius);
     
     vertical-align: top;
-    padding-top: 0.25em;
-    padding-bottom: 0.15em;
+    padding-top: 0px; /* NOTE: > 0 here will cause issues with .sticky scroll content */
+    padding-bottom: 0.5em;
+    margin-top: 0.5em;
 }
 
 .container:first-child {
