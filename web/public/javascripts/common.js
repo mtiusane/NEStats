@@ -49,6 +49,7 @@ Common = {
     color: (name) => Common._colors[name] || "white",
     
     // loadingStart: 0,
+    _loading: new Map(),
     onEndLoading: [],
     beginLoading: (element = undefined) => {
         if (Common.loadingCount <= 0) {
@@ -59,15 +60,23 @@ Common = {
         if (element !== undefined) {
             element.dataset.loading = true;
             element.dataset.loadingCount = (element.dataset.loadingCount || 0) + 1;
-            // console.log("Begin loading data for element: "+element);
+            if (element.dataset.loadingCount == 1) {
+                const loading = Common.createEl('SPAN', {}, "loading", /*Common.createEl('SPAN', {}, "center", */Common.createEl('SPAN', {}, "indicator symbol biohazard", ""))/*)*/;
+                element.appendChild(loading);
+                Common._loading.set(element, loading);
+            }
         }
-        // console.log("Loading started, requests: "+Common.loadingCount);
     },
     endLoading: (element = undefined) => {
         if (element !== undefined && element.dataset.loadingCount !== undefined) {
             if (--element.dataset.loadingCount <= 0) {
+                // console.log("END: ", element);
                 delete element.dataset.loadingCount;
                 delete element.dataset.loading;
+                if (Common._loading.has(element)) {
+                    Common._loading.get(element).remove();
+                    Common._loading.delete(element);
+                }
                 // console.log("Finished loading data for element: "+element);
             }
         }
@@ -92,16 +101,22 @@ Common = {
         }
     },
 
+    _graphLibrariesLoaded: false,
     loadGraphLibraries: () => {
-        Common.beginLoading();
-        return import("/javascripts/chart.umd.min.js").then(
-            () => import("/javascripts/hammer.min.js")
-        ).then(
-            () => import("/javascripts/chartjs-plugin-zoom.min.js")
-        ).then(result => {
-            Common.endLoading();
-            return result;
-        });
+        if (!Common._graphLibrariesLoaded) {
+            Common.beginLoading();
+            return import("/javascripts/chart.umd.min.js").then(
+                () => import("/javascripts/hammer.min.js")
+            ).then(
+                () => import("/javascripts/chartjs-plugin-zoom.min.js")
+            ).then(result => {
+                Common.endLoading();
+                Common._graphLibrariesLoaded = true;
+                return result;
+            });
+        } else {
+            return new Promise().resolve();
+        }
     },
 
     deferEl: (contentFn) => {

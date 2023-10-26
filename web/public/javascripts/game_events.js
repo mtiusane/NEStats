@@ -181,6 +181,7 @@ document.addEventListener("DOMContentLoaded", event => {
             };
         });
         return {
+            "game": gameData.game,
             "datasets": datasets,
             "markers": markers,
             "minTime": minTime,
@@ -223,7 +224,7 @@ document.addEventListener("DOMContentLoaded", event => {
                 minScore: data.minScore,
                 maxScore: data.maxScore,
                 minTime: data.events[0].time,
-                maxTime: data.events[1].time
+                maxTime: data.events[data.events.length - 1].time
             } ]; })));
         }).then(sessions => { return {
             'game': game,
@@ -231,7 +232,7 @@ document.addEventListener("DOMContentLoaded", event => {
         }; });
     };
     let initializeGraph = div => {
-        Common.beginLoading(div);
+        const loading = Common.beginLoading(div);
         const anchor = div.querySelector('a.data.game_id');
         const game_id = anchor.getAttribute('href');
         anchor.parentNode.removeChild(anchor);
@@ -243,27 +244,41 @@ document.addEventListener("DOMContentLoaded", event => {
         const canvas = document.createElement('CANVAS');
         wrapper.appendChild(canvas);
         div.appendChild(wrapper);
-        let chart = loadGameData(game_id).then(data => buildGraphData(data)).then(({ datasets, markers, minTime, maxTime, minScore, maxScore }) => {
-            let chart = new Chart(canvas, {
+        Promise.all([
+            Common.loadGraphLibraries(),
+            loadGameData(game_id).then(data => buildGraphData(data))
+        ]).then(([ _, { game, datasets, markers, minTime, maxTime, minScore, maxScore }]) => {
+            const [ timeDelta, scoreDelta ] = [ maxTime - minTime, maxScore - minScore ];
+            const chart = new Chart(canvas, {
                 type: 'line',
                 data: { "datasets": datasets },
                 plugins: [ regions ],
                 options: {
+                    parsing: false,
+                    normalized: true,
                     responsive: true,
                     maintainAspectRatio: false,
+                    layout: { autoPadding: false },
                     // aspectRatio: 3.0,
+                    animation: {
+                        // duration: 500,
+                        // onProgress: animation => loading.progress(animation.currentStep / animation.numSteps),
+                        // onComplete: loading.complete()
+                    },
                     scales: {
                         x: {
                             type: 'linear',
                             ticks: {
                                 display: true,
-                                color: (context) => "#ffffff",
+                                color: (context) => /*context.dataset.data[context.dataIndex] >= game.suddendeath < xxx*/ "#ffffff",
                                 callback: function(value,index,ticks) {
                                     const delta = (value - minTime) / 60000;
                                     const minutes = delta % 60;
                                     return Math.floor(delta - minutes) + ":" + Math.floor(minutes);
                                 }
-                            }
+                            },
+                            min: minTime,
+                            max: maxTime,
                         },
                         y: {
                             type: 'linear',
@@ -271,7 +286,9 @@ document.addEventListener("DOMContentLoaded", event => {
                                 display: true,
                                 color: (context) => "#ffffff",
                                 callback: (value,index,ticks) => Math.floor(value),
-                            }
+                            },
+                            min: minScore,
+                            max: maxScore,
                         }
                     },
                     plugins: {
@@ -283,7 +300,15 @@ document.addEventListener("DOMContentLoaded", event => {
                         },
                         zoom: {
                             zoom: {
-                                wheel: { enabled: true },
+                                wheel: {
+                                    enabled: true,
+                                    speed: 0.25,
+                                    modifierkey: 'shift'
+                                },
+                                drag: {
+                                    enabled: false,
+                                    // modifierKey: null
+                                },
                                 pinch: { enabled: true },
                                 // scaleMode: 'y'
                                 mode: 'xy'
@@ -294,8 +319,8 @@ document.addEventListener("DOMContentLoaded", event => {
                                 //scaleMode: 'xy'
                             },
                             limits: {
-                                x: { min: minTime, max: maxTime },
-                                y: { min: minScore, max: maxScore }
+                                x: { min: minTime - 0.005 * timeDelta, max: maxTime + 0.005 * timeDelta },
+                                y: { min: minScore - 0.005 * scoreDelta, max: maxScore + 0.005 * scoreDelta }
                             }
                         },
                         tooltip: {
@@ -359,41 +384,5 @@ document.addEventListener("DOMContentLoaded", event => {
         });
         return canvas;
     };
-    Common.loadGraphLibraries().then(() => {
-        document.querySelectorAll('#content div#game_events').forEach(div => {
-            let canvas = initializeGraph(div);
-            const active = [];
-            const enableDispatch = (el, eventName, selector, handler) => {
-                let eventFn = event => {
-                    const targetEl = event.target.closest(selector);
-                    if (targetEl) {
-                        handler.call(targetEl, event);
-                    }
-                };
-                el.addEventListener(eventName, eventFn);
-                active.push([ eventName, eventFn ]);
-            };
-            const disableDispatch = (el) => {
-                active.forEach(([ eventName, eventFn ]) => {
-                    el.removeEventListener(eventName, eventFn);
-                });
-            }
-            const eventNames = [
-                'mousewheel',
-                'mousedown',
-                'mousemove', 'click', 'mouseout',
-                'touchstart', 'touchmove', 'touchend'
-            ];
-            canvas.addEventListener("mouseover", event => {
-                // console.log("Event capture enabled...");
-                Common.disableScroll();
-                eventNames.forEach(eventName => enableDispatch(document, ".game_events", e => e.stopPropagation()));
-            });
-            canvas.addEventListener("mouseout", event => {
-                // console.log("Event capture disabled...");
-                Common.enableScroll();
-                eventNames.forEach(eventName => disableDispatch(document));
-            });
-        });
-    });
+    document.querySelectorAll('#content div#game_events').forEach(div => initializeGraph(div));
 });

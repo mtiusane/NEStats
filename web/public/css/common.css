@@ -9,14 +9,48 @@
 
 * {
     scrollbar-color: rgba(59,198,184,0.75) rgba(239, 239, 239, 0.25);
-    scrollbar-width: thin;
+    scrollbar-width: auto;
+    padding: 0px;
+    margin: 0px;
 }
 
-div[data-loading] .loading {
-    display: true;
+div[data-loading="true"] .loading {
+    visibility: visible;
 }
-div:not([data-loading]).loading {
-    display: false;
+div[data-loading="false"] .loading {
+    visibility: hidden;
+}
+.loading {
+    display: inline-block;
+    width: 100%;
+    height: 100%;
+    display: grid;
+    place-items: center;
+}
+.loading span.indicator {
+    color: rgba(218, 192, 160, 0.2);
+    animation: spin 14s linear infinite;
+}
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+span.symbol.biohazard {
+    display: inline-block;
+    width: 15vh;
+    height: 15vh;
+    font-size: 15vh;
+    transform: translate(-50%,-50%);
+    transform-origin: center;
+    text-align: center;
+}
+span.symbol.biohazard:before {
+    display: inline-block;
+    transform: translate(0,-10%);
+    content: "\2623";
+    width: 100%;
+    height: 100%;
+    font-size: 1em;
 }
 
 :root {
