@@ -292,8 +292,22 @@ document.addEventListener("DOMContentLoaded", event => {
                         }
                     },
                     plugins: {
+                        // TODO: https://www.chartjs.org/docs/latest/samples/legend/html.html
                         legend: {
-                            display: false, // true,
+                            position: 'top',
+                            align: 'start',
+                            /* maxWidth: 0.4 * div.layoutWidth,
+                            maxHeight: 0.4 * div.layoutHeight, */
+                            title: {
+                                display: true,
+                                color: (context) => '#afafaf',
+                                text: "Hold CTRL to zoom/pan or SHIFT to select a region to zoom into.",
+                                // text: "Hold <i>CTRL</i> to zoom/pan or <i>SHIFT</i> to select a region to zoom into.",
+                            },
+                            display: true, // true,
+                            labels: {
+                                color: (context) => "#ffffff",
+                            }
                         },
                         regions: {
                             markers: markers
@@ -302,25 +316,27 @@ document.addEventListener("DOMContentLoaded", event => {
                             zoom: {
                                 wheel: {
                                     enabled: true,
+                                    modifierKey: 'ctrl',
                                     speed: 0.25,
-                                    modifierkey: 'shift'
                                 },
                                 drag: {
-                                    enabled: false,
+                                    enabled: true,
+                                    modifierKey: 'shift',
                                     // modifierKey: null
                                 },
-                                pinch: { enabled: true },
-                                // scaleMode: 'y'
+                                pinch: {
+                                    enabled: true,
+                                },
                                 mode: 'xy'
                             },
                             pan: {
                                 enabled: true,
+                                modifierKey: 'ctrl',
                                 mode: 'xy'
-                                //scaleMode: 'xy'
                             },
                             limits: {
-                                x: { min: minTime - 0.005 * timeDelta, max: maxTime + 0.005 * timeDelta },
-                                y: { min: minScore - 0.005 * scoreDelta, max: maxScore + 0.005 * scoreDelta }
+                                x: { min: minTime - 0.20 * timeDelta, max: maxTime + 0.30 * timeDelta },
+                                y: { min: minScore - 0.20 * scoreDelta, max: maxScore + 0.30 * scoreDelta }
                             }
                         },
                         tooltip: {
