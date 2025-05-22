@@ -21,8 +21,8 @@
       </thead>
       <tbody>
 	    <tr class="template">
-          <td>   
-	        <a class="f_url" href="">
+          <td>
+	        <a class="f_game_url" href="">
 	          <span class="f__utcdate f_start"></span>
 	        </a>
 	      </td>

@@ -87,7 +87,7 @@ get '/servers/:offset/:limit' => sub {
     # TODO: Order query by player count and/or name
     my $count = Stats::DB::Server::Manager->get_servers_count();
     # my $games_count = Stats::DB::Game::Manager->get_games_count(where => [ server_id => params->{server} ]);
-    # my $last_game = Stats::DB::Game::Manager->get_games(where 
+    # my $last_game = Stats::DB::Game::Manager->get_games(where
     my @servers = map +{
         id          => $_->id,
         name        => replace_all($_->name),
@@ -305,7 +305,7 @@ get '/server/:id/games/:offset/:limit' => sub {
     my @games = map +{
         server      => get_server_fields($server),
         id          => $_->id,
-        url         => join('/','','game',$_->id),
+        game_url    => join('/','','game',$_->id),
         map         => get_map_fields($_->map),
         outcome     => get_formatted_outcome($_),
         max_players => $_->max_players,
@@ -371,7 +371,7 @@ get '/game/:id' => sub {
         game => {
             id => $game->id,
             server_id => $game->server_id,
-            
+
             as2 => $game->as2,
             as3 => $game->as3,
             as4 => $game->as4,
