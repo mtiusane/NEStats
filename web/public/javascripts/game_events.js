@@ -46,9 +46,81 @@ document.addEventListener("DOMContentLoaded", event => {
         alien:     range(31).map(v => 'rgb('+(7 + 8 * v)+','+(7 + 2 * v)+','+(7 + 2 * v)+')').reverse(),
         human:     range(31).map(v => 'rgb('+(7 + 2 * v)+','+(7 + 2 * v)+','+(7 + 8 * v)+')').reverse()
     };
+    /* TODO: Filter events + map them to different types separating kill and suicide */
+    const eventMapping = {
+        'kill': (s, e, events) => {
+            return events[e.killer_id].session.team != events[e.killed_id].session.team ? {
+                type: 'kill',
+                killer: s, // events[e.killer_id].session,
+                killed: events[e.killed_id]?.session,
+                assist: events[e.assist_id]?.session,
+                weapon: e.weapon
+            } : e.killer_id == e.killed_id ? {
+                type: 'suicide',
+                killer: s, // events[e.killer_id].session,
+                killed: events[e.killed_id]?.session,
+                assist: events[e.assist_id]?.session,
+                weapon: e.weapon
+            } : {
+                type: 'teamkill',
+                killer: s, // events[e.killer_id].session,
+                killed: events[e.killed_id]?.session,
+                assist: events[e.assist_id]?.session,
+                weapon: e.weapon
+            };
+        },
+        'death': (s, e, events) => { return {
+            type: 'death',
+            killer: events[e.killer_id]?.session,
+            killed: s, // events[e.killed_id].session,
+            assist: events[e.assist_id]?.session,
+            weapon: e.weapon
+        } },
+        'assist': (s, e, events) => { return {
+            // TODO: Separate cases for assist and team damage
+            type: 'assist',
+            killer: events[e.killer_id]?.session,
+            killed: events[e.killed_id]?.session,
+            assist: s, // events[e.assist_id],
+            weapon: e.weapon
+        } },
+        'build': (s, e, events) => { return {
+            type: 'build',
+            builder: s,
+            building: e.building
+        } },
+        'destroy': (s, e, events) => {
+            return s.team != e.building.team ? {
+                type: 'destroy',
+                killer: s,
+                building: e.building,
+                weapon: e.weapon,
+            } : e.weapon == 'MOD_DECONSTRUCT' ? {
+                type: 'deconstruct',
+                builder: s,
+                building: e.building,
+                weapon: e.weapon,
+            } : {
+                type: 'teamdestroy',
+                killer: s,
+                building: e.building,
+                weapon: e.weapon,
+            };
+        },
+        'team': (s, e, events) => { return {
+            type: 'team',
+            player: s,
+            team: e.team
+        } },
+        'end': (s, e, events) => { return {
+            type: 'end',
+            player: s
+        } }
+    };
+    const eventRadius1 = 6;
     const eventTypes = {
         kill: {
-            value: function(s,evs,e,v) { return s.team != evs[e.killed_id].session.team ? v + 1 : v - 1.5; },
+            value: (s,evs,e,v) => v + 1,
             tooltip: function(s,evs,e) {
                 if (e.assist_id != null && evs[e.assist_id] == null) {
                     console.log("Strange, assist with no session data for assistant.");
@@ -56,27 +128,44 @@ document.addEventListener("DOMContentLoaded", event => {
                 return formatPopup('Kill',[
                     Common.format_text(s.name),
                     'killed',
-                    Common.format_text(evs[e.killed_id].session.name),
+                    Common.format_text(e.killed.name),
                     'with',
                     Common.format_text(e.weapon.displayname)
-                ].concat((e.assist_id != null && evs[e.assist_id] != null) ? [
+                ].concat(e.assist ? [
                     'assisted by',
-                    Common.format_text(evs[e.assist_id].session.name)
+                    Common.format_text(e.assist.name)
                 ] : [ ]));
-            }
+            },
+            radius: eventRadius1,
+        },
+        teamkill: {
+            value: (s,evs,e,v) => v - 1.5,
+            tooltip: function(s,evs,e) {
+                return formatPopup('Kill',[
+                    Common.format_text(s.name),
+                    'killed',
+                    Common.format_text(e.killed.name),
+                    'with',
+                    Common.format_text(e.weapon.displayname)
+                ].concat(e.assist ? [
+                    'assisted by',
+                    Common.format_text(e.assist.name)
+                ] : [ ]));
+            },
+            radius: eventRadius1,
         },
         death: {
-            value: function(s,evs,e,v) { return evs[e.killer_id] && s.team != evs[e.killer_id].session.team ? v - 0.25 : v; },
+            value: (s,evs,e,v) => v - 0.25,
             tooltip: function(s,evs,e) {
-                if (e.killer_id != null) {
+                if (e.killer) {
                     return formatPopup('Death',[
                         Common.format_text(s.name),
                         'killed by',
-                        Common.format_text(evs[e.killer_id].session.name || ""),
+                        Common.format_text(e.killer?.name || ""),
                         'with',
-                        Common.format_text(e.weapon.displayname)].concat((e.assist_id != null && evs[e.assist_id] != null) ? [
+                        Common.format_text(e.weapon.displayname)].concat(e.assist ? [
                             'assisted by',
-                            Common.format_text(evs[e.assist_id].session.name)
+                            Common.format_text(e.assist.name)
                         ] : [ ]));
                 } else {
                     return formatPopup('Death',[
@@ -85,43 +174,86 @@ document.addEventListener("DOMContentLoaded", event => {
                         Common.format_text(e.weapon.displayname)
                     ]);
                 }
-            }
+            },
+            radius: eventRadius1,
+        },
+        suicide: {
+            value: (s,evs,e,v) => v - 0.25,
+            tooltip: function(s,evs,e) {
+                if (e.killer) {
+                    return formatPopup('Death',[
+                        Common.format_text(s.name),
+                        'killed by',
+                        Common.format_text(e.killer?.name || ""),
+                        'with',
+                        Common.format_text(e.weapon.displayname)].concat(e.assist ? [
+                            'assisted by',
+                            Common.format_text(e.assist.name)
+                        ] : [ ]));
+                } else {
+                    return formatPopup('Death',[
+                        Common.format_text(s.name),
+                        'died of',
+                        Common.format_text(e.weapon.displayname)
+                    ]);
+                }
+            },
+            radius: eventRadius1,
         },
         assist: {
-            value: function(s,evs,e,v) { return s.team != evs[e.killed_id].session.team ? v + 0.25 : v; },
+            value: (s,evs,e,v) => v + 0.25,
             tooltip: function(s,evs,e) {
                 return formatPopup('Assist',[
                     Common.format_text(s.name),
                     ' assisted ',
-                    (e.killer_id != null ? Common.format_text(evs[e.killer_id].session.name) : '<i>world</i>'),
+                    (e.killer_id != null ? Common.format_text(e.killer.name) : '<i>world</i>'),
                     ' vs ',
-                    Common.format_text(evs[e.killed_id].session.name)
+                    Common.format_text(e.killed.name)
                 ]);
-            }
+            },
+            radius: eventRadius1,
         },
         build: {
-            value: function(s,evs,e,v) { return v + (e.building.name == 'reactor' || e.building.name == 'overmind' ? 6 : 1); },
+            value: (s,evs,e,v) => v + (e.building.name == 'reactor' || e.building.name == 'overmind' ? 6 : 1),
             tooltip: function(s,evs,e) {
                 return formatPopup('Build',[ Common.format_text(s.name),'built',Common.format_text(e.building.displayname) ]);
-            }
+            },
+            radius: eventRadius1,
         },
         destroy: {
-            value: function(s,evs,e,v) { return e.building.team != s.team ? v + (e.building.name == 'reactor' || e.building.name == 'overmind' ? 12 : 2) : (e.weapon.name == 'MOD_DECONSTRUCT' ? v : v - 3); },
+            value: (s,evs,e,v) => v + (e.building.name == 'reactor' || e.building.name == 'overmind' ? 12 : 2),
             tooltip: function(s,evs,e) {
                 return formatPopup('Destroy',[ Common.format_text(s.name),'destroyed',Common.format_text(e.building.displayname),'with',Common.format_text(e.weapon.displayname) ]);
-            }
+            },
+            radius: eventRadius1,
+        },
+        deconstruct: {
+            value: (s,evs,e,v) => v,
+            tooltip: function(s,evs,e) {
+                return formatPopup('Destroy',[ Common.format_text(s.name),'destroyed',Common.format_text(e.building.displayname),'with',Common.format_text(e.weapon.displayname) ]);
+            },
+            radius: eventRadius1,
+        },
+        teamdestroy: {
+            value: (s,evs,e,v) => v - (e.building.name == 'reactor' || e.building.name == 'overmind' ? 12 : 2),
+            tooltip: function(s,evs,e) {
+                return formatPopup('Destroy',[ Common.format_text(s.name),'destroyed',Common.format_text(e.building.displayname),'with',Common.format_text(e.weapon.displayname) ]);
+            },
+            radius: eventRadius1,
         },
         team: {
             value: function(s,evs,e,v) { return 0; },
             tooltip: function(s,evs,e) {
                 return formatPopup('Team',[ Common.format_text(s.name),'joined',e.team+'s' ]);
-            }
+            },
+            radius: eventRadius1,
         },
         end: {
             value: function(s,evs,e,v) { return v; },
             tooltip: function(s,evs,e) {
                 return formatPopup('End',[ Common.format_text(s.name),'left',e.team+'s' ]);
-            }
+            },
+            radius: eventRadius1,
         }
     };
     let buildGraphData = gameData => {
@@ -137,6 +269,7 @@ document.addEventListener("DOMContentLoaded", event => {
                 data: s.events.map(e => ({
                     x: e.time,
                     y: e.score,
+                    type: e.type,
                     title: eventTypes[e.type].tooltip(s.session, gameData.sessions, e)
                 })),
                 fill: false,
@@ -195,10 +328,10 @@ document.addEventListener("DOMContentLoaded", event => {
             fetch(`/json/game/${game_id}`).then(r => r.json()).then(data => data.game),
             fetch(`/json/game/${game_id}/sessions`).then(r => r.json()).then(data => data.sessions)
         ]).then(([ game, sessions ]) => {
-            let sessionsById = Object.fromEntries(sessions.map(s => [ s.id, { session: s } ]));
+            const sessionsById = Object.fromEntries(sessions.map(s => [ s.id, { session: s } ]));
             return Promise.all(sessions.map(async (s, sessionIndex) => fetch(`/json/session/${s.id}/events`).then(r => r.json()).then(eventData => {
-                let events = eventData.events.map(e => ({ ...e, time: Date.parse(e.time) })).sort((a,b) => a.time - b.time);
-                let markers = { reactor: [], overmind: [] };
+                const events = eventData.events.map(e => ({ ...eventMapping[e.type](s, e, sessionsById), time: Date.parse(e.time) })).sort((a,b) => a.time - b.time);
+                const markers = { reactor: [], overmind: [] };
                 let score = Number(0), minScore = score, maxScore = score;
                 for(let event of events) {
                     score = event.score = eventTypes[event.type].value(s, sessionsById, event, score);
@@ -291,6 +424,20 @@ document.addEventListener("DOMContentLoaded", event => {
                             max: maxScore,
                         }
                     },
+                    elements: {
+                        point: {
+                            // NOTE: Can be customized on a per dataset basis too
+                            pointStyle: (context) => {
+                                const data = context.dataset.data[context.dataIndex];
+                                
+                                return context.dataset.data[context.dataIndex].type == 'kill' ? 'triangle' : 'circle';
+                            },
+                            pointRadius: (context) => {
+                                const data = context.dataset.data[context.dataIndex];
+                                return eventTypes[data.type].radius
+                            },
+                        },
+                    },
                     plugins: {
                         // TODO: https://www.chartjs.org/docs/latest/samples/legend/html.html
                         legend: {
@@ -312,6 +459,7 @@ document.addEventListener("DOMContentLoaded", event => {
                         regions: {
                             markers: markers
                         },
+                        // colors: { enabled: true, forceOverride: true },
                         zoom: {
                             zoom: {
                                 wheel: {

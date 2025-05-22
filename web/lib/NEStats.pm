@@ -40,60 +40,80 @@ use Rose::DB::Object::Helpers qw/as_tree/;
 
 set content_type => 'text/html';
 
-my $global_menu = [
-    { link => '/servers', title => 'Servers' },
-    { link => '/server/1/games', title => 'Games' },
-    { link => '/server/1/players', title => 'Players' },
-    { link => '/server/1/maps', title => 'Maps' },
-    { link => '/server/1/weapons', title => 'Weapons' }
-];
+sub global_menu
+{
+    my ($server_id, %params) = @_;
+    my @servers = @{Stats::DB::Server::Manager->get_servers(
+        sort_by => 'name asc',
+        limit  => 25,
+        offset => 0,
+        # with_objects => [ 'map' ]
+    )};
+    my $server = $server_id && Stats::DB::Server->new(id => $server_id);
+    return {
+        menu => [
+            { link => '/servers', title => 'Servers' },
+            (defined($server_id) ? (
+                { link => "/server/$server_id/games", title => 'Games' },
+                { link => "/server/$server_id/players", title => 'Players' },
+                { link => "/server/$server_id/maps", title => 'Maps' },
+                { link => "/server/$server_id/weapons", title => 'Weapons' }
+            ) : ())
+        ],
+        servers => [
+            map { +{ id => $_->id, displayname => $_->name } } @servers
+        ],
+        (defined($server_id) ? (server_id => $server->id, server => { id => $server->id, displayname => $server->name }) : ()),
+        %params
+    };
+}
 
 get '/' => sub {
     redirect '/servers'; # template 'index';
 };
 
 get '/servers' => sub {
-    template 'servers',{ menu => $global_menu };
+    template 'servers', global_menu(params->{server_id});
 };
 
 get '/games' => sub {
-    template 'games',{ menu => $global_menu };
+    template 'games', global_menu(params->{server_id});
 };
 
 get '/maps' => sub {
-    template 'maps',{ menu => $global_menu };
+    template 'maps', global_menu(params->{server_id});
 };
 
 get '/map/:id' => sub {
-    template 'map',{ menu => $global_menu, map_id => params->{id} };
+    template 'map', global_menu(params->{server_id}, map_id => params->{id});
 };
 
 get '/game/:id' => sub {
-    template 'game',{ menu => $global_menu, game_id => params->{id} };
+    template 'game', global_menu(params->{server_id}, game_id => params->{id});
 };
 
 get '/player/:id' => sub {
-    template 'player',{ menu => $global_menu, player_id => params->{id} };
+    template 'player', global_menu(params->{server_id}, player_id => params->{id});
 };
 
 get '/server/:id/games' => sub {
-    template 'games',{ menu => $global_menu, server_id => params->{id} };
+    template 'games', global_menu(params->{id});
 };
 
 get '/server/:id/players' => sub {
-    template 'players',{ menu => $global_menu, server_id => params->{id} };
+    template 'players', global_menu(params->{id});
 };
 
 get '/server/:id/players/name=:name' => sub {
-    template 'players',{ menu => $global_menu, server_id => params->{id}, name => params->{name} };
+    template 'players', global_menu(params->{id}, name => params->{name});
 };
 
 get '/server/:id/maps' => sub {
-    template 'maps',{ menu => $global_menu, server_id => params->{id} };
+    template 'maps', global_menu(params->{id});
 };
 
 get '/server/:id/weapons' => sub {
-    template 'weapons',{ menu => $global_menu, server_id => params->{id} };
+    template 'weapons', global_menu(params->{id});
 };
 
 true;

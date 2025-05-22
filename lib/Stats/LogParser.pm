@@ -9,6 +9,7 @@ use Stats::DB::Game;
 use Stats::DB::Map;
 use Stats::DB::Player;
 use Stats::DB::Session;
+use Stats::DB::SessionCounter;
 use Stats::DB::Weapon;
 use Stats::DB::Building;
 use Stats::DB::PlayerEvent;
@@ -43,12 +44,11 @@ use constant MAX_SLOTS         => 64;
 
 sub new {
     my ($class,$initializer,%params) = @_;
-    die "Server ip (server_ip) and name (server_name) must be provided." unless (defined($params{server_name}) && defined($params{server_ip}));
     my $self = {
-	log     => Log::Log4perl->get_logger("Stats::LogParser"),
+        log     => Log::Log4perl->get_logger("Stats::LogParser"),
         game    => undef,
         db_game => undef,
-	last_glicko2 => undef,
+        last_glicko2 => undef,
         slots => [ map { undef } (1..MAX_SLOTS) ],
         guids => {
             0 => +{
@@ -61,9 +61,9 @@ sub new {
         },
         cache => { },
         line  => undef,
-	source_path => undef,
+        source_path => undef,
         # games => [ ],
-	in_game => 0,
+        in_game => 0,
     };
     $self->{slots}->[MAX_SLOTS-1] = {
         connect       => DateTime->now,
@@ -72,10 +72,19 @@ sub new {
         simple_name   => '<world>',
         authenticated => 1,
     };
-    $self->{db_server} = Stats::DB::Server->new(ip => $params{server_ip},name => $params{server_name},url => $params{server_url});
-    unless ($self->{db_server}->load(speculative => 1)) {
-	# TODO: Load default values here
-	$self->{db_server}->save;
+    if ($params{server_name}) {
+	my $server = $self->{db_server} = Stats::DB::Server->new(ip => $params{server_ip},name => $params{server_name},url => $params{server_url});
+	unless ($server->load(speculative => 1)) {
+	    $server->{ip} = $params{server_ip};
+	    $server->{name} = $params{server_name};
+	    $server->{url} = $params{server_url};
+	    $server->save;
+	}
+    } elsif ($params{server_id}) {
+	my $server = $self->{db_server} = Stats::DB::Server->new(id => $params{server_id});
+	die "No server record found with id: $params{server_id}" unless ($server->load);
+    } else {
+	die "Server ip (server_ip) and name (server_name) or server id (server_id) must be provided." unless ((defined($params{server_name}) && defined($params{server_ip}) || defined($params{server_id})));
     }
     # TODO: Not the prettiest way of implementing this but will have to do for now...
     $initializer->($self->{db_server});
@@ -97,10 +106,17 @@ sub loadCached {
     my $cache = $self->{cache}->{$cacheName} //= { };
     my $cacheKey = join(' ',map { $_.'_'.$keys->{$_} } keys(%$keys));
     return $cache->{$cacheKey} if (defined $cache->{$cacheKey});
-    my $result = $class->new(%$keys);
+    #my $managerClass = $class.'::Manager';
+    #my $managerMethod = 'get_'.$cacheName;
+    #if (my $candidates = $managerClass->$managerMethod(where => [ %$keys ])) {
+    #	$initializer->($candidates->[0]) if (defined $initializer);
+    #	$candidates->[0]->save;
+    #	return $cache->{$cacheKey} = $candidates->[0];
+    #}
+    my $result = $class->new(%$keys);    
     unless ($result->load(speculative => 1)) {
-        $initializer->($result) if (defined $initializer);
-        $result->save;
+	$initializer->($result) if (defined $initializer);
+	$result->save;
     }
     return $cache->{$cacheKey} = $result;
 }
@@ -113,8 +129,8 @@ sub dropCache {
 sub loadBuilding {
     my ($self,$name) = @_;
     return $self->loadCached('buildings',qw/Stats::DB::Building/,undef,{
-	server_id => $self->{db_server}->id,
-	name      => $name
+        server_id => $self->{db_server}->id,
+        name      => $name
     });
 }
 
@@ -182,6 +198,7 @@ sub endSession {
     $session->end($end);
     $session->save;
     if ($session->team =~ /^human|alien$/) {
+        push @{$self->{game}->{sessions}},$session;
         if (my $player = $self->loadPlayer($session->player_id)) {
             my $playerMap = Stats::DB::PlayerMap->new(player_id => $player->id,map_id => $self->{db_game}->map_id);
             $playerMap->load(speculative => 1);
@@ -219,17 +236,18 @@ sub handleInitGame {
         result       => 'Draw (voted / crashed)',
         score        => [ ],
         db_players   => { },
+        sessions     => [ ],
     };
 }
 
 sub handleRealTime {
-    my ($self,%fields) = @_;
+    my ($self, %fields) = @_;
     return unless (defined $self->{game});
-    $self->{game}->{realtime} = DateTime->new(time_zone => '+0000',%fields);
-    my $map = Stats::DB::Map->new(server_id => $self->{db_server}->id,name => $self->{game}->{map});
+    $self->{game}->{realtime} = DateTime->new(time_zone => '+0000', %fields);
+    my $map = Stats::DB::Map->new(server_id => $self->{db_server}->id, name => $self->{game}->{map});
     $map->load(speculative => 1) || $map->save;
     # TODO: if ($self->{cache}->{total_players} > 0) -- perhaps at some point
-    $map->total_loaded($map->total_loaded+1);
+    $map->total_loaded($map->total_loaded + 1);
     $self->{cache}->{map} = $map;
     $self->{cache}->{total_players} = 0;
     $self->{cache}->{total_bots} = 0;
@@ -240,16 +258,16 @@ sub handleRealTime {
     );
     if ($self->{db_game}->load(speculative => 1)) {
         unless ($self->{db_game}->import_complete) {
-            $self->log->info(sprintf('Reimporting game: %s %s',$self->{game}->{map},$self->{game}->{realtime}));
+            $self->log->info(sprintf('Reimporting game: %s %s', $self->{game}->{map}, $self->{game}->{realtime}));
             # Re-importing an existing game entry - remove all event data first
             deleteGameEntries($self->{db_game}->id);
             $self->{skip_game} = 0;
         } else {
-            $self->log->info(sprintf('Skipping fully imported game: %s %s',$self->{game}->{map},$self->{game}->{realtime}));
+            $self->log->info(sprintf('Skipping fully imported game: %s %s', $self->{game}->{map}, $self->{game}->{realtime}));
             $self->{skip_game} = 1;
         }
     } else {
-        $self->log->info(sprintf('Importing game: %s %s',$self->{game}->{map},$self->{game}->{realtime}));
+        $self->log->info(sprintf('Importing game: %s %s', $self->{game}->{map}, $self->{game}->{realtime}));
         $self->{db_game}->max_players(0);
         $self->{db_game}->import_complete(0);
         $self->{db_game}->save;
@@ -258,16 +276,16 @@ sub handleRealTime {
 }
 
 sub handleShutdownGame {
-    my ($self,%fields) = @_;
+    my ($self, %fields) = @_;
     return unless (defined $self->{game});
     if ($self->shouldSkipCurrentGame) {
         undef $self->{db_game};
         return;
     }
-    foreach my $slot (0..63) {
+    foreach my $slot (0..$#{$self->{slots}}) {
         next unless defined $self->{slots}->[$slot];
         next if $self->{slots}->[$slot]->{disconnected};
-        $self->handleClientDisconnect(time => $fields{time},guid => $self->{slots}->[$slot]->{guid},slot => $slot);
+        $self->handleClientDisconnect(time => $fields{time}, guid => $self->{slots}->[$slot]->{guid}, slot => $slot);
     }
     $self->{db_game}->import_complete(1);
     $self->{db_game}->save;
@@ -279,8 +297,7 @@ sub handleShutdownGame {
 
     $self->log->info(sprintf("\tGame import completed, max players: %d", $self->{db_game}->max_players));
 
-    my $updateNeeded = $hadPlayers;
-    $updateNeeded = 1 if ($self->updateGlicko2());
+    my $updateNeeded = $hadPlayers && $self->updateGlicko2();
     
     undef $self->{game};
     undef $self->{db_game};
@@ -289,7 +306,7 @@ sub handleShutdownGame {
 }
 
 sub handleSuddenDeath {
-    my ($self,%fields) = @_;
+    my ($self, %fields) = @_;
     return unless (defined $self->{game});
     $self->{game}->{sd} = $self->parseTime($fields{time});
     $self->{db_game}->sd($self->{db_game}->start->clone->add_duration($self->{game}->{sd}));
@@ -297,7 +314,7 @@ sub handleSuddenDeath {
 }
 
 sub handleWeakSuddenDeath {
-    my ($self,%fields) = @_;
+    my ($self, %fields) = @_;
     return unless (defined $self->{game});
     $self->{game}->{wsd} = $self->parseTime($fields{time});
     $self->{db_game}->wsd($self->{db_game}->start->clone->add_duration($self->{game}->{wsd}));
@@ -308,7 +325,7 @@ sub handleClientConnect
 {
     # TODO: Optional $fields{flags} handling added for unv, assumes bots never have guid and wont have a matching player record
     # TODO: Verify that bot players are handled correctly and no extra player records are created
-    my ($self,%fields) = @_;
+    my ($self, %fields) = @_;
     return unless (defined $self->{game});
     unless ($fields{simplename}) {
         # TODO: (1.1): Not tested yet, 1.1 doesn't provide separate simplename field
@@ -393,7 +410,7 @@ sub handleClientConnect
 }
 
 sub handleClientDisconnect {
-    my ($self,%fields) = @_;
+    my ($self, %fields) = @_;
     return unless (defined $self->{game});
     my $time = $self->parseTime($fields{time});
     push @{$self->{game}->{players}->{$fields{guid}}->{sessions}},$time;
@@ -411,7 +428,7 @@ sub handleClientDisconnect {
 }
 
 sub handleAdminAuth {
-    my ($self,%fields) = @_;
+    my ($self, %fields) = @_;
     return unless (defined $self->{game});
     my $guid = $fields{guid};
     
@@ -430,29 +447,29 @@ sub handleAdminAuth {
 sub handleDie {
     my ($self,%fields) = @_;
     return unless (defined $self->{game});
-    unless ($fields{killerslot} >= 64 || defined($self->{slots}->[$fields{killerslot}]->{db_session})) {
+    unless ($fields{killerslot} >= MAX_SLOTS || defined($self->{slots}->[$fields{killerslot}]->{db_session})) {
         $self->log->warn("handleDie(): No db session for killerslot $fields{killerslot}");
         return;
     }
-    unless ($fields{killedslot} >= 64 || defined($self->{slots}->[$fields{killedslot}]->{db_session})) {
+    unless ($fields{killedslot} >= MAX_SLOTS || defined($self->{slots}->[$fields{killedslot}]->{db_session})) {
         $self->log->warn("handleDie(): No db session for killedslot $fields{killedslot}");
         return;
     }
-    unless ($fields{assistslot} >= 64 || defined($self->{slots}->[$fields{assistslot}]->{db_session})) {
+    unless ($fields{assistslot} >= MAX_SLOTS || defined($self->{slots}->[$fields{assistslot}]->{db_session})) {
         $self->log->warn("handleDie(): No db session for assistslot $fields{assistslot}");
         return;
     }
     # print "DEBUG: assist: $fields{assistslot} ".(defined($fields{assistslot}) ? "1" : "0")."\n";
-    my $killer_session = (($fields{killerslot} // 64) < 64) ? $self->{slots}->[$fields{killerslot}]->{db_session} : undef;
-    my $killed_session = (($fields{killedslot} // 64) < 64) ? $self->{slots}->[$fields{killedslot}]->{db_session} : undef;
-    my $assist_session = (($fields{assistslot} // 64) < 64) ? $self->{slots}->[$fields{assistslot}]->{db_session} : undef;
+    my $killer_session = (($fields{killerslot} // MAX_SLOTS) < MAX_SLOTS) ? $self->{slots}->[$fields{killerslot}]->{db_session} : undef;
+    my $killed_session = (($fields{killedslot} // MAX_SLOTS) < MAX_SLOTS) ? $self->{slots}->[$fields{killedslot}]->{db_session} : undef;
+    my $assist_session = (($fields{assistslot} // MAX_SLOTS) < MAX_SLOTS) ? $self->{slots}->[$fields{assistslot}]->{db_session} : undef;
     my $weapon = $self->loadWeapon($fields{mod});
     my $event = Stats::DB::PlayerEvent->new(
         time      => $self->parseTimeRelative($fields{time}),
         weapon_id => $weapon->id,
-        killer_id => defined($killer_session) ? $killer_session->id : undef,
-        killed_id => defined($killed_session) ? $killed_session->id : undef,
-	assist_id => defined($assist_session) ? $assist_session->id : undef,
+        killer_id => (defined($killer_session) ? $killer_session->id : undef),
+        killed_id => (defined($killed_session) ? $killed_session->id : undef),
+        assist_id => (defined($assist_session) ? $assist_session->id : undef),
     );
     $event->save;
 
@@ -461,40 +478,40 @@ sub handleDie {
 
     my $map = $self->{cache}->{map};
     if (defined($assist_session)) {
-	$assist_session->total_assists($assist_session->total_assists+1);
-	$assist_session->save;
+        $assist_session->total_assists($assist_session->total_assists+1);
+        $assist_session->save;
 
-	if (my $assist = $self->loadPlayer($assist_session->player_id)) {
-	    $assist->total_assists($assist->total_assists+1);
-	    $assist->save;
+        if (my $assist = $self->loadPlayer($assist_session->player_id)) {
+            $assist->total_assists($assist->total_assists+1);
+            $assist->save;
 
-	    if ($killed_session->player_id) {
-            my $kill = Stats::DB::PlayerKill->new(player_id => $assist_session->player_id,target_id => $killed_session->player_id);
-            $kill->load(speculative => 1);
-            $kill->total_assists($kill->total_assists+1);
-            if ($assist_session->team eq 'alien') {
-                $kill->total_assists_a($kill->total_assists_a+1);
-            } elsif ($assist_session->team eq 'human') {
-                $kill->total_assists_h($kill->total_assists_h+1);
-            } else {
-                $self->log->warn("Assisted by a spectator. Might need to track previous team as well.");
+            if ($killed_session->player_id) {
+                my $kill = Stats::DB::PlayerKill->new(player_id => $assist_session->player_id,target_id => $killed_session->player_id);
+                $kill->load(speculative => 1);
+                $kill->total_assists($kill->total_assists+1);
+                if ($assist_session->team eq 'alien') {
+                    $kill->total_assists_a($kill->total_assists_a+1);
+                } elsif ($assist_session->team eq 'human') {
+                    $kill->total_assists_h($kill->total_assists_h+1);
+                } else {
+                    $self->log->warn("Assisted by a spectator. Might need to track previous team as well.");
+                }
+                $kill->save;
             }
-            $kill->save;
-	    }
-
-	    my $assistMap = Stats::DB::PlayerMap->new(player_id => $assist->id,map_id => $map->id);
-	    $assistMap->load(speculative => 1);
-	    $assistMap->total_assists($assistMap->total_assists+1);
-	    if ($assist_session->team eq 'alien') {
-            $assistMap->total_assists_a($assistMap->total_assists_a+1);
-	    } elsif ($assist_session->team eq 'human') {
-            $assistMap->total_assists_h($assistMap->total_assists_h+1);
-	    } else {
-            $self->log->warn("Assist by a spectator. Might need to track previous team as well.");
-	    }
-        
-	    $assistMap->save;
-	}
+            
+            my $assistMap = Stats::DB::PlayerMap->new(player_id => $assist->id,map_id => $map->id);
+            $assistMap->load(speculative => 1);
+            $assistMap->total_assists($assistMap->total_assists+1);
+            if ($assist_session->team eq 'alien') {
+                $assistMap->total_assists_a($assistMap->total_assists_a+1);
+            } elsif ($assist_session->team eq 'human') {
+                $assistMap->total_assists_h($assistMap->total_assists_h+1);
+            } else {
+                $self->log->warn("Assist by a spectator. Might need to track previous team as well.");
+            }
+            
+            $assistMap->save;
+        }
     }
     if (defined($killer_session)) {
         $killer_session->total_kills($killer_session->total_kills+1);
@@ -511,68 +528,68 @@ sub handleDie {
         $map->total_deaths($map->total_deaths+1);
 
         my $killer = $self->loadPlayer($killer_session->player_id);
-	if ($killer) {
-	    $killer->total_kills($killer->total_kills+1);
-	    $killer->save;
+        if ($killer) {
+            $killer->total_kills($killer->total_kills+1);
+            $killer->save;
 
-	    my $killerMap = Stats::DB::PlayerMap->new(player_id => $killer->id,map_id => $map->id);
-	    $killerMap->load(speculative => 1);
-	    $killerMap->total_kills($killerMap->total_kills+1);
-	    if ($killer_session->team eq 'alien') {
-		$killerMap->total_kills_a($killerMap->total_kills_a+1);
-		$map->total_kills_a($map->total_kills_a+1);
-	    } elsif ($killer_session->team eq 'human') {
-		$killerMap->total_kills_h($killerMap->total_kills_h+1);
-		$map->total_kills_h($map->total_kills_h+1);
-	    } else {
-		$self->log->warn("Kill by a spectator. Might need to track previous team as well.");
-	    }
-	    $killerMap->save();
+            my $killerMap = Stats::DB::PlayerMap->new(player_id => $killer->id,map_id => $map->id);
+            $killerMap->load(speculative => 1);
+            $killerMap->total_kills($killerMap->total_kills+1);
+            if ($killer_session->team eq 'alien') {
+                $killerMap->total_kills_a($killerMap->total_kills_a+1);
+                $map->total_kills_a($map->total_kills_a+1);
+            } elsif ($killer_session->team eq 'human') {
+                $killerMap->total_kills_h($killerMap->total_kills_h+1);
+                $map->total_kills_h($map->total_kills_h+1);
+            } else {
+                $self->log->warn("Kill by a spectator. Might need to track previous team as well.");
+            }
+            $killerMap->save;
 
-	    my $killerWeapon = Stats::DB::PlayerWeapon->new(player_id => $killer->id,weapon_id => $weapon->id);
-	    $killerWeapon->load(speculative => 1);
-	    $killerWeapon->total_kills($killerWeapon->total_kills+1);
-	    $killerWeapon->save();    
-	}
+            my $killerWeapon =  Stats::DB::PlayerWeapon->new(player_id => $killer->id,weapon_id => $weapon->id);
+            $killerWeapon->load(speculative => 1);
+            $killerWeapon->total_kills($killerWeapon->total_kills+1);
+            $killerWeapon->save;    
+        }
 
         my $killed = $self->loadPlayer($killed_session->player_id);
-	if ($killed) {
-	    $killed->total_deaths($killed->total_deaths+1);
-	    $killed->save;
+        if ($killed) {
+            $killed->total_deaths($killed->total_deaths+1);
+            $killed->save;
 
-	    my $killedMap = Stats::DB::PlayerMap->new(player_id => $killed->id,map_id => $map->id);
-	    $killedMap->load(speculative => 1);
-	    $killedMap->total_deaths($killedMap->total_deaths+1);
-	    if ($killed_session->team eq 'alien') {
-		$killedMap->total_deaths_a($killedMap->total_deaths_a+1);
-		$map->total_deaths_a($map->total_deaths_a+1);
-	    } elsif ($killed_session->team eq 'human') {
-		$killedMap->total_deaths_h($killedMap->total_deaths_h+1);
-		$map->total_deaths_h($map->total_deaths_h+1);
-	    } else {
-		$self->log->warn("Killed by a spectator. Might need to track previous team as well.");
-	    }
-	    $killedMap->save();
+            my $killedMap = Stats::DB::PlayerMap->new(player_id => $killed->id,map_id => $map->id);
+            $killedMap->load(speculative => 1);
+            $killedMap->total_deaths($killedMap->total_deaths+1);
+            if ($killed_session->team eq 'alien') {
+                $killedMap->total_deaths_a($killedMap->total_deaths_a+1);
+                $map->total_deaths_a($map->total_deaths_a+1);
+            } elsif ($killed_session->team eq 'human') {
+                $killedMap->total_deaths_h($killedMap->total_deaths_h+1);
+                $map->total_deaths_h($map->total_deaths_h+1);
+            } else {
+                $self->log->warn("Killed by a spectator. Might need to track previous team as well.");
+            }
+            $killedMap->save;
 
-	    my $killedWeapon = Stats::DB::PlayerWeapon->new(player_id => $killed->id,weapon_id => $weapon->id);
-	    $killedWeapon->load(speculative => 1);
-	    $killedWeapon->total_deaths($killedWeapon->total_deaths+1);
-	    $killedWeapon->save();
-	}
+            my $killedWeapon = Stats::DB::PlayerWeapon->new(player_id => $killed->id,weapon_id => $weapon->id);
+            $killedWeapon->load(speculative => 1);
+            $killedWeapon->total_deaths($killedWeapon->total_deaths+1);
+            $killedWeapon->save;
+        }
 
-	if ($killer && $killed) {
-	    my $kill = Stats::DB::PlayerKill->new(player_id => $killer->id,target_id => $killed->id);
-	    $kill->load(speculative => 1);
-	    $kill->total_kills($kill->total_kills+1);
-	    if ($killer_session->team eq 'alien') {
-		$kill->total_kills_a($kill->total_kills_a+1);
-	    } elsif ($killer_session->team eq 'human') {
-		$kill->total_kills_h($kill->total_kills_h+1);
-	    } else {
-		$self->log->warn("Killed by a spectator. Might need to track previous team as well.");
-	    }
-	    $kill->save;
-	}
+        if ($killer && $killed) {
+            my $kill = Stats::DB::PlayerKill->new(player_id => $killer->id,target_id => $killed->id);
+            $kill->load(speculative => 1);
+            $kill->total_kills($kill->total_kills+1);
+            if ($killer_session->team eq 'alien') {
+                $kill->total_kills_a($kill->total_kills_a+1);
+            } elsif ($killer_session->team eq 'human') {
+                $kill->total_kills_h($kill->total_kills_h+1);
+            } else {
+                $self->log->warn("Killed by a spectator. Might need to track previous team as well.");
+            }
+            $kill->save;
+        }
     } else {
         $self->{db_game}->total_bdeaths($self->{db_game}->total_bdeaths+1);
         $map->total_bdeaths($map->total_bdeaths+1);
@@ -581,28 +598,28 @@ sub handleDie {
         $killed_session->save;
 
         if (my $killed = $self->loadPlayer($killed_session->player_id)) {
-	    $killed->total_bdeaths($killed->total_bdeaths+1);
-	    $killed->save;
+            $killed->total_bdeaths($killed->total_bdeaths+1);
+            $killed->save;
 
-	    my $killedMap = Stats::DB::PlayerMap->new(player_id => $killed->id,map_id => $map->id);
-	    $killedMap->load(speculative => 1);
-	    $killedMap->total_bdeaths($killedMap->total_bdeaths+1);
-	    if ($killed_session->team eq 'alien') {
-		$killedMap->total_bdeaths_a($killedMap->total_bdeaths_a+1);
-		$map->total_bdeaths_a($map->total_bdeaths_a+1);
-	    } elsif ($killed_session->team eq 'human') {
-		$killedMap->total_bdeaths_h($killedMap->total_bdeaths_h+1);
-		$map->total_bdeaths_h($map->total_bdeaths_h+1);
-	    } else {
-		$self->log->warn("Kill by a spectator. Might need to track previous team as well.");
-	    }
-	    $killedMap->save();
+            my $killedMap = Stats::DB::PlayerMap->new(player_id => $killed->id,map_id => $map->id);
+            $killedMap->load(speculative => 1);
+            $killedMap->total_bdeaths($killedMap->total_bdeaths+1);
+            if ($killed_session->team eq 'alien') {
+                $killedMap->total_bdeaths_a($killedMap->total_bdeaths_a+1);
+                $map->total_bdeaths_a($map->total_bdeaths_a+1);
+            } elsif ($killed_session->team eq 'human') {
+                $killedMap->total_bdeaths_h($killedMap->total_bdeaths_h+1);
+                $map->total_bdeaths_h($map->total_bdeaths_h+1);
+            } else {
+                $self->log->warn("Kill by a spectator. Might need to track previous team as well.");
+            }
+            $killedMap->save;
 
-	    my $killedWeapon = Stats::DB::PlayerWeapon->new(player_id => $killed->id,weapon_id => $weapon->id);
-	    $killedWeapon->load(speculative => 1);
-	    $killedWeapon->total_bdeaths($killedWeapon->total_bdeaths+1);
-	    $killedWeapon->save();
-	}
+            my $killedWeapon = Stats::DB::PlayerWeapon->new(player_id => $killed->id,weapon_id => $weapon->id);
+            $killedWeapon->load(speculative => 1);
+            $killedWeapon->total_bdeaths($killedWeapon->total_bdeaths+1);
+            $killedWeapon->save;
+        }
     }
     $map->save;
 }
@@ -641,25 +658,25 @@ sub handleConstruct {
     
     my $player = $self->loadPlayer($session->player_id);
     if ($player) {
-	$player->total_built($player->total_built+1);
-	$player->save;
+        $player->total_built($player->total_built+1);
+        $player->save;
 
-	my $map = $self->{cache}->{map};
+        my $map = $self->{cache}->{map};
 
-	my $playerMap = Stats::DB::PlayerMap->new(player_id => $player->id,map_id => $map->id);
-	$playerMap->load(speculative => 1);
-	$playerMap->total_built($playerMap->total_built+1);
-	if ($session->team eq 'alien') {
-	    $playerMap->total_built_a($playerMap->total_built_a+1);
-	    $map->total_built_a($map->total_built_a+1);
-	} elsif ($session->team eq 'human') {
-	    $playerMap->total_built_h($playerMap->total_built_h+1);
-	    $map->total_built_h($map->total_built_h+1);
-	} else {
-	    $self->log->warn("Build by a spectator. Might need to track previous team as well.");
-	}
-	$map->save;
-	$playerMap->save;
+        my $playerMap = Stats::DB::PlayerMap->new(player_id => $player->id,map_id => $map->id);
+        $playerMap->load(speculative => 1);
+        $playerMap->total_built($playerMap->total_built+1);
+        if ($session->team eq 'alien') {
+            $playerMap->total_built_a($playerMap->total_built_a+1);
+            $map->total_built_a($map->total_built_a+1);
+        } elsif ($session->team eq 'human') {
+            $playerMap->total_built_h($playerMap->total_built_h+1);
+            $map->total_built_h($map->total_built_h+1);
+        } else {
+            $self->log->warn("Build by a spectator. Might need to track previous team as well.");
+        }
+        $map->save;
+        $playerMap->save;
     }
 }
 
@@ -695,7 +712,7 @@ sub handleDeconstruct {
     $game->total_bkills($game->total_bkills+1);
 
     my $building = $self->loadBuilding($fields{buildingname});
-    my $deconner = (($fields{playerid} < 64) ? $self->{slots}->[$fields{playerid}]->{db_session} : undef);
+    my $deconner = (($fields{playerid} < MAX_SLOTS) ? $self->{slots}->[$fields{playerid}]->{db_session} : undef);
     my $event = Stats::DB::BuildingEvent->new(
         type => 'destroy',
         time => $self->parseTimeRelative($fields{time}),
@@ -710,28 +727,28 @@ sub handleDeconstruct {
 
     if (defined $deconner) {
         if (my $player = $self->loadPlayer($deconner->player_id)) {
-	    $player->total_bkills($player->total_bkills+1);
+            $player->total_bkills($player->total_bkills+1);
 
-	    my $playerMap = Stats::DB::PlayerMap->new(player_id => $player->id,map_id => $map->id);
-	    $playerMap->load(speculative => 1);
-	    $playerMap->total_bkills($playerMap->total_bkills+1);
-	    $playerMap->save();
+            my $playerMap = Stats::DB::PlayerMap->new(player_id => $player->id,map_id => $map->id);
+            $playerMap->load(speculative => 1);
+            $playerMap->total_bkills($playerMap->total_bkills+1);
+            $playerMap->save();
 
-	    if ($deconner->team eq 'human') {
-		$playerMap->total_bkills_h($playerMap->total_bkills_h+1);
-		$map->total_bkills_h($map->total_bkills_h+1);
-	    } elsif ($deconner->team eq 'alien') {
-		$playerMap->total_bkills_a($playerMap->total_bkills_a+1);
-		$map->total_bkills_a($map->total_bkills_a+1);
-	    }
+            if ($deconner->team eq 'human') {
+                $playerMap->total_bkills_h($playerMap->total_bkills_h+1);
+                $map->total_bkills_h($map->total_bkills_h+1);
+            } elsif ($deconner->team eq 'alien') {
+                $playerMap->total_bkills_a($playerMap->total_bkills_a+1);
+                $map->total_bkills_a($map->total_bkills_a+1);
+            }
 
-	    my $playerWeapon = Stats::DB::PlayerWeapon->new(player_id => $player->id,weapon_id => $weapon->id);
-	    $playerWeapon->load(speculative => 1);
-	    $playerWeapon->total_bkills($playerWeapon->total_bkills+1);
-	    $playerWeapon->save();
-	}
-	$deconner->total_bkills($deconner->total_bkills+1);
-	$deconner->save;
+            my $playerWeapon = Stats::DB::PlayerWeapon->new(player_id => $player->id,weapon_id => $weapon->id);
+            $playerWeapon->load(speculative => 1);
+            $playerWeapon->total_bkills($playerWeapon->total_bkills+1);
+            $playerWeapon->save();
+        }
+        $deconner->total_bkills($deconner->total_bkills+1);
+        $deconner->save;
     }
     $map->save;
     
@@ -762,13 +779,66 @@ sub handleExit {
     if ($self->{db_game}->max_players + $self->{db_game}->max_bots >= 1) {
         my $outcome = $self->{db_game}->outcome;
         my $map = $self->{cache}->{map};
+        my $counters;
         if ($outcome eq 'humans') {
             $map->human_wins($map->human_wins+1);
+            $map->hwin_sessions($counters = $map->hwin_sessions // Stats::DB::SessionCounter->new());
         } elsif ($outcome eq 'aliens') {
             $map->alien_wins($map->alien_wins+1);
+            $map->awin_sessions($counters = $map->awin_sessions // Stats::DB::SessionCounter->new());
         } else {
             $map->draws($map->draws+1);
+            $map->draw_sessions($counters = $map->draw_sessions // Stats::DB::SessionCounter->new());
         }
+        my ($early_limit, $late_limit) = map {
+            $self->{db_game}->start->clone->add(seconds => $_ * ($self->{game}->{end}->in_units('seconds') - $self->{game}->{start}->in_units('seconds')) / 100)
+        } (25, 75);
+        my %counter_fields = (
+            human => {
+                start => {
+                    early  => sub { $_[0]->early_session_starts_h($_[0]->early_session_starts_h+1) },
+                    middle => sub { $_[0]->midgame_session_starts_h($_[0]->midgame_session_starts_h+1) },
+                    late   => sub { $_[0]->late_session_starts_h($_[0]->late_session_starts_h+1) },
+                },
+                end => {
+                    early  => sub { $_[0]->early_session_ends_h($_[0]->early_session_ends_h+1) },
+                    middle => sub { $_[0]->midgame_session_ends_h($_[0]->midgame_session_ends_h+1) },
+                    late   => sub { $_[0]->late_session_ends_h($_[0]->late_session_ends_h+1) }
+                }
+            },
+            alien => {
+                start => {
+                    early  => sub { $_[0]->early_session_starts_a($_[0]->early_session_starts_a+1) },
+                    middle => sub { $_[0]->midgame_session_starts_a($_[0]->midgame_session_starts_a+1) },
+                    late   => sub { $_[0]->late_session_starts_a($_[0]->late_session_starts_a+1) },
+                },
+                end => {
+                    early  => sub { $_[0]->early_session_ends_a($_[0]->early_session_ends_a+1) },
+                    middle => sub { $_[0]->midgame_session_ends_a($_[0]->midgame_session_ends_a+1) },
+                    late   => sub { $_[0]->late_session_ends_a($_[0]->late_session_ends_a+1) }
+                }
+            }
+        );
+        foreach my $team (qw/human alien/) {
+            foreach my $session (grep { $_->team eq $team } @{$self->{game}->{sessions}}) {
+                if ($session->start < $early_limit) {
+                    $counter_fields{$team}->{start}->{early}->($counters);
+                } elsif ($session->start < $late_limit) {
+                    $counter_fields{$team}->{start}->{middle}->($counters);
+                } else {
+                    $counter_fields{$team}->{start}->{late}->($counters);
+                }
+                if ($session->end < $early_limit) {
+                    $counter_fields{$team}->{end}->{early}->($counters);
+                } elsif ($session->end < $late_limit) {
+                    $counter_fields{$team}->{end}->{middle}->($counters);                    
+                } else {
+                    $counter_fields{$team}->{end}->{late}->($counters);
+                }
+            }
+        }
+        $counters->save;
+
         $map->total_games($map->total_games+1);
         $map->total_time($map->total_time+$self->getDuration($self->{db_game}->end - $self->{db_game}->start));
         $map->save;
@@ -795,10 +865,10 @@ sub handleScore {
     # };
     # print "SCORE: ".join(" ",map { "$_ = $fields{$_}" } keys(%fields))."\n";
     if (my $db_session = $self->{slots}->[$fields{slot}]->{db_session}) {
-  	$db_session->score($fields{score});
-    	$db_session->ping($fields{ping});
-    	# $db_session->name($fields{name});
-    	$db_session->save;
+        $db_session->score($fields{score});
+        $db_session->ping($fields{ping});
+        # $db_session->name($fields{name});
+        $db_session->save;
     }
 }
 
@@ -807,7 +877,7 @@ sub handleChangeTeam {
     return unless (defined $self->{game});
     my $db_session = $self->{slots}->[$fields{slot}]->{db_session};
     if (defined $db_session) {
-	$self->endSession($db_session,$self->parseTimeRelative($fields{time}));
+        $self->endSession($db_session,$self->parseTimeRelative($fields{time}));
     } else {
         $self->log->warn("ChangeTeam(): No active db_session for slot $fields{slot} guid $fields{guid}");
         return;
@@ -847,7 +917,7 @@ sub handleClientRename {
         return;
     }
     if (my $player = $self->loadPlayer($db_session->player_id)) {
-	# TODO: !$player->is_bot && ... below
+        # TODO: !$player->is_bot && ... below
         if ($player->displayname ne $fields{newnameformatted}) {
             $player->displayname($fields{newnameformatted});
             $player->save;
@@ -966,30 +1036,30 @@ sub deleteGameEntries {
 sub loadGlicko2 {
     my ($self,$player_id,%extra) = @_;
     return {
-	player  => undef,
-	glicko  => Glicko2::Player->new,
-	db      => undef,
+        player  => undef,
+        glicko  => Glicko2::Player->new,
+        db      => undef,
         %extra,
     } unless (defined $player_id);
     my $result = Stats::DB::Glicko2->new(player_id => $player_id);
     $result->save unless ($result->load(speculative => 1));
     # print "LOAD: $player_id -> ".Glicko2::Player->new(rating => $result->rating,rd => $result->rd,volatility => $result->volatility)."\n";
     return {
-	player => $player_id,
-	glicko => Glicko2::Player->new(rating => $result->rating,rd => $result->rd,volatility => $result->volatility),
-	db     => $result,
-	%extra
+        player => $player_id,
+        glicko => Glicko2::Player->new(rating => $result->rating,rd => $result->rd,volatility => $result->volatility),
+        db     => $result,
+        %extra
     };
 }
 
 sub saveGlicko2 {
     my ($self,$glicko2) = @_;
     if (defined(my $db = $glicko2->{db})) {
-	$db->rating($glicko2->{glicko}->rating);
-	$db->rd($glicko2->{glicko}->rd);
-	$db->volatility($glicko2->{glicko}->volatility);
-	$db->update_count($db->update_count+1);
-	$db->save;
+        $db->rating($glicko2->{glicko}->rating);
+        $db->rd($glicko2->{glicko}->rd);
+        $db->volatility($glicko2->{glicko}->volatility);
+        $db->update_count($db->update_count+1);
+        $db->save;
     }
 }
 
@@ -1005,11 +1075,11 @@ sub updateGlicko2 {
     return 0 unless (defined $game->outcome);
     my $score_values;
     if ($game->outcome =~ /^humans/i) {
-	$score_values = { human => 1.0, alien => 0.0 }
+        $score_values = { human => 1.0, alien => 0.0 }
     } elsif ($game->outcome =~ /^aliens/i) {
-	$score_values = { human => 0.0, alien => 1.0 }
+        $score_values = { human => 0.0, alien => 1.0 }
     } else { # /^draw$/i
-	$score_values = { human => 0.5, alien => 0.5 }
+        $score_values = { human => 0.5, alien => 0.5 }
     }
     unless (defined $score_values) {
         $self->log->warn("Unrecognized outcome: '".$game->outcome."' skipping rankings update.");
@@ -1017,42 +1087,42 @@ sub updateGlicko2 {
     }
     my %teams = (human => [ ],alien => [ ]);
     foreach my $session (@{Stats::DB::Session::Manager->get_sessions(where => [ game_id => $game->id,team => [ 'human', 'alien' ]])}) {
-	push @{$teams{$session->team}},$self->loadGlicko2($session->player_id,session => $session);
+        push @{$teams{$session->team}},$self->loadGlicko2($session->player_id,session => $session);
     }
     return 0 unless(scalar(@{$teams{human}}) && scalar(@{$teams{alien}}));
     my $game_duration = $self->getDuration($game->end - $game->start);
     my $cutoff_factor = 0.55;
     my $cutoff_duration = $cutoff_factor*$game_duration;
     foreach my $team ('human','alien') {
-	my $comp = $teams{$team.'_composite'} = Glicko2::Player->new(rating => 0,rd => 0,volatility => 0);
-	my $team_count = 0;
-	foreach my $session (@{$teams{$team}}) {
-	    my $session_duration = $self->getDuration($session->{session}->end - $session->{session}->start);
-	    next if ($session_duration < $cutoff_duration);
-	    $comp->rating($comp->rating+$session->{glicko}->rating);
-	    $comp->rd($comp->rd+$session->{glicko}->rd);
-	    $comp->volatility($comp->volatility+$session->{glicko}->volatility);
-	    ++$team_count;
-	}
-	return 0 unless ($team_count > 0);
-	$comp->rating($comp->rating/$team_count);
-	$comp->rd($comp->rd/$team_count);
-	$comp->volatility($comp->volatility/$team_count);
+        my $comp = $teams{$team.'_composite'} = Glicko2::Player->new(rating => 0,rd => 0,volatility => 0);
+        my $team_count = 0;
+        foreach my $session (@{$teams{$team}}) {
+            my $session_duration = $self->getDuration($session->{session}->end - $session->{session}->start);
+            next if ($session_duration < $cutoff_duration);
+            $comp->rating($comp->rating+$session->{glicko}->rating);
+            $comp->rd($comp->rd+$session->{glicko}->rd);
+            $comp->volatility($comp->volatility+$session->{glicko}->volatility);
+            ++$team_count;
+        }
+        return 0 unless ($team_count > 0);
+        $comp->rating($comp->rating/$team_count);
+        $comp->rd($comp->rd/$team_count);
+        $comp->volatility($comp->volatility/$team_count);
     }
     my %opponents = (human => $teams{alien_composite},alien => $teams{human_composite});
     foreach my $team ('human','alien') {
-	foreach my $session (@{$teams{$team}}) {
-	    # print "Append queue: ".((defined $session->{db}) ? $session->{db}->id : 'null')."\n";
-	    next unless (defined $session->{db});
-	    next if ($self->getDuration($session->{session}->end - $session->{session}->start) < $cutoff_duration);
-	    Stats::DB::Glicko2Score->new(glicko2_id          => $session->{db}->id,
+        foreach my $session (@{$teams{$team}}) {
+            # print "Append queue: ".((defined $session->{db}) ? $session->{db}->id : 'null')."\n";
+            next unless (defined $session->{db});
+            next if ($self->getDuration($session->{session}->end - $session->{session}->start) < $cutoff_duration);
+            Stats::DB::Glicko2Score->new(glicko2_id          => $session->{db}->id,
                                      session_id          => $session->{session}->id,
                                      score               => $score_values->{$team},
                                      opponent_rating     => $opponents{$team}->rating,
                                      opponent_rd         => $opponents{$team}->rd,
                                      opponent_volatility => $opponents{$team}->volatility,
                                      is_new              => 1)->save;
-	}
+        }
     }
     $self->{last_glicko2} = $game->end->clone;
     # print "  Last glicko2: ".$self->{last_glicko2}."\n";
@@ -1085,7 +1155,7 @@ sub updateRankings {
                 $score->save;
             }
             foreach my $match (values %matches) {
-                # print "Outcomes: ".scalar(@{$match->{outcomes}})."\n";
+                print "Outcomes: ".scalar(@{$match->{outcomes}})."\n";
                 $match->{glicko2}->{glicko}->update(@{$match->{outcomes}});
                 $self->saveGlicko2($match->{glicko2});
             }
@@ -1103,27 +1173,27 @@ sub updateRankings {
         "update player_rankings r left join (select p.id,\@rownum:=\@rownum+1 as value,p.total_games,p.total_time from players p,player_glicko2 g where server_id = $server_id and g.player_id = p.id and p.total_games >= ".MIN_GLICKO2_GAMES." and p.total_time >= ".MIN_GLICKO2_TIME." order by g.rating desc) as q on r.player_id = q.id set by_glicko2 = value where q.total_games >= ".MIN_GLICKO2_GAMES." and q.total_time >= ".MIN_GLICKO2_TIME,
         "update player_rankings r left join (select p.id,\@rownum:=\@rownum+1 as value,p.total_games,p.total_time from players p,player_glicko2 g where server_id = $server_id and g.player_id = p.id and (p.total_games < ".MIN_GLICKO2_GAMES." or p.total_time < ".MIN_GLICKO2_TIME.") order by p.total_kills desc, p.total_time desc) as q on r.player_id = q.id set by_glicko2 = value where (q.total_games < ".MIN_GLICKO2_GAMES." or q.total_time < ".MIN_GLICKO2_TIME.")",
         "set \@rownum=-1",
-        "update player_rankings r left join (select id,\@rownum:=\@rownum+1 as value from players where server_id = $server_id order by total_kills desc) as p on r.player_id = p.id set by_kills = value",
+        "update player_rankings r left join (select id,\@rownum:=\@rownum+1 as value from players where server_id = $server_id order by total_kills desc) as p on r.player_id = p.id set by_kills = value where value is not null",
         "set \@rownum=-1",
-        "update player_rankings r left join (select id,\@rownum:=\@rownum+1 as value from players where server_id = $server_id order by name) as p on r.player_id = p.id set by_name = value",
+        "update player_rankings r left join (select id,\@rownum:=\@rownum+1 as value from players where server_id = $server_id order by name) as p on r.player_id = p.id set by_name = value where value is not null",
         "set \@rownum=-1",
-        "update player_rankings r left join (select id,\@rownum:=\@rownum+1 as value from players where server_id = $server_id order by total_deaths desc) as p on r.player_id = p.id set by_deaths = value",
+        "update player_rankings r left join (select id,\@rownum:=\@rownum+1 as value from players where server_id = $server_id order by total_deaths desc) as p on r.player_id = p.id set by_deaths = value where value is not null",
         "set \@rownum=-1",
-        "update player_rankings r left join (select id,\@rownum:=\@rownum+1 as value from players where server_id = $server_id order by total_assists desc) as p on r.player_id = p.id set by_assists = value",
+        "update player_rankings r left join (select id,\@rownum:=\@rownum+1 as value from players where server_id = $server_id order by total_assists desc) as p on r.player_id = p.id set by_assists = value where value is not null",
         "set \@rownum=-1",
-        "update player_rankings r left join (select id,\@rownum:=\@rownum+1 as value from players where server_id = $server_id order by total_built desc) as p on r.player_id = p.id set by_buildings_built = value",
+        "update player_rankings r left join (select id,\@rownum:=\@rownum+1 as value from players where server_id = $server_id order by total_built desc) as p on r.player_id = p.id set by_buildings_built = value where value is not null",
         "set \@rownum=-1",
-        "update player_rankings r left join (select id,\@rownum:=\@rownum+1 as value from players where server_id = $server_id order by total_bkills desc) as p on r.player_id = p.id set by_buildings_killed = value",
+        "update player_rankings r left join (select id,\@rownum:=\@rownum+1 as value from players where server_id = $server_id order by total_bkills desc) as p on r.player_id = p.id set by_buildings_killed = value where value is not null",
         "set \@rownum=-1",
-        "update player_rankings r left join (select id,\@rownum:=\@rownum+1 as value from players where server_id = $server_id order by total_kills/total_deaths desc) as p on r.player_id = p.id set by_kills_per_deaths = value",
+        "update player_rankings r left join (select id,\@rownum:=\@rownum+1 as value from players where server_id = $server_id order by total_kills/if(total_deaths = 0, 1, total_deaths) desc) as p on r.player_id = p.id set by_kills_per_deaths = value where value is not null",
         "set \@rownum=-1",
-        "update player_rankings r left join (select id,\@rownum:=\@rownum+1 as value from players where server_id = $server_id order by total_bkills/total_deaths desc) as p on r.player_id = p.id set by_bkills_per_deaths = value",
+        "update player_rankings r left join (select id,\@rownum:=\@rownum+1 as value from players where server_id = $server_id order by total_bkills/if(total_deaths = 0, 1, total_deaths) desc) as p on r.player_id = p.id set by_bkills_per_deaths = value where value is not null",
         "set \@rownum=-1",
-        "update player_rankings r left join (select id,\@rownum:=\@rownum+1 as value from players where server_id = $server_id order by total_time_a/total_time_h desc) as p on r.player_id = p.id set by_team_aliens = value",
+        "update player_rankings r left join (select id,\@rownum:=\@rownum+1 as value from players where server_id = $server_id order by total_time_a/if(total_time_h = 0, 1, total_time_h) desc) as p on r.player_id = p.id set by_team_aliens = value where value is not null",
         "set \@rownum=-1",
-        "update player_rankings r left join (select id,\@rownum:=\@rownum+1 as value from players where server_id = $server_id order by total_time_h/total_time_a desc) as p on r.player_id = p.id set by_team_humans = value",
+        "update player_rankings r left join (select id,\@rownum:=\@rownum+1 as value from players where server_id = $server_id order by total_time_h/if(total_time_a = 0, 1, total_time_a) desc) as p on r.player_id = p.id set by_team_humans = value where value is not null",
         "set \@rownum=-1",
-        "update player_rankings r left join (select id,\@rownum:=\@rownum+1 as value from players where server_id = $server_id order by total_rqs/total_sessions) as p on r.player_id = p.id set by_rq = value",
+        "update player_rankings r left join (select id,\@rownum:=\@rownum+1 as value from players where server_id = $server_id order by total_rqs/if(total_sessions = 0, 1, total_sessions)) as p on r.player_id = p.id set by_rq = value where value is not null",
         # Player/Map kills/deaths statistics - Handled directly during import
         # 'delete from player_maps',
         # 'insert into player_maps (player_id,map_id,total_kills) select p.id as player_id,m.id as map_id,sum(s.total_kills) as total_kills from player_events e,maps m,players p,sessions s,games g where s.player_id = p.id and s.game_id = g.id and g.map_id = m.id and e.killer_id = s.id group by player_id',
@@ -1142,7 +1212,7 @@ sub updateRankings {
             $db->dbh->do($statement);
         };
         # This happens when total_deaths = 0 <-> division by 0
-        # print "SQL statement failed: $statement, error: $@\n" if ($@);
+        print "SQL statement failed: $statement, error: $@\n" if ($@);
     }
 }
 
@@ -1150,11 +1220,11 @@ sub updateRankings {
 sub splitLine {
     my ($self,$line) = @_;
     if ($line =~ /^\s*(?<line1>\d+:\d+\s*Inactivity:\s*\d+)\s+(?<line2>.+)\s*$/) {
-	# This was a case in some earlier new edge gpp builds
+        # This was a case in some earlier new edge gpp builds
         return ($+{line1},$+{line2});
     } else {
-	# Recent versions of unvanquished seem to output lines joined together with \x00
-	return split /\x00\s*/,$line;
+        # Recent versions of unvanquished seem to output lines joined together with \x00
+        return split /\x00\s*/,$line;
         # return ($line);
     }
 }
@@ -1163,77 +1233,77 @@ sub parseLine {
     my ($self,$line) = @_;
     $self->{line} = $line; # For debug messages use
     eval {
-	if ($line =~ /^\s*(?<time>\d+:\d+)\s*-+\s*$/) {
-            # Delimiter - skipped
-	} elsif (!$self->{in_game}) {
-	    if ($line =~ /^\s*(?<time>\d+:\d+)\s*InitGame:\s+\\(?<rawdata>.+)\s*$/) {
-		my %data = split /\\/,$+{rawdata};
-		$self->handleInitGame(%+,%data);
-		$self->{in_game} = 1;
-		$self->{skip_game} = 0;
-	    } else {
-		$self->log->warn("Unrecognized line: $line");
-		return;
-	    }
-	} elsif ($line =~ /^\s*(?<time>\d+:\d+)\s*ShutdownGame:\s*$/) {
+        if ($line =~ /^\s*$/ || $line =~ /^\s*(?<time>\d+:\d+)\s*-+\s*$/) {
+            # Empty line or delimiter - skipped
+        } elsif (!$self->{in_game}) {
+            if ($line =~ /^\s*(?<time>\d+:\d+)\s*InitGame:\s+\\(?<rawdata>.+)\s*$/) {
+                my %data = split /\\/,$+{rawdata};
+                $self->handleInitGame(%+,%data);
+                $self->{in_game} = 1;
+                $self->{skip_game} = 0;
+            } else {
+                $self->log->warn("Unrecognized line: $line");
+                return;
+            }
+        } elsif ($line =~ /^\s*(?<time>\d+:\d+)\s*ShutdownGame:\s*$/) {
             $self->handleShutdownGame(%+);
-	    $self->{in_game} = $self->{skip_game} = 0;
-	} elsif ($self->{skip_game}) {
-	    # Nothing to do, current game already imported, shutdowngame required for next match
-	} elsif ($line =~ /^\s*(?:\d+:\d+)\s*RealTime:\s+(?<year>\d{4})[\/-](?<month>\d{2})[\/-](?<day>\d{2})\s+(?<hour>\d{2}):(?<minute>\d{2}):(?<second>\d{2})(?:(\s+(?<time_zone>[A-Z]+)))?\s*$/) { # TODO: optional time_zone added for unv
-        $self->handleRealTime(%+);
-    } elsif ($line =~ /^\s*(?<time>\d+:\d+)\s*Beginning\s*Sudden\s*Death\s*$/) {
-        $self->handleSuddenDeath(%+);
-    } elsif ($line =~ /^\s*(?<time>\d+:\d+)\s*Beginning\s*Weak\s*Sudden\s*Death\s*$/) {
-        $self->handleWeakSuddenDeath(%+);
-    } elsif ($line =~ /^\s*(?<time>\d+:\d+)\s*ClientConnect:\s+(?<slot>\d+)\s+\[(?<ip>\S+?)\]\s+\((?<guid>\S+?)\)(?:\s+\"(?<simplename>.+?)\")?\s+\"(?<name>.+?)\"(?:\s+(?<flags>\S+))?\s*$/) {
-	    # TODO: (1.1): Simplename made optional
-        $self->handleClientConnect(%+);
-    } elsif ($line =~ /^\s*(?<time>\d+:\d+)\s*ClientDisconnect:\s*(?<slot>\d+)\s+\[(?<ip>\S*?)\]\s+\((?<guid>\S+?)\)\s+\"(?<simplename>.+?)\"\s*$/) {
-        $self->handleClientDisconnect(%+);
-    } elsif ($line =~ /^\s*(?<time>\d+:\d+)\s*AdminAuth:\s+(?<slot>\d+)\s+\"(?<simplename>.+?)\"\s+\"(?<authname>.+?)\"\s+\[(?<level>\-?\d+)\]\s+\((?<guid>\S+?)\):\s+.+$/) {
-        $self->handleAdminAuth(%+);
-    } elsif ($line =~ /^\s*(?<time>\d+:\d+)\s*Die:\s+(?<killerslot>\d+)\s+(?<killedslot>\d+)\s+(?<mod>\S+)(?:\s+(?<assistslot>\d+)\s+(?<assistteam>\d+))?:\s+(?<killername>.+?)\s+killed\s+(?<killedname>.+)$/) {
-        $self->handleDie(%+);
-	} elsif ($line =~ /^\s*(?<time>\d+:\d+)\s*Kill:\s+(?<killerslot>\d+)\s+(?<killedslot>\d+)\s+(?<modnumber>\S+):\s+(?<killername>.+?)\s+killed\s+(?<killedname>.+?)\s+by\s+(?<mod>\S+)$/) {
-	    # TODO: (1.1) Kill message instead of Die but provides mostly same information.
-	    $self->handleDie(%+);
-    } elsif ($line =~ /^\s*(?<time>\d+:\d+)\s*Construct:\s+(?<slot>\d+)\s+(?<entityid>\d+)\s+(?<buildingname>\S+):\s+.+$/) {
-        # 31:26 Construct: 0 177 mgturret: Pat is building Machinegun Turret
-        # 31:04 Construct: 0 149 medistat: CU|Mario is building Medistation
-        $self->handleConstruct(%+,mod => 'MOD_CONSTRUCT');
-	} elsif ($line =~ /^\s*(?<time>\d+:\d+)\s*Construct:\s+(?<slot>\d+)\s+(?<entityid>\d+)\s+(?<buildingname>\S+)\s+(?<replacedids>\d+(?:\s+\d+)*?):\s+.+$/) {
-	    # 4:51 Construct: 0 149 mgturret 119: CU|narbatucker is building Machinegun Turret, replacing Telenode
-	    # 2:27 Construct: 0 158 mgturret 83 70: DRM vs. freeloaders is building Machinegun Turret, replacing Machinegun Turret and Drill
-	    $self->handleConstruct(%+,mod => 'MOD_CONSTRUCT');
-    } elsif ($line =~ /^\s*(?<time>\d+:\d+)\s*Deconstruct:\s+(?<playerid>\d+)\s+(?<entityid>\d+)\s+(?<buildingname>\S+)\s+(?<mod>\S+):\s+.+$/) {
-        # 32:48 Deconstruct: 0 168 acid_tube MOD_MACHINEGUN: Acid Tube destroyed by Pat
-        $self->handleDeconstruct(%+);
-    } elsif ($line =~ /^\s*(?<time>\d+:\d+)\s*Exit:\s+(?<reason>.+)\s*$/) {
-        $self->handleExit(%+);
-    } elsif ($line =~ /^\s*(?<time>\d+:\d+)\s*score:\s+(?<score>\-?\d+)\s+ping:\s+(?<ping>\d+)\s+client:\s+(?<slot>\d+)\s+(?<name>.+?)\s*$/) {
-        # 1101:22score: 48  ping: 412  client: 0 kwergangregory
-        # 17:31 score: 8  ping: 322  client: 1 bluedemon1
-        $self->handleScore(%+);
-    } elsif ($line =~ /^\s*(?<time>\d+:\d+)\s*Warmup:\s+(?<duration>\d+)\s*$/) {
-        # Warmup definition - not used
-    } elsif ($line =~ /^\s*(?<time>\d+:\d+)\s*ClientBegin:\s+(?<slot>\d+)\s*$/) {
-        # ClientBegin - not used
-    } elsif ($line =~ /^\s*(?<time>\d+:\d+)\s*AdminExec:.*$/) {
-        # AdminExec - not used
-    } elsif ($line =~ /^\s*(?<time>\d+:\d+)\s*Say(?:Team|Area)?:\s+(?<slot>\-?\d+)\s+\"(?<name>.+?)\":\s+(?<message>.*?)\s*$/) {
-        # Say, SayTeam, SayArea - not used
-    } elsif ($line =~ /^\s*(?<time>\d+:\d+)\s*ChangeTeam:\s+(?<slot>\d+)\s+(?<team>\S+):\s+(?<message>.*?)\s*$/) {
-        # 41:06 ChangeTeam: 1 human: Lucirant switched teams
-        # team values: human, alien, spectator directly mapped as enum in db
-        $self->handleChangeTeam(%+);
-	} elsif ($line =~ /^\s*(?<time>\d+:\d+)\s*ClientTeamClass:\s+(?<slot>\d+)\s+(?<team>\S+)\s+(?<weapon>\S+)\s*$/) {
-	    # TODO: (1.1)
-	    # 2:22 ClientTeamClass: 0 human rifle
-	    $self->handleClientTeamClass(%+)
-	} elsif ($line =~ /^\s*(?<time>\d+:\d+)\s*ClientTeam:\s+(?<displayname>.+?)\s+left the (?<team>humans|aliens)\.\s*$/) {
-	    # TODO: (1.1)
-	    # 21:39 ClientTeam: ^7[LEGO] ^2l^3ooooo^2s^5er^7 left the aliens.
+            $self->{in_game} = $self->{skip_game} = 0;
+        } elsif ($self->{skip_game}) {
+            # Nothing to do, current game already imported, shutdowngame required for next match
+        } elsif ($line =~ /^\s*(?:\d+:\d+)\s*RealTime:\s+(?<year>\d{4})[\/-](?<month>\d{2})[\/-](?<day>\d{2})\s+(?<hour>\d{2}):(?<minute>\d{2}):(?<second>\d{2})(?:(\s+(?<time_zone>[A-Z]+)))?\s*$/) { # TODO: optional time_zone added for unv
+            $self->handleRealTime(%+);
+        } elsif ($line =~ /^\s*(?<time>\d+:\d+)\s*Beginning\s*Sudden\s*Death\s*$/) {
+            $self->handleSuddenDeath(%+);
+        } elsif ($line =~ /^\s*(?<time>\d+:\d+)\s*Beginning\s*Weak\s*Sudden\s*Death\s*$/) {
+            $self->handleWeakSuddenDeath(%+);
+        } elsif ($line =~ /^\s*(?<time>\d+:\d+)\s*ClientConnect:\s+(?<slot>\d+)\s+\[(?<ip>\S+?)\]\s+\((?<guid>\S+?)\)(?:\s+\"(?<simplename>.+?)\")?\s+\"(?<name>.+?)\"(?:\s+(?<flags>\S+))?\s*$/) {
+            # TODO: (1.1): Simplename made optional
+            $self->handleClientConnect(%+);
+        } elsif ($line =~ /^\s*(?<time>\d+:\d+)\s*ClientDisconnect:\s*(?<slot>\d+)\s+\[(?<ip>\S*?)\]\s+\((?<guid>\S+?)\)\s+\"(?<simplename>.+?)\"\s*$/) {
+            $self->handleClientDisconnect(%+);
+        } elsif ($line =~ /^\s*(?<time>\d+:\d+)\s*AdminAuth:\s+(?<slot>\d+)\s+\"(?<simplename>.+?)\"\s+\"(?<authname>.+?)\"\s+\[(?<level>\-?\d+)\]\s+\((?<guid>\S+?)\):\s+.+$/) {
+            $self->handleAdminAuth(%+);
+        } elsif ($line =~ /^\s*(?<time>\d+:\d+)\s*Die:\s+(?<killerslot>\d+)\s+(?<killedslot>\d+)\s+(?<mod>\S+)(?:\s+(?<assistslot>\d+)\s+(?<assistteam>\d+))?:\s+(?<killername>.+?)\s+killed\s+(?<killedname>.+)$/) {
+            $self->handleDie(%+);
+        } elsif ($line =~ /^\s*(?<time>\d+:\d+)\s*Kill:\s+(?<killerslot>\d+)\s+(?<killedslot>\d+)\s+(?<modnumber>\S+):\s+(?<killername>.+?)\s+killed\s+(?<killedname>.+?)\s+by\s+(?<mod>\S+)$/) {
+            # TODO: (1.1) Kill message instead of Die but provides mostly same information.
+            $self->handleDie(%+);
+        } elsif ($line =~ /^\s*(?<time>\d+:\d+)\s*Construct:\s+(?<slot>\d+)\s+(?<entityid>\d+)\s+(?<buildingname>\S+):\s+.+$/) {
+            # 31:26 Construct: 0 177 mgturret: Pat is building Machinegun Turret
+            # 31:04 Construct: 0 149 medistat: CU|Mario is building Medistation
+            $self->handleConstruct(%+,mod => 'MOD_CONSTRUCT');
+        } elsif ($line =~ /^\s*(?<time>\d+:\d+)\s*Construct:\s+(?<slot>\d+)\s+(?<entityid>\d+)\s+(?<buildingname>\S+)\s+(?<replacedids>\d+(?:\s+\d+)*?):\s+.+$/) {
+            # 4:51 Construct: 0 149 mgturret 119: CU|narbatucker is building Machinegun Turret, replacing Telenode
+            # 2:27 Construct: 0 158 mgturret 83 70: DRM vs. freeloaders is building Machinegun Turret, replacing Machinegun Turret and Drill
+            $self->handleConstruct(%+,mod => 'MOD_CONSTRUCT');
+        } elsif ($line =~ /^\s*(?<time>\d+:\d+)\s*Deconstruct:\s+(?<playerid>\d+)\s+(?<entityid>\d+)\s+(?<buildingname>\S+)\s+(?<mod>\S+):\s+.+$/) {
+            # 32:48 Deconstruct: 0 168 acid_tube MOD_MACHINEGUN: Acid Tube destroyed by Pat
+            $self->handleDeconstruct(%+);
+        } elsif ($line =~ /^\s*(?<time>\d+:\d+)\s*Exit:\s+(?<reason>.+)\s*$/) {
+            $self->handleExit(%+);
+        } elsif ($line =~ /^\s*(?<time>\d+:\d+)\s*score:\s+(?<score>\-?\d+)\s+ping:\s+(?<ping>\d+)\s+client:\s+(?<slot>\d+)\s+(?<name>.+?)\s*$/) {
+            # 1101:22score: 48  ping: 412  client: 0 kwergangregory
+            # 17:31 score: 8  ping: 322  client: 1 bluedemon1
+            $self->handleScore(%+);
+        } elsif ($line =~ /^\s*(?<time>\d+:\d+)\s*Warmup:\s+(?<duration>\d+)\s*$/) {
+            # Warmup definition - not used
+        } elsif ($line =~ /^\s*(?<time>\d+:\d+)\s*ClientBegin:\s+(?<slot>\d+)\s*$/) {
+            # ClientBegin - not used
+        } elsif ($line =~ /^\s*(?<time>\d+:\d+)\s*AdminExec:.*$/) {
+            # AdminExec - not used
+        } elsif ($line =~ /^\s*(?<time>\d+:\d+)\s*Say(?:Team|Area)?:\s+(?<slot>\-?\d+)\s+\"(?<name>.+?)\":\s+(?<message>.*?)\s*$/) {
+            # Say, SayTeam, SayArea - not used
+        } elsif ($line =~ /^\s*(?<time>\d+:\d+)\s*ChangeTeam:\s+(?<slot>\d+)\s+(?<team>\S+):\s+(?<message>.*?)\s*$/) {
+            # 41:06 ChangeTeam: 1 human: Lucirant switched teams
+            # team values: human, alien, spectator directly mapped as enum in db
+            $self->handleChangeTeam(%+);
+        } elsif ($line =~ /^\s*(?<time>\d+:\d+)\s*ClientTeamClass:\s+(?<slot>\d+)\s+(?<team>\S+)\s+(?<weapon>\S+)\s*$/) {
+            # TODO: (1.1)
+            # 2:22 ClientTeamClass: 0 human rifle
+            $self->handleClientTeamClass(%+)
+        } elsif ($line =~ /^\s*(?<time>\d+:\d+)\s*ClientTeam:\s+(?<displayname>.+?)\s+left the (?<team>humans|aliens)\.\s*$/) {
+            # TODO: (1.1)
+            # 21:39 ClientTeam: ^7[LEGO] ^2l^3ooooo^2s^5er^7 left the aliens.
         } elsif ($line =~ /^\s*(?<time>\d+:\d+)\s*ClientRename:\s+(?<slot>\d+)\s+\[(?<ip>\S+)?\]\s+\((?<guid>(\S+)?)\)\s+\"(?<name>.+?)\"\s+->\s+\"(?<newname>.+?)\"\s+\"(?<newnameformatted>.+?)\"\s*$/) {
             # 1:43 ClientRename: 1 [86.135.175.36] (B2DA87EFC901CB0B35AB87EE33DD669F) ":InfD:Mors" -> "[ye]Kai [flamer]" "^3[ye]^1K^4ai ^2[flamer]
             $self->handleClientRename(%+);
@@ -1261,8 +1331,8 @@ sub parseLine {
             $self->handleCombatStats(%+);
         } elsif ($line =~ /^\s*(?<time>\d+:\d+)\s*Clan(?<type>Add|Remove|Resign|Auth):\s+\[(?<tag>.+?)\]\s+(?<guid>\S+)\s+(?<isleader>[01])\s+(?<name>.+)\s*$/) {
             $self->handleClanInfo(%+);
-	#} elsif ($line =~ /^\s(\d+)\s+(?<time>\d+:\d+)\s*-+\s*$/) {
-	#    # 4  0:00 ------------------------------------------------------------
+        #} elsif ($line =~ /^\s(\d+)\s+(?<time>\d+:\d+)\s*-+\s*$/) {
+        #    # 4  0:00 ------------------------------------------------------------
         } else {
             $self->log->warn("Unrecognized line: $line");
         }

@@ -24,6 +24,7 @@ use Stats::DB::Server;
 use Stats::DB::PlayerRanking;
 use Stats::DB::PlayerWeapon;
 use Stats::DB::SessionWeapon;
+use Stats::DB::SessionCounter;
 use Stats::DB::GameWeapon;
 use Stats::DB::PlayerMap;
 use Stats::DB::Clan;
@@ -77,6 +78,13 @@ sub get_formatted_outcome {
         }
     }
     return 'unknown';
+}
+
+sub filter_fields {
+    my ($obj) = @_;
+    
+    
+    return (defined($obj) && ref($obj) !~ /^SCALAR|HASH|ARRAY$/o && $obj->can('meta')) ? { map { $_ => filter_fields($obj->{$_}) } grep { !/^_/o && !/^db$/io } keys(%$obj) } : $obj
 }
 
 # -- JSON handlers --
@@ -517,15 +525,16 @@ get '/game/:id/sessions/:team/:offset/:limit' => sub {
 };
 
 get '/map/:id' => sub {
-    my $map = Stats::DB::Map->new(id => params->{id});
-    unless ($map->load(speculative => 1)) {
-        return {
-            error => "Invalid map id: ".params->{id}
-        }
-    }
+    my ($map) = @{Stats::DB::Map::Manager->get_maps(
+        where        => [ id => params->{id} ],
+        with_objects => [ 'awin_sessions', 'hwin_sessions', 'draw_sessions' ]
+    )};
+    return {
+        error => "Invalid map id: ".params->{id}
+    } unless ($map);
     return {
         displayname => replace_all($map->name),
-	    (map { $_ => $map->{$_} } grep { !/^_/ } $map->meta->column_names)
+        %{filter_fields($map)}
     }
 };
 

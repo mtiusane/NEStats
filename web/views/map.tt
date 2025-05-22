@@ -6,6 +6,27 @@
     <a class="data map_id" href="<% map_id %>"></a>
     <div id="map_overall">
       <h1>Map: <span class="f_displayname"></span></h1>
+      <h2>Player Sessions</h2>
+      <table>
+        <% FOREACH type IN [ 'starts', 'ends' ] %>
+        <tr><td><% type %></td><td>
+        <span class="row small f__fillBar">
+          <% FOREACH time IN [ 'early' 'midgame' 'late' ] %>
+          <span class="bar_region">
+            <span class="value<% FOREACH winner IN [ 'awin' 'hwin' 'draw' ] %><% ' f_' _ winner _ '_sessions__' _ time _ '_session_' _ type _ '_h'%><% END %>"></span>
+            <span class="color">rgba(51,63,100,0.66)</span>
+            <span class="title"><span class="small f__text">[bsuit]</span></span>
+          </span>
+          <span class="bar_region">
+            <span class="value<% FOREACH winner IN [ 'awin' 'hwin' 'draw' ] %><% ' f_' _ winner _ '_sessions__' _ time _ '_session_' _ type _ '_a'%><% END %>"></span>
+            <span class="color">rgba(100,63,51,0.66)</span>
+            <span class="title"><span class="small f__text">[tyrant]</span></span>
+          </span>
+          <% END %>
+        </span>
+        </td></tr>
+        <% END %>
+      </table>
     </div>
   </div>
   <div id="players" class="container halfheight fullwidth">

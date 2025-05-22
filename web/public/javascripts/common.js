@@ -222,67 +222,72 @@ Common = {
     clearFieldType: field => Common._removeFieldData(field, 'f__fieldType'),
 
     loadFieldValues: (target, data) => {
+        // console.log("Loading field values...");
         Common._expandSelector(target).forEach(selector => {
-            /*if (!data || !Array.isArray(data)) {
-              console.log("Invalid data...");
-              return;
-              }*/
-            selector.querySelectorAll('.f__parent').forEach(parent => {
-                parent.classList.remove('f__parent');
+            let loadEntries = (target, data, prefix = '') => {
+                selector.querySelectorAll('.f__parent').forEach(parent => {
+                    parent.classList.remove('f__parent');
+                    Object.entries(data).forEach(([ name, value ]) => {
+                        const selectorName = 'f_'+name;
+                        if (parent.classList.contains(selectorName)) {
+                            parent.classList.remove(selectorName);
+                            loadEntries(parent, value);
+                        }
+                    });
+                });            
+                // console.log("Loading entries, prefix = "+prefix);
                 Object.entries(data).forEach(([ name, value ]) => {
-                    const selectorName = 'f_'+name;
-                    if (parent.classList.contains(selectorName)) {
-                        parent.classList.remove(selectorName);
-                        Common.loadFieldValues(parent, value);
-                    }
-                });
-            });
-            Object.entries(data).forEach(([ name, value ]) => {
-                const selectorName = 'f_'+name;
-                selector.querySelectorAll('.'+selectorName).forEach((field, fieldIndex) => {
-                    // console.log("Loading field: f_"+name, field);
-                    field.classList.remove(selectorName);
-                    if (field.tagName == 'A') {
-                        if (value != null) {
-                            field.setAttribute('href', value);
-                        } else {
-                            while(field.firstChild) {
-                                field.parentNode.appendChild(field.firstChild);
-                            }
-                            field.parentNode.removeChild(field);
-                        }
-                    } else if (field.tagName == 'IMG') {
-                        if (value != null && value != "") {
-                            field.setAttribute('src',value);
-                            field.parentNode.querySelectorAll('.imgNotFound').forEach(child => child.parentNode.removeChild(child));
-                        } else {
-                            field.parentNode.removeChild(field);
-                        }
-                    } else if (field.classList.contains('f__sum') || field.classList.contains('f__sub')) {
-                        let fns = Common.loadFieldType(field);
-                        let sum = Common._getFieldData(field, 'f__sum');
-                        let parsedValue = fns.parseValue(value);
-                        if (sum === undefined) {
-                            sum = parsedValue;
-                        } else {
-                            sum += parsedValue;
-                        }
-                        Common._setFieldData(field, 'f__sum', sum);
-                    } else if (field.classList.contains('f__div')) {
-                        let fns = Common.loadFieldType(field);
-                        let sum = Common._getFieldData(field, 'f__sum');
-                        let parsedValue = fns.parseValue(value);
-                        if (sum === undefined) {
-                            sum = parsedValue;
-                        } else {
-                            sum /= parsedValue;
-                        }
-                        Common._setFieldData(field, 'f__sum', sum);
+                    if (typeof value === 'object' && value !== null) {
+                        loadEntries(target, value, name+'__');
                     } else {
-                        Common.replaceField(field, value);
+                        const selectorName = 'f_'+prefix+name;
+                        selector.querySelectorAll('.'+selectorName).forEach((field, fieldIndex) => {
+                            console.log("Loading field: "+selectorName, field);
+                            field.classList.remove(selectorName);
+                            if (field.tagName == 'A') {
+                                if (value != null) {
+                                    field.setAttribute('href', value);
+                                } else {
+                                    while(field.firstChild) {
+                                        field.parentNode.appendChild(field.firstChild);
+                                    }
+                                    field.parentNode.removeChild(field);
+                                }
+                            } else if (field.tagName == 'IMG') {
+                                if (value != null && value != "") {
+                                    field.setAttribute('src',value);
+                                    field.parentNode.querySelectorAll('.imgNotFound').forEach(child => child.parentNode.removeChild(child));
+                                } else {
+                                    field.parentNode.removeChild(field);
+                                }
+                            } else if (field.classList.contains('f__sum') || field.classList.contains('f__sub')) {
+                                let fns = Common.loadFieldType(field);
+                                let sum = Common._getFieldData(field, 'f__sum');
+                                let parsedValue = fns.parseValue(value);
+                                if (sum === undefined) {
+                                    sum = parsedValue;
+                                } else {
+                                    sum += parsedValue;
+                                }
+                                Common._setFieldData(field, 'f__sum', sum);
+                            } else if (field.classList.contains('f__div')) {
+                                let fns = Common.loadFieldType(field);
+                                let sum = Common._getFieldData(field, 'f__sum');
+                                let parsedValue = fns.parseValue(value);
+                                if (sum === undefined) {
+                                    sum = parsedValue;
+                                } else {
+                                    sum /= parsedValue;
+                                }
+                                Common._setFieldData(field, 'f__sum', sum);
+                            } else {
+                                Common.replaceField(field, value);
+                            }
+                        });
                     }
                 });
-            });
+            };
+            loadEntries(target, data, '');
         });
     },
     
@@ -360,15 +365,20 @@ Common = {
                     field.classList.remove('f__text');
                     Common.replaceField(field, Common.formatText(field.textContent));
                 });
-                target.querySelectorAll('.f__fillBar').forEach((field, index) => {
-                    field.classList.remove('f__fillBar');
+                target.querySelectorAll('.f__fillBar, .f__fillBarRelative').forEach((field, index) => {
+                    const isRelative = field.classList.contains('f__fillBarRelative');
+                    [ 'f__fillBar', 'f__fillBarRelative' ].forEach(c => field.classList.remove(c));
                     const result = Common.createEl('SPAN', {}, "bar");
-                    result.appendChild(Common.fillBar(Common.regions(Array.from(field.querySelectorAll(".bar_region")).map(region => Object.fromEntries([
+                    const regions = isRelative ? Common.regionsRelative : Common.regions;
+                    const regionsElements = regions(Array.from(field.querySelectorAll(".bar_region")).map(region => Object.fromEntries([
                         'title', 'value', 'color'
                     ].map(key => {
                         const value = region.querySelector(`.${key}`);
                         return (value !== undefined) && [ key, (key == 'title') ? value : value.textContent ];
-                    }).filter(v => v !== undefined))))));
+                    }).filter(v => v !== undefined))));
+                    //result.appendChild(document.createComment(JSON.stringify(Array.from(field.querySelectorAll(".bar_region"))));
+                    //result.appendChild(document.createComment(JSON.stringify(regionsElements)));
+                    result.appendChild(Common.fillBar(regionsElements));
                     Common.replaceField(field, result);
                 });
                 target.querySelectorAll('.f__bar').forEach((field, index) => {
@@ -637,16 +647,16 @@ Common = {
         const infoStyle = `font-size: ${fontSizeInfo}px; fill: #dfdddc`;
         const empty_color = 'transparent';
         const svg = Common.createElXML("svg", { "width": "100%", "height" : "100%", "viewbox": `0 0 ${cw} ${ch}`, "style"  : `background: ${empty_color}` });
-        const [ rangeMin, rangeMax ] = [ Number(g.min_range), Number(g.max_range) ];
+        const [ rangeMin, rangeMax ] = [ !isNaN(g.min_range) ? Number(g.min_range) : 800, !isNaN(g.max_range) ? Number(g.max_range) : 2200];
         const rangeDelta = rangeMax - rangeMin;
-        const r = Number(g.rating);
-        const rd = Number(g.rd);
+        const r = !isNaN(g.rating) ? Number(g.rating) : 1500;
+        const rd = !isNaN(g.rd) ? Number(g.rd) : 350;
         const fill_color = 'rgba(100,63,51,0.66)';
         const stroke_color = '#642e1d';
         const rd_fill_left = cw * (r - rangeMin - 2.0 * rd) / rangeDelta;
         const rd_fill_width = cw * (4.0 * rd) / rangeDelta;
-        const x0 =       rd_fill_width /  4.0,x1 = 3.0*rd_fill_width / 10.0,x2 = rd_fill_width / 2.0;
-        const x3 = 2.0 * rd_fill_width / 10.0,x4 =     rd_fill_width /  4.0,x5 = rd_fill_width / 2.0;
+        const x0 =       rd_fill_width /  4.0, x1 = 3.0 * rd_fill_width / 10.0, x2 = rd_fill_width / 2.0;
+        const x3 = 2.0 * rd_fill_width / 10.0, x4 =       rd_fill_width /  4.0, x5 = rd_fill_width / 2.0;
         let graph = [ 'm' ].concat([
             rd_fill_left, ch
         ].map(v => Number(v).toFixed(2))).concat([ 'c' ]).concat([
@@ -694,10 +704,19 @@ Common = {
         return result;
     },
 
-    regions: (stops, start) => stops.reduce((a, n) => a.concat(Object.fromEntries([
-        [ "start" , Number(a.length ? a[a.length - 1].end : (start || 0))                        ],
-        [ "end"   , Number(a.length ? a[a.length - 1].end : (start || 0)) + Number(n.value || 0) ]
-    ].concat(Object.entries(n).filter(([k, v]) => k != "value")))), []),
+    regions: (stops, start) => {
+        return stops.reduce((a, n) => a.concat(Object.fromEntries([
+            [ "start" , Number(a.length ? a[a.length - 1].end : (start || 0.0))                        ],
+            [ "end"   , Number(a.length ? a[a.length - 1].end : (start || 0.0)) + Number(n.value || 0) ]
+        ].concat(Object.entries(n).filter(([k, v]) => k != "value")))), []);
+    },
+    regionsRelative: (stops, start) => {
+        const total = stops.reduce((total,s) => total + Number(s.value || 0.0), 0.0); 
+        return stops.reduce((a, n) => a.concat(Object.fromEntries([
+            [ "start" , (Number(a.length ? a[a.length - 1].end : (start || 0.0)) / total * 100.0).toFixed(2)                        ],
+            [ "end"   , (Number(a.length ? a[a.length - 1].end : (start || 0.0)) + Number(n.value || 0) / total * 100.0).toFixed(2) ]
+        ].concat(Object.entries(n).filter(([k, v]) => k != "value")))), []);
+    },
     fillBar: (regions, ranges, size) => {
         const [ cw, ch ] = size || Common.bar_size();
         const result = Common.createEl('SPAN', {}, [ "fill", "grid" ]);
@@ -757,8 +776,8 @@ Common = {
         const total = Number(params.total);
         const svg = Common.createElXML('svg', { "width": cw, "height": ch, "viewbox": `0 0 ${cw} ${ch}` });
         if (total > 0.0) {
-            const fill = 100.0 * Number(params.value) / total;
-            const neutral = Common.isDefined(params.neutral) ? 100.0 * Number(params.neutral) / total : 0.0;
+            const fill = !isNaN(params.value) ? 100.0 * Number(params.value) / total : 0.0;
+            const neutral = (Common.isDefined(params.neutral) && !isNaN(params.neutral)) ? 100.0 * Number(params.neutral) / total : 0.0;
             const empty = 100.0 - fill - neutral;
             const fill_text = hasText ? '' : ((fill >= 33.0 || centerText) ? fill.toFixed(2)+'%' : '');
             const empty_text = hasText ? '' : ((empty >= 33.0 && !centerText) ? empty.toFixed(2)+'%' : '');

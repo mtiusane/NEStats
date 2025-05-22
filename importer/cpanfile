@@ -1,8 +1,7 @@
 requires 'Rose::DB::Object';
 requires 'DateTime';
 requires 'DateTime::Format::Duration';
-requires 'DBD::MariaDB';
-requires 'DBD::mysql', '< 5.001';
+requires 'DBD::mysql', '<= 4.051';
 requires 'Log::Log4perl';
 requires 'File::Tail';
 requires 'Log::Dispatch::FileRotate';

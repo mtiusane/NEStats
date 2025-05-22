@@ -4,5 +4,5 @@ requires 'Rose::DB::Object';
 requires 'Plack';
 requires 'DateTime';
 requires 'DateTime::Format::Duration';
-requires 'DBD::mysql';
+requires 'DBD::mysql', '<= 4.051';
 requires 'CGI';
