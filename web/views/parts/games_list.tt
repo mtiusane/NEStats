@@ -32,9 +32,9 @@
             <span class="imageTextField">
 	          <a class="f_url" href="">
 	            <span class="title"><span class="f_name f__text"></span></span>
-	            <span class="roundcorners f__img">
-		          <img class="f_img_url" src="">
-		          <span class="imgNotFound">N/A</span>
+	            <span class="f__img">
+		          <img class="roundcorners f_img_url" src="">
+		          <span class="roundcorners imgNotFound">N/A</span>
 	            </span>
 	          </a>
             </span>
