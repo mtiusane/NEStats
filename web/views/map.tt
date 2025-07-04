@@ -10,9 +10,9 @@
       <table>
         <% FOREACH type IN [ 'starts', 'ends' ] %>
         <tr><th></th><th>awin</th><th>hwin</th><th>draw</th></tr>
-        <tr><th><% type %></th><td>
+        <tr><th><% type %></th>
             <% FOREACH winner IN [ 'awin' 'hwin' 'draw' ] %>
-            <span class="row small f__fillBar">
+            <td><span class="row small f__fillBar">
               <span class="bar_region">
                 <span class="value <% 'f_' _ winner _ '_sessions__early_session_' _ type _ '_h'%>"></span>
                 <span class="color">rgba(51,63,100,0.66)</span>
@@ -26,12 +26,12 @@
                 <span class="color">rgba(100,63,51,0.66)</span>
                 <span class="title"><span class="small f__text">[bsuit]</span></span>
               </span>
-            </span>
+            </span></td>
             <% END %>
-        </td></tr>
-        <tr><td><% type %></td><td>
+        </tr>
+        <tr><th><% type %></th>
             <% FOREACH winner IN [ 'awin' 'hwin' 'draw' ] %>
-            <span class="row small f__fillBar">
+            <td><span class="row small f__fillBar">
               <span class="bar_region">
                 <span class="value <% 'f_' _ winner _ '_sessions__early_session_' _ type _ '_a'%>"></span>
                 <span class="color">rgba(51,63,100,0.66)</span>
@@ -45,9 +45,9 @@
                 <span class="color">rgba(100,63,51,0.66)</span>
                 <span class="title"><span class="small f__text">[tyrant]</span></span>
               </span>
-            </span>
+            </span></td>
             <% END %>
-        </td></tr>
+        </tr>
         <% END %>
       </table>
     </div>
