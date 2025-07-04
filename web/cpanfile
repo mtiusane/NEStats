@@ -6,3 +6,4 @@ requires 'DateTime';
 requires 'DateTime::Format::Duration';
 requires 'DBD::mysql', '<= 4.051';
 requires 'CGI';
+requires 'List::MoreUtils';
