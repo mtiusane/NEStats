@@ -16,7 +16,7 @@
               <span class="bar_region">
                 <span class="value <% 'f_' _ winner _ '_sessions__early_session_' _ type _ '_h'%>"></span>
                 <span class="color">rgba(51,63,100,0.66)</span>
-                <span class="title"><span class="small f__sum <% 'f_' _ winner _ '_sessions__early_session_' _ type _ '_h"></span></span>
+                <span class="title"><span class="small f__sum <% 'f_' _ winner _ '_sessions__early_session_' _ type _ '_h%>"></span></span>
               </span><span class="bar_region">
                 <span class="value <% 'f_' _ winner _ '_sessions__midgame_session_' _ type _ '_h'%>"></span>
                 <span class="color">rgba(100,63,100,0.66)</span>
