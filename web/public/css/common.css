@@ -503,13 +503,13 @@ a:hover {
 a:hover span,
 a:visited:hover span { /* override for color codes in emoticons */
     text-decoration: none;
-    border-bottom: 1px solid rgba(59,198,184,0.75);
+    text-decoration: underline;
+    text-decoration-color: rgba(59,198,184,0.75);
 }
 
 a:hover span.smiley,
 a:visited:hover span.smiley {
     text-decoration: none;
-    border-bottom: none !important;
 }
 
 a:active {
