@@ -15,9 +15,9 @@
       <div id="links_background"></div>
       <div id="links">
 	<% FOREACH s IN servers %>
-	<% IF s.id == server.id %><li class="selected"><% ELSE %><li><% END %>
+	<% IF s.id == server.id %><span class="selected"><% ELSE %><span><% END %>
 	  <a class="server" href="/server/<% s.id %>"><% s.displayname.replace_all %></a>
-	</li>
+	</span>
 	<% END %>
 	<!--<a href="http://www.new-edge.org">home</a>
 	<a href="http://stats.new-edge.org">stats</a>-->
