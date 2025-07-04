@@ -1435,12 +1435,12 @@ a:visited:hover .roundcorners {
 }
 
 .imgNotFound {
-    display: inline-block;
+    display: block;
     width: 100%;
     height: 100%;
     background: #3f3f3f;
     text-align: center;
-    min-width: 356px;
+    min-width: 356px
     min-height: 200px;
 }
 
