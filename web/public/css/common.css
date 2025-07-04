@@ -7,9 +7,30 @@
 }
 */
 
+::-webkit-scrollbar {
+    background: transparent;
+    width: var(--scrollbar-size);
+    height: var(--scrollbar-size);
+}
+
+::-webkit-scrollbar-track {
+    border-radius: calc(var(--scrollbar-size) / 2);
+    background: rgba(255,255,255,0.15);
+}
+
+::-webkit-scrollbar-thumb {
+    border-radius: var(--border-radius);
+    border-left: 2px solid rgba(0,0,0,0.35);
+    background: rgba(255,255,255,0.25);
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(59,198,184,0.5);
+}
+
 * {
     scrollbar-color: rgba(59,198,184,0.75) rgba(239, 239, 239, 0.25);
-    scrollbar-width: auto;
+    scrollbar-width: var(--scrollbar-size);
     padding: 0px;
     margin: 0px;
 }
@@ -74,7 +95,7 @@ span.symbol.biohazard:before {
     box-sizing: border-box;
 
     padding: 0px;
-    margin: 0px;   
+    margin: 0px;
 }
 
 body {
@@ -671,27 +692,6 @@ table.jqplot-table-legend tr td {
 .jqplot-grid-canvas {
     color: rgba(59,198,184,0.75)
     background: transparent;
-}
-
-::-webkit-scrollbar {
-    background: transparent;
-    width: var(--scrollbar-size);
-    height: var(--scrollbar-size);
-}
-
-::-webkit-scrollbar-track {
-    border-radius: 0px;
-    background: rgba(255,255,255,0.15);
-}
-
-::-webkit-scrollbar-thumb {
-    border-radius: var(--border-radius);
-    border-left: 2px solid rgba(0,0,0,0.35);
-    background: rgba(255,255,255,0.25);
-}
-
-::-webkit-scrollbar-thumb:hover {
-    background: rgba(59,198,184,0.5);
 }
 
 button[type="submit"],
