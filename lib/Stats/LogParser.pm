@@ -245,10 +245,15 @@ sub handleRealTime {
     my ($self, %fields) = @_;
     return unless (defined $self->{game});
     $self->{game}->{realtime} = DateTime->new(time_zone => '+0000', %fields);
-    my $map = Stats::DB::Map->new(server_id => $self->{db_server}->id, name => $self->{game}->{map});
-    $map->load(speculative => 1) || $map->save;
+    my $map = undef;
+    $map = if (my @maps = Stats::DB::Map::Manager->get_maps(where => [ server_id => $self->{db_server}->id, name => $self->{game}->{map} ], limit => 1)) {
+        $maps[0];
+    } else {
+        Stats::DB::Map->new(server_id => $self->{db_server}->id, name => $self->{game}->{map});
+    }
     # TODO: if ($self->{cache}->{total_players} > 0) -- perhaps at some point
     $map->total_loaded($map->total_loaded + 1);
+    $map->save;
     $self->{cache}->{map} = $map;
     $self->{cache}->{total_players} = 0;
     $self->{cache}->{total_bots} = 0;
