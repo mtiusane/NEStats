@@ -230,6 +230,17 @@ div#logo > div#links {
     z-index: 2000;
 }
 
+/* begin: server names in links section */
+div#logo > div#links span {
+    display: inline-block;
+    text-decoration: none;
+}
+div#logo > div#links span.selected {
+    display: inline-block;
+    text-decoration: underline;
+}
+/* end: server names in links section */
+
 div#logo > div#links a,
 div#logo > div#links a:visited {
     display: inline-block;
