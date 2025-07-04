@@ -15,7 +15,11 @@
               <% FOREACH time IN [ 'early' 'midgame' 'late' ] %>
               <span class="bar_region">
                 <span class="value <% 'f_' _ winner _ '_sessions__' _ time _ '_session_' _ type _ '_h'%>"></span>
-                <span class="color">rgba(51,63,100,0.66)</span>
+                <span class="color"><% +{
+                  early        => 'rgba(51,63,100,0.66)',
+                  midgame => 'rgba(100,63,100,0.66)',
+                  late          => 'rgba(100,63,51,66)'
+                }{type}  %></span>
                 <span class="title"><span class="small f__text">[bsuit]</span></span>
               </span>
               <% END %>
