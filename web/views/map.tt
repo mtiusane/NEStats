@@ -8,9 +8,9 @@
       <h1>Map: <span class="f_displayname"></span></h1>
       <h2>Player Sessions</h2>
       <table>
-        <tr><th></th><th>awin</th><th>hwin</th><th>draw</th></tr>
         <% FOREACH type IN [ 'starts', 'ends' ] %>
-        <tr><td><% type %></td><td>
+        <tr><th></th><th>awin</th><th>hwin</th><th>draw</th></tr>
+        <tr><th><% type %></th><td>
             <% FOREACH winner IN [ 'awin' 'hwin' 'draw' ] %>
             <span class="row small f__fillBar">
               <span class="bar_region">
