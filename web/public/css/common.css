@@ -15,7 +15,7 @@
 
 ::-webkit-scrollbar-track {
     border-radius: calc(var(--scrollbar-size) / 2);
-    background: rgba(255,255,255,0.15);
+    background: revert;
 }
 
 ::-webkit-scrollbar-thumb {
@@ -29,7 +29,7 @@
 }
 
 * {
-    scrollbar-color: rgba(59,198,184,0.75) rgba(239, 239, 239, 0.25);
+    scrollbar-color: rgba(59,198,184,0.75) revert;
     scrollbar-width: var(--scrollbar-size);
     padding: 0px;
     margin: 0px;
@@ -1006,7 +1006,7 @@ canvas {
     padding: 0px;
     margin: 0px;
     overflow-x: auto;
-    overflow-y: scroll;
+    overflow-y: auto;
     border-radius: var(--border-radius);
     
     vertical-align: top;
