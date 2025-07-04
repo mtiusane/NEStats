@@ -8,9 +8,9 @@
       <h1>Map: <span class="f_displayname"></span></h1>
       <h2>Player Sessions</h2>
       <table>
-        <% FOREACH type IN [ 'starts', 'ends' ] %>
+        <% FOREACH type IN [ 'starts' ] %>
         <tr><th></th><th>awin</th><th>hwin</th><th>draw</th></tr>
-        <tr><th><span class="small f__text">[bsuit]</span> <% type %></th>
+        <tr><th><span class="small f__text">[bsuit]</span>/th>
           <% FOREACH winner IN [ 'awin' 'hwin' 'draw' ] %>
           <td><span class="row small f__fillBar">
               <span class="bar_region">
@@ -29,21 +29,21 @@
           </span></td>
           <% END %>
         </tr>
-        <tr><th><span class="small f__text">[tyrant]</span> <% type %></th>
+        <tr><th><span class="small f__text">[tyrant]</span></th>
           <% FOREACH winner IN [ 'awin' 'hwin' 'draw' ] %>
           <td><span class="row small f__fillBar">
               <span class="bar_region">
                 <span class="value <% 'f_' _ winner _ '_sessions__early_session_' _ type _ '_a'%>"></span>
                 <span class="color">rgba(100,63,51,0.66)</span>
-                <span class="title small f__sub <% 'f_' _ winner _ '_sessions__early_session_starts_a'%> <% 'f_' _ winner _ '_sessions__early_session_ends_a'%>"></span>
+                <span class="title small">+<span class="<% 'f_' _ winner _ '_sessions__early_session_starts_a'%>"></span> -<span class="<% 'f_' _ winner _ '_sessions__early_session_ends_a'%>"></span></span>
               </span><span class="bar_region">
                 <span class="value <% 'f_' _ winner _ '_sessions__midgame_session_' _ type _ '_a'%>"></span>
                 <span class="color">rgba(100,63,100,0.66)</span>
-                <span class="title small f__sub <% 'f_' _ winner _ '_sessions__midgame_session_starts_a'%> <% 'f_' _ winner _ '_sessions__midgame_session_ends_a'%>"></span>
+                <span class="title small">+<span class="<% 'f_' _ winner _ '_sessions__midgame_session_starts_a'%>"></span> -<span class="<% 'f_' _ winner _ '_sessions__midgame_session_ends_a'%>"></span></span>
               </span><span class="bar_region">
                 <span class="value <% 'f_' _ winner _ '_sessions__late_session_' _ type _ '_a'%>"></span>
                 <span class="color">rgba(51,63,100,0.66)</span>
-                <span class="title small f__sub <% 'f_' _ winner _ '_sessions__late_session_starts_a'%> <% 'f_' _ winner _ '_sessions__late_session_ends_a'%>"></span>
+                <span class="title small">+<span class="<% 'f_' _ winner _ '_sessions__late_session_starts_a'%>"</span> -<span class="<% 'f_' _ winner _ '_sessions__late_session_ends_a'%>"></span></span>
               </span>
           </span></td>
           <% END %>
