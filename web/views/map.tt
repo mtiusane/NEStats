@@ -29,7 +29,7 @@
           </span></td>
           <% END %>
         </tr>
-        <tr><th><span class="small f__text">[tyrant]</span><% type %></th>
+        <tr><th><span class="small f__text">[tyrant]</span> <% type %></th>
           <% FOREACH winner IN [ 'awin' 'hwin' 'draw' ] %>
           <td><span class="row small f__fillBar">
               <span class="bar_region">

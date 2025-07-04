@@ -338,9 +338,10 @@ get '/server/:id/games/:offset/:limit' => sub {
 };
 
 get '/server/:id/maps/:offset/:limit' => sub {
-    my $count = Stats::DB::Map::Manager->get_maps_count(where => [ server_id => params->{id} ]);
+    my $conditions = []; # TODO: $params->{id} != -1 ? [ server_id => params->{id} ] : []; -- currently map counts are shared between servers so not much sense
+    my $count = Stats::DB::Map::Manager->get_maps_count(where => $conditions);
     my @maps = @{Stats::DB::Map::Manager->get_maps(
-        where   => [ server_id => params->{id} ],
+        where   => $conditions,
         sort_by => 'total_games desc',
         limit   => min(25,params->{limit}),
         offset  => params->{offset},
