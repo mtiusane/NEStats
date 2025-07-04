@@ -18,6 +18,14 @@
                 <span class="color">rgba(51,63,100,0.66)</span>
                 <span class="title"><span class="small f__text">[bsuit]</span></span>
               </span>
+              <% END %>
+            </span>
+            <% END %>
+        </td></tr>
+        <tr><td><% type %></td><td>
+            <% FOREACH winner IN [ 'awin' 'hwin' 'draw' ] %>
+            <span class="row small f__fillBar">
+              <% FOREACH time IN [ 'early' 'midgame' 'late' ] %>
               <span class="bar_region">
                 <span class="value <% ' f_' _ winner _ '_sessions__' _ time _ '_session_' _ type _ '_a'%>"></span>
                 <span class="color">rgba(100,63,51,0.66)</span>
