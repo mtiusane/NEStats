@@ -29,7 +29,7 @@
       </ul>
       <ul class="servers">
 	<% FOREACH s IN servers %>
-	<% IF s.id == server.id %><li class="selected"><span class="f__text"><% s.displayname %></span></li>
+	<% IF s.id == server.id %><li class="selected"><span class="f__text"><% s.displayname %></span></li><%END%>
 	<% END %>
       </ul>
     </div>
