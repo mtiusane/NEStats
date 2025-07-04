@@ -203,7 +203,7 @@ Common = {
 
     findFieldType: field => {
         const dateTypes = [
-            'f__date', 'f__time', 'f__duration', 'f__duration_minutes', 'f__duration_date'
+            'f__date', 'f__time', 'f__duration', 'f__duration_date'
         ];
         return (dateTypes.some(dt => field.classList.contains(dt))) ? {
             parseValue: value => new Date(value)

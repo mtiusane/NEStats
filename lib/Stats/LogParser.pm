@@ -100,6 +100,7 @@ sub guids { $_[0]->{guids} }
 # sub games { @{$_[0]->{games}} }
 sub db_game { $_[0]->{db_game} }
 sub shouldSkipCurrentGame { $_[0]->{skip_game} }
+sub inGame { $_[0]->{in_game} }
 
 sub loadCached {
     my ($self,$cacheName,$class,$initializer,$keys) = @_;
