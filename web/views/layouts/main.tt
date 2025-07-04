@@ -11,6 +11,7 @@
   </head>
   <body>
     <div id="logo">
+      <script src="/javascripts/main.js></script>
       <div id="image"></div>
       <div id="links_background"></div>
       <div id="links">
