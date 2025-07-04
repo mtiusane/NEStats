@@ -157,6 +157,10 @@ tr td {
 tr th {
     text-align: left;
     font-weight: bold;
+    padding-left: 6px;
+    padding-right: 6px;
+    padding-top: 6px;
+    padding-bottom: 6px;
 }
 
 div#logo {
