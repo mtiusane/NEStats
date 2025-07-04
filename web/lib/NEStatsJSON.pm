@@ -338,7 +338,7 @@ get '/server/:id/games/:offset/:limit' => sub {
 };
 
 get '/server/:id/maps/:offset/:limit' => sub {
-    my $conditions = $params->{id} != -1 ? [ server_id => params->{id} ] : [];
+    my $conditions = params->{id} != -1 ? [ server_id => params->{id} ] : [];
     my $count = Stats::DB::Map::Manager->get_maps_count(where => $conditions);
     my @maps = @{Stats::DB::Map::Manager->get_maps(
         where   => $conditions,
