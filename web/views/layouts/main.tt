@@ -15,11 +15,6 @@
       <div id="image"></div>
       <div id="links_background"></div>
       <div id="links">
-	<% FOREACH s IN servers %>
-	<% IF s.id == server.id %><span class="selected"><% ELSE %><span><% END %>
-	  <a class="server" href="/server/<% s.id %>"><span class="f__text"><% s.displayname %></span></a>
-	</span>
-	<% END %>
 	<!--<a href="http://www.new-edge.org">home</a>
 	<a href="http://stats.new-edge.org">stats</a>-->
       </div>
@@ -34,9 +29,7 @@
       </ul>
       <ul class="servers">
 	<% FOREACH s IN servers %>
-	<% IF s.id == server.id %><li class="selected"><% ELSE %><li><% END %>
-	  <a class="server" href="/server/<% s.id %>"><span class="f__text"><% s.displayname %></span></a>
-	</li>
+	<% IF s.id == server.id %><li class="selected"><span class="f__text"><% s.displayname %></span></li>
 	<% END %>
       </ul>
     </div>
