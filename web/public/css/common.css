@@ -1440,6 +1440,8 @@ a:visited:hover .roundcorners {
     height: 100%;
     background: #3f3f3f;
     text-align: center;
+    min-width: 356px;
+    min-height: 200px;
 }
 
 .text {
