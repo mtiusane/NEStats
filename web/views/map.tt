@@ -11,8 +11,8 @@
         <% FOREACH type IN [ 'starts', 'ends' ] %>
         <tr><th></th><th>awin</th><th>hwin</th><th>draw</th></tr>
         <tr><th><span class="small f__text">[bsuit]</span> <% type %></th>
-            <% FOREACH winner IN [ 'awin' 'hwin' 'draw' ] %>
-            <td><span class="row small f__fillBar">
+          <% FOREACH winner IN [ 'awin' 'hwin' 'draw' ] %>
+          <td><span class="row small f__fillBar">
               <span class="bar_region">
                 <span class="value <% 'f_' _ winner _ '_sessions__early_session_' _ type _ '_h'%>"></span>
                 <span class="color">rgba(51,63,100,0.66)</span>
@@ -26,27 +26,27 @@
                 <span class="color">rgba(100,63,51,0.66)</span>
                 <span class="title small f__sub <% 'f_' _ winner _ '_sessions__late_session_starts_h'%> <% 'f_' _ winner _ '_sessions__late_session_ends_h'%>"></span>
               </span>
-            </span></td>
-            <% END %>
+          </span></td>
+          <% END %>
         </tr>
         <tr><th><span class="small f__text">[tyrant]</span><% type %></th>
-            <% FOREACH winner IN [ 'awin' 'hwin' 'draw' ] %>
-            <td><span class="row small f__fillBar">
+          <% FOREACH winner IN [ 'awin' 'hwin' 'draw' ] %>
+          <td><span class="row small f__fillBar">
               <span class="bar_region">
                 <span class="value <% 'f_' _ winner _ '_sessions__early_session_' _ type _ '_a'%>"></span>
-                <span class="color">rgba(51,63,100,0.66)</span>
-                <span class="title"><span class="small f__text">[tyrant]</span></span>
+                <span class="color">rgba(100,63,51,0.66)</span>
+                <span class="title small f__sub <% 'f_' _ winner _ '_sessions__early_session_starts_a'%> <% 'f_' _ winner _ '_sessions__early_session_ends_a'%>"></span>
               </span><span class="bar_region">
                 <span class="value <% 'f_' _ winner _ '_sessions__midgame_session_' _ type _ '_a'%>"></span>
                 <span class="color">rgba(100,63,100,0.66)</span>
-                <span class="title"><span class="small f__text">[tyrant]</span></span>
+                <span class="title small f__sub <% 'f_' _ winner _ '_sessions__midgame_session_starts_a'%> <% 'f_' _ winner _ '_sessions__midgame_session_ends_a'%>"></span>
               </span><span class="bar_region">
                 <span class="value <% 'f_' _ winner _ '_sessions__late_session_' _ type _ '_a'%>"></span>
-                <span class="color">rgba(100,63,51,0.66)</span>
-                <span class="title"><span class="small f__text">[tyrant]</span></span>
+                <span class="color">rgba(51,63,100,0.66)</span>
+                <span class="title small f__sub <% 'f_' _ winner _ '_sessions__late_session_starts_a'%> <% 'f_' _ winner _ '_sessions__late_session_ends_a'%>"></span>
               </span>
-            </span></td>
-            <% END %>
+          </span></td>
+          <% END %>
         </tr>
         <% END %>
       </table>
