@@ -258,7 +258,9 @@ document.addEventListener("DOMContentLoaded", event => {
     };
     let buildGraphData = gameData => {
         let colorIndex = 0;
-        let datasets = Object.values(gameData.sessions).sort((a,b) => a.index - b.index).map(s => {
+        let sessions = Object.values(gameData.sessions);
+        let hideBots = sessions.some(s => !s.is_bot)
+        let datasets = sessions.sort((a,b) => a.index - b.index).map(s => {
             const color = /*hidden ? '#7f7f7f' : */teamColors[s.session.team][(colorIndex++) % teamColors[s.session.team].length];
             return {
                 type: 'line',
@@ -273,7 +275,7 @@ document.addEventListener("DOMContentLoaded", event => {
                     title: eventTypes[e.type].tooltip(s.session, gameData.sessions, e)
                 })),
                 fill: false,
-                hidden: false, // todo
+                hidden: hideBots && !s.is_bot,
                 score: s.events.length ? s.events[s.events.length - 1].score : 0
             };
         });
