@@ -539,9 +539,9 @@ document.addEventListener("DOMContentLoaded", event => {
                         }
                     }
                 }
-                [...Array(datasets.length).keys()].forEach(index => chart.setDatasetVisibility(index, !datasets[index].hidden));
-                chart.update();
             });
+            [...Array(datasets.length).keys()].forEach(index => chart.setDatasetVisibility(index, !datasets[index].hidden));
+            chart.update();
             window.addEventListener("resize", event => {
                 const area = wrapper.getBoundingClientRect();
                 chart.canvas.width = area.innerWidth;
