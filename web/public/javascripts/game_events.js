@@ -546,7 +546,8 @@ document.addEventListener("DOMContentLoaded", event => {
                 chart.canvas.height = area.innerHeight;
                 chart.resize();
             });
-            [...Array(datasets.length).keys()].forEach(index => chart.setDatasetVisibility(index, chart.getDatasetMeta(index).hidden));
+            [...Array(datasets.length).keys()].forEach(index => chart.setDatasetVisibility(index, !chart.getDatasetMeta(index).hidden));
+            chart.update();
             Common.endLoading(div);
         });
         return canvas;
