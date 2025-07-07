@@ -118,6 +118,7 @@ document.addEventListener("DOMContentLoaded", event => {
         } }
     };
     const eventRadius1 = 6;
+    const eventRadius2 = 3;
     const eventTypes = {
         kill: {
             value: (s,evs,e,v) => v + 1,
@@ -253,7 +254,7 @@ document.addEventListener("DOMContentLoaded", event => {
             tooltip: function(s,evs,e) {
                 return formatPopup('End',[ Common.format_text(s.name),'left team' ]);
             },
-            radius: eventRadius1,
+            radius: eventRadius2,
         }
     };
     let buildGraphData = gameData => {
