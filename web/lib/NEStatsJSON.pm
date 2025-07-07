@@ -421,7 +421,8 @@ get '/game/:id/sessions' => sub {
                 id        => $_->id,
                 player_id => $_->player_id,
                 name      => $_->name, # replace_all($_->name),
-                team      => $_->team
+                team      => $_->team,
+                is_bot    => $_->is_bot
             } } @sessions
         ]
     };
