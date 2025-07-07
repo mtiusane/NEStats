@@ -275,7 +275,7 @@ document.addEventListener("DOMContentLoaded", event => {
                     title: eventTypes[e.type].tooltip(s.session, gameData.sessions, e)
                 })),
                 fill: false,
-                hidden: hideBots && s.is_bot,
+                hidden: hideBots && s.session && s.session.is_bot,
                 score: s.events.length ? s.events[s.events.length - 1].score : 0
             };
         });
