@@ -251,7 +251,7 @@ document.addEventListener("DOMContentLoaded", event => {
         end: {
             value: function(s,evs,e,v) { return v; },
             tooltip: function(s,evs,e) {
-                return formatPopup('End',[ Common.format_text(s.name),'left',e.team+'s' ]);
+                return formatPopup('End',[ Common.format_text(s.name),'left team' ]);
             },
             radius: eventRadius1,
         }
@@ -431,7 +431,6 @@ document.addEventListener("DOMContentLoaded", event => {
                             // NOTE: Can be customized on a per dataset basis too
                             pointStyle: (context) => {
                                 const data = context.dataset.data[context.dataIndex];
-                                
                                 return context.dataset.data[context.dataIndex].type == 'kill' ? 'triangle' : 'circle';
                             },
                             pointRadius: (context) => {
