@@ -275,7 +275,7 @@ document.addEventListener("DOMContentLoaded", event => {
                     title: eventTypes[e.type].tooltip(s.session, gameData.sessions, e)
                 })),
                 fill: false,
-                hidden: hideBots && !s.is_bot,
+                hidden: hideBots && s.is_bot,
                 score: s.events.length ? s.events[s.events.length - 1].score : 0
             };
         });
@@ -546,6 +546,7 @@ document.addEventListener("DOMContentLoaded", event => {
                 chart.canvas.height = area.innerHeight;
                 chart.resize();
             });
+            (0..datasets.length - 1).forEach(index => chart.setDatasetVisibility(index, lineChart.getDatasetMeta(index).hidden);
             Common.endLoading(div);
         });
         return canvas;
