@@ -259,7 +259,7 @@ document.addEventListener("DOMContentLoaded", event => {
     let buildGraphData = gameData => {
         let colorIndex = 0;
         let sessions = Object.values(gameData.sessions);
-        let hideBots = sessions.some(s => !s.is_bot)
+        let hideBots = sessions.some(s => !s.is_bot && s.team != 'spectator')
         let datasets = sessions.sort((a,b) => a.index - b.index).map(s => {
             const color = /*hidden ? '#7f7f7f' : */teamColors[s.session.team][(colorIndex++) % teamColors[s.session.team].length];
             return {
