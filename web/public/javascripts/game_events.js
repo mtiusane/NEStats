@@ -274,7 +274,7 @@ document.addEventListener("DOMContentLoaded", event => {
                     y: e.score,
                     type: e.type,
                     title: eventTypes[e.type].tooltip(s.session, gameData.sessions, e),
-                    event: e, // Used for graph icons, could be preloaded here
+                    event: { ...e, session: s }, // Used for graph icons, could be preloaded here
                 })),
                 fill: false,
                 hidden: hideBots && s.session && s.session.is_bot,
