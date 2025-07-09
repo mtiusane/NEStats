@@ -431,7 +431,18 @@ document.addEventListener("DOMContentLoaded", event => {
                         point: {
                             // NOTE: Can be customized on a per dataset basis too
                             pointStyle: (context) => {
+                                const pointIcons = {
+                                    'team':        (event) => Common.createEl('IMG', { src: `images/timeline/#{event.session.team}.png` }),
+                                    'kill':        (event) => Common.createEl('IMG', { src: `xxxx` }),
+                                    'destroy':     (event) => Common.createEl('SPAN', {}, [], event.building.displayname),
+                                    'teamdestroy': (event) => Common.createEl('SPAN', {}, [], event.building.displayname),
+                                    'deconstruct': (event) => Common.createEl('SPAN', {}, [], event.building.displayname),
+                                    
+                                    // killer, killed, assist, weapon, building
+                                    
+                                };
                                 const data = context.dataset.data[context.dataIndex];
+                                if (pointIcons[data.type]) return pointIcons[data.type](data);
                                 return context.dataset.data[context.dataIndex].type == 'kill' ? 'triangle' : 'circle';
                             },
                             pointRadius: (context) => {
