@@ -274,7 +274,7 @@ document.addEventListener("DOMContentLoaded", event => {
                     y: e.score,
                     type: e.type,
                     title: eventTypes[e.type].tooltip(s.session, gameData.sessions, e),
-                    event: { ...e, session: s }, // Used for graph icons, could be preloaded here
+                    event: { ...e, session: s.session }, // Used for graph icons, could be preloaded here
                 })),
                 fill: false,
                 hidden: hideBots && s.session && s.session.is_bot,
@@ -443,7 +443,7 @@ document.addEventListener("DOMContentLoaded", event => {
                                 };
                                 const data = context.dataset.data[context.dataIndex];
                                 if (pointIcons[data.type]) return pointIcons[data.type](data);
-                                return context.dataset.data[context.dataIndex].type == 'kill' ? 'triangle' : 'circle';
+                                return data.type == 'kill' ? 'triangle' : 'circle';
                             },
                             pointRadius: (context) => {
                                 const data = context.dataset.data[context.dataIndex];
