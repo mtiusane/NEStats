@@ -273,7 +273,8 @@ document.addEventListener("DOMContentLoaded", event => {
                     x: e.time,
                     y: e.score,
                     type: e.type,
-                    title: eventTypes[e.type].tooltip(s.session, gameData.sessions, e)
+                    title: eventTypes[e.type].tooltip(s.session, gameData.sessions, e),
+                    event: e, // Used for graph icons, could be preloaded here
                 })),
                 fill: false,
                 hidden: hideBots && s.session && s.session.is_bot,
@@ -432,12 +433,11 @@ document.addEventListener("DOMContentLoaded", event => {
                             // NOTE: Can be customized on a per dataset basis too
                             pointStyle: (context) => {
                                 const pointIcons = {
-                                    'team':        (event) => Common.createEl('IMG', { src: `images/timeline/#{event.session.team}.png` }),
-                                    'kill':        (event) => Common.createEl('IMG', { src: `xxxx` }),
-                                    'destroy':     (event) => Common.createEl('SPAN', {}, [], event.building.displayname),
-                                    'teamdestroy': (event) => Common.createEl('SPAN', {}, [], event.building.displayname),
-                                    'deconstruct': (event) => Common.createEl('SPAN', {}, [], event.building.displayname),
-                                    
+                                    'team':        (e) => Common.createEl('IMG', { src: `images/timeline/#{e.event.session.team}.png` }),
+                                    // 'kill':        (event) => Common.createEl('IMG', { src: `xxxx` }),
+                                    'destroy':     (e) => Common.createEl('SPAN', {}, [], e.event.building.displayname),
+                                    'teamdestroy': (e) => Common.createEl('SPAN', {}, [], e.event.building.displayname),
+                                    'deconstruct': (e) => Common.createEl('SPAN', {}, [], e.event.building.displayname),
                                     // killer, killed, assist, weapon, building
                                     
                                 };
