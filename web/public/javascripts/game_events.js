@@ -442,6 +442,8 @@ document.addEventListener("DOMContentLoaded", event => {
                                     'build':       (e) => Common.createEl('IMG', { src: '/images/timeline/build-generic.svg', width: '24px', height: '24px' }),
                                     'assist':      (e) => Common.createEl('IMG', { src: '/images/timeline/assist-generic.svg', width: '16px', height: '16px' }),
                                     'death':       (e) => Common.createEl('IMG', { src: '/images/timeline/death-generic.svg', width: '16px', height: '16px' }),
+                                    'teamdeath':   (e) => Common.createEl('IMG', { src: '/images/timeline/death-generic.svg', width: '16px', height: '16px' }),
+                                    'teamkill':    (e) => Common.createEl('IMG', { src: '/images/timeline/teamkill-generic.svg', width: '16px', height: '16px' }),
                                     // e.event: killer, killed, assist, weapon, building
                                     
                                 };
