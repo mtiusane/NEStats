@@ -434,12 +434,14 @@ document.addEventListener("DOMContentLoaded", event => {
                             pointStyle: (context) => {
                                 const pointIcons = {
                                     'team':        (e) => Common.createEl('IMG', { src: '/images/timeline/jointeam-generic.svg', width: '24px', height: '24px' }),
-                                    'end':         (e) => Common.createEl('IMG', { src: '/images/timeline/leaveteam-generic.svg', width: '24px', height: '24px' }),  
-                                    // 'kill':        (event) => Common.createEl('IMG', { src: `xxxx` }),
-                                    'destroy':     (e) => Common.createEl('SPAN', {}, [], e.event.building.displayname),
-                                    'teamdestroy': (e) => Common.createEl('SPAN', {}, [], e.event.building.displayname),
-                                    'deconstruct': (e) => Common.createEl('SPAN', {}, [], e.event.building.displayname),
-                                    // killer, killed, assist, weapon, building
+                                    'end':         (e) => Common.createEl('IMG', { src: '/images/timeline/leaveteam-generic.svg', width: '16px', height: '16px' }),  
+                                    'kill':        (e) => Common.createEl('IMG', { src: '/images/timeline/kill-generic.svg', width: '16px', height: '16px' }),
+                                    'destroy':     (e) => Common.createEl('IMG', { src: '/images/timeline/destroy-generic.svg', width: '16px', height: '16px' }),
+                                    'teamdestroy': (e) => Common.createEl('IMG', { src: '/images/timeline/destroy-generic.svg', width: '16px', height: '16px' }),
+                                    'deconstruct': (e) => Common.createEl('IMG', { src: '/images/timeline/destroy-generic.svg', width: '16px', height: '16px' }),
+                                    'build':       (e) => Common.createEl('IMG', { src: '/images/timeline/build-generic.svg', width: '24px', height: '24px' }),
+                                    'assist':      (e) => Common.createEl('IMG', { src: '/images/timeline/assist-generic.svg', width: '16px', height: '16px' }),
+                                    // e.event: killer, killed, assist, weapon, building
                                     
                                 };
                                 const data = context.dataset.data[context.dataIndex];
