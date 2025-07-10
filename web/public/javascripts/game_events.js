@@ -433,7 +433,8 @@ document.addEventListener("DOMContentLoaded", event => {
                             // NOTE: Can be customized on a per dataset basis too
                             pointStyle: (context) => {
                                 const pointIcons = {
-                                    'team':        (e) => Common.createEl('IMG', { src: e.team != 'spectators' ? '/images/timeline/jointeam-generic.svg' : '/images/timeline/leaveteam-generic.svg', width: '24px', height: '24px' }),
+                                    'team':        (e) => Common.createEl('IMG', { src: '/images/timeline/jointeam-generic.svg', width: '24px', height: '24px' }),
+                                    'end':         (e) => Common.createEl('IMG', { src: '/images/timeline/leaveteam-generic.svg', width: '24px', height: '24px' }),  
                                     // 'kill':        (event) => Common.createEl('IMG', { src: `xxxx` }),
                                     'destroy':     (e) => Common.createEl('SPAN', {}, [], e.event.building.displayname),
                                     'teamdestroy': (e) => Common.createEl('SPAN', {}, [], e.event.building.displayname),
