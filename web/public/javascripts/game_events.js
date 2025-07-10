@@ -439,11 +439,12 @@ document.addEventListener("DOMContentLoaded", event => {
                                     'destroy':     (e) => Common.createEl('IMG', { src: '/images/timeline/destroy-generic.svg', width: '16px', height: '16px' }),
                                     'teamdestroy': (e) => Common.createEl('IMG', { src: '/images/timeline/destroy-generic.svg', width: '16px', height: '16px' }),
                                     'deconstruct': (e) => Common.createEl('IMG', { src: '/images/timeline/destroy-generic.svg', width: '16px', height: '16px' }),
-                                    'build':       (e) => Common.createEl('IMG', { src: '/images/timeline/build-generic.svg', width: '24px', height: '24px' }),
+                                    'build':       (e) => Common.createEl('IMG', { src: '/images/timeline/build-generic.svg', width: '16px', height: '16px' }),
                                     'assist':      (e) => Common.createEl('IMG', { src: '/images/timeline/assist-generic.svg', width: '16px', height: '16px' }),
                                     'death':       (e) => Common.createEl('IMG', { src: '/images/timeline/death-generic.svg', width: '16px', height: '16px' }),
                                     'teamdeath':   (e) => Common.createEl('IMG', { src: '/images/timeline/death-generic.svg', width: '16px', height: '16px' }),
                                     'teamkill':    (e) => Common.createEl('IMG', { src: '/images/timeline/teamkill-generic.svg', width: '16px', height: '16px' }),
+                                    'suicide':     (e) => Common.createEl('IMG', { src: '/images/timeline/suicide-generic.svg', width: '16px', height: '16px' }),
                                     // e.event: killer, killed, assist, weapon, building
                                     
                                 };
