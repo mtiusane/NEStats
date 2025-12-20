@@ -73,18 +73,18 @@ sub new {
         authenticated => 1,
     };
     if ($params{server_name}) {
-	my $server = $self->{db_server} = Stats::DB::Server->new(ip => $params{server_ip},name => $params{server_name},url => $params{server_url});
-	unless ($server->load(speculative => 1)) {
-	    $server->{ip} = $params{server_ip};
-	    $server->{name} = $params{server_name};
-	    $server->{url} = $params{server_url};
-	    $server->save;
-	}
+        my $server = $self->{db_server} = Stats::DB::Server->new(ip => $params{server_ip},name => $params{server_name},url => $params{server_url});
+        unless ($server->load(speculative => 1)) {
+            $server->{ip} = $params{server_ip};
+            $server->{name} = $params{server_name};
+            $server->{url} = $params{server_url};
+            $server->save;
+        }
     } elsif ($params{server_id}) {
-	my $server = $self->{db_server} = Stats::DB::Server->new(id => $params{server_id});
-	die "No server record found with id: $params{server_id}" unless ($server->load);
+        my $server = $self->{db_server} = Stats::DB::Server->new(id => $params{server_id});
+        die "No server record found with id: $params{server_id}" unless ($server->load);
     } else {
-	die "Server ip (server_ip) and name (server_name) or server id (server_id) must be provided." unless ((defined($params{server_name}) && defined($params{server_ip}) || defined($params{server_id})));
+        die "Server ip (server_ip) and name (server_name) or server id (server_id) must be provided." unless ((defined($params{server_name}) && defined($params{server_ip}) || defined($params{server_id})));
     }
     # TODO: Not the prettiest way of implementing this but will have to do for now...
     $initializer->($self->{db_server});
@@ -245,8 +245,12 @@ sub handleRealTime {
     my ($self, %fields) = @_;
     return unless (defined $self->{game});
     $self->{game}->{realtime} = DateTime->new(time_zone => '+0000', %fields);
-    my @maps = Stats::DB::Map::Manager->get_maps(where => [ server_id => $self->{db_server}->id, name => $self->{game}->{map} ], limit => 1);
-    my $map = scalar(@maps) ? $maps[0] : Stats::DB::Map->new(server_id => $self->{db_server}->id, name => $self->{game}->{map});
+    my $map = Stats::DB::Map->new(server_id => $self->{db_server}->id, name => $self->{game}->{map});
+    $map->load(speculative => 1) || $map->save;
+    unless (defined $map) {
+        $self->log->warn("Failed to create or load map object for server_id = %s, name = %s, skipping import...", $self->{db_server}->id, $self->{game}->{map});
+        $self->{skip_game} = 1;
+    }
     # TODO: if ($self->{cache}->{total_players} > 0) -- perhaps at some point
     $map->total_loaded($map->total_loaded + 1);
     $map->save;
