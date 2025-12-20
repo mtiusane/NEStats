@@ -114,7 +114,7 @@ sub loadCached {
     #	$candidates->[0]->save;
     #	return $cache->{$cacheKey} = $candidates->[0];
     #}
-    my $result = $class->new(%$keys);    
+    my $result = $class->new(%$keys);
     unless ($result->load(speculative => 1)) {
 	$initializer->($result) if (defined $initializer);
 	$result->save;
@@ -245,12 +245,8 @@ sub handleRealTime {
     my ($self, %fields) = @_;
     return unless (defined $self->{game});
     $self->{game}->{realtime} = DateTime->new(time_zone => '+0000', %fields);
-    my $map = undef;
-    $map = if (my @maps = Stats::DB::Map::Manager->get_maps(where => [ server_id => $self->{db_server}->id, name => $self->{game}->{map} ], limit => 1)) {
-        $maps[0];
-    } else {
-        Stats::DB::Map->new(server_id => $self->{db_server}->id, name => $self->{game}->{map});
-    }
+    my @maps = Stats::DB::Map::Manager->get_maps(where => [ server_id => $self->{db_server}->id, name => $self->{game}->{map} ], limit => 1);
+    my $map = scalar(@maps) ? $maps[0] : Stats::DB::Map->new(server_id => $self->{db_server}->id, name => $self->{game}->{map});
     # TODO: if ($self->{cache}->{total_players} > 0) -- perhaps at some point
     $map->total_loaded($map->total_loaded + 1);
     $map->save;
@@ -264,16 +260,16 @@ sub handleRealTime {
     );
     if ($self->{db_game}->load(speculative => 1)) {
         unless ($self->{db_game}->import_complete) {
-            $self->log->info(sprintf('Reimporting game: %s %s', $self->{game}->{map}, $self->{game}->{realtime}));
+            $self->log->debug(sprintf('Reimporting game: %s %s', $self->{game}->{map}, $self->{game}->{realtime}));
             # Re-importing an existing game entry - remove all event data first
             deleteGameEntries($self->{db_game}->id);
             $self->{skip_game} = 0;
         } else {
-            $self->log->info(sprintf('Skipping fully imported game: %s %s', $self->{game}->{map}, $self->{game}->{realtime}));
+            $self->log->debug(sprintf('Skipping fully imported game: %s %s', $self->{game}->{map}, $self->{game}->{realtime}));
             $self->{skip_game} = 1;
         }
     } else {
-        $self->log->info(sprintf('Importing game: %s %s', $self->{game}->{map}, $self->{game}->{realtime}));
+        $self->log->debug(sprintf('Importing game: %s %s', $self->{game}->{map}, $self->{game}->{realtime}));
         $self->{db_game}->max_players(0);
         $self->{db_game}->import_complete(0);
         $self->{db_game}->save;
@@ -295,16 +291,16 @@ sub handleShutdownGame {
     }
     $self->{db_game}->import_complete(1);
     $self->{db_game}->save;
-    
+
     my $hadPlayers = $self->{db_game}->max_players > 0;
-    
+
     foreach my $player (values %{$self->{cache}->{players}}) { $player->save; }
     foreach my $cache (qw/map players player_weapons session_weapons game_weapons/) { $self->dropCache($cache); }
 
-    $self->log->info(sprintf("\tGame import completed, max players: %d", $self->{db_game}->max_players));
+    $self->log->debug(sprintf("\tGame import completed, max players: %d", $self->{db_game}->max_players));
 
     my $updateNeeded = $hadPlayers && $self->updateGlicko2();
-    
+
     undef $self->{game};
     undef $self->{db_game};
 
@@ -348,7 +344,7 @@ sub handleClientConnect
                 $db_player->displayname($fields{name});
             } else {
                 $db_player->name("[BOT]");
-                $db_player->displayname("(bot)"); 
+                $db_player->displayname("(bot)");
             }
             $db_player->save;
         } elsif ($db_player->displayname ne $fields{name} && !$is_bot) {
@@ -437,7 +433,7 @@ sub handleAdminAuth {
     my ($self, %fields) = @_;
     return unless (defined $self->{game});
     my $guid = $fields{guid};
-    
+
     $self->{guids}->{$guid}->{simple_name} = $fields{authname};
     $self->{guids}->{$guid}->{level} = $fields{level};
     $self->{game}->{players}->{$guid}->{authenticated} = $self->{guids}->{$guid}->{authenticated} = 1;
@@ -504,7 +500,7 @@ sub handleDie {
                 }
                 $kill->save;
             }
-            
+
             my $assistMap = Stats::DB::PlayerMap->new(player_id => $assist->id,map_id => $map->id);
             $assistMap->load(speculative => 1);
             $assistMap->total_assists($assistMap->total_assists+1);
@@ -515,7 +511,7 @@ sub handleDie {
             } else {
                 $self->log->warn("Assist by a spectator. Might need to track previous team as well.");
             }
-            
+
             $assistMap->save;
         }
     }
@@ -555,7 +551,7 @@ sub handleDie {
             my $killerWeapon =  Stats::DB::PlayerWeapon->new(player_id => $killer->id,weapon_id => $weapon->id);
             $killerWeapon->load(speculative => 1);
             $killerWeapon->total_kills($killerWeapon->total_kills+1);
-            $killerWeapon->save;    
+            $killerWeapon->save;
         }
 
         my $killed = $self->loadPlayer($killed_session->player_id);
@@ -661,7 +657,7 @@ sub handleConstruct {
 
     my $game = $self->{db_game};
     $game->total_built($game->total_built+1);
-    
+
     my $player = $self->loadPlayer($session->player_id);
     if ($player) {
         $player->total_built($player->total_built+1);
@@ -757,7 +753,7 @@ sub handleDeconstruct {
         $deconner->save;
     }
     $map->save;
-    
+
     ++$self->{guids}->{$fields{mod}}->{total_deaths};
     undef $self->{slots}->[$fields{entityid}];
 }
@@ -837,7 +833,7 @@ sub handleExit {
                 if ($session->end < $early_limit) {
                     $counter_fields{$team}->{end}->{early}->($counters);
                 } elsif ($session->end < $late_limit) {
-                    $counter_fields{$team}->{end}->{middle}->($counters);                    
+                    $counter_fields{$team}->{end}->{middle}->($counters);
                 } else {
                     $counter_fields{$team}->{end}->{late}->($counters);
                 }
@@ -851,7 +847,7 @@ sub handleExit {
         foreach my $player (values %{$self->{game}->{db_players}}) {
             $player->total_games($player->total_games+1);
             $player->save;
-            
+
             my $playerMap = Stats::DB::PlayerMap->new(player_id => $player->id,map_id => $map->id);
             $playerMap->load(speculative => 1);
             $playerMap->total_games($playerMap->total_games+1);
@@ -1025,7 +1021,7 @@ sub handleClanInfo {
             Stats::DB::ClanEvent->new(clan_id => $clan->id,time => DateTime->now,type => 'destroy',player_id => $player->id)->save;
         }
     } elsif ($fields{type} eq 'Auth') {
-        
+
     }
 }
 
@@ -1318,7 +1314,7 @@ sub parseLine {
         } elsif ($line =~ /^\s*(?<time>\d+:\d+)\s*EndVote:\s+.+$/) {
             # EndVote - not used
         } elsif ($line =~ /^\s*(?<time>\d+:\d+)\s*(?:Priv|Admin)Msg(?:Public)?:\s+.+$/) {
-            # PrivMsg, AdminMsg, AdminMsgPublic (NOTE: Also matches PrivMsgPublic) - not used 
+            # PrivMsg, AdminMsg, AdminMsgPublic (NOTE: Also matches PrivMsgPublic) - not used
         } elsif ($line =~ /^\s*(?<time>\d+:\d+)\s*Anti-camper\s+bonus\s+for\s+killing\s+(?<killedname>.+?)\s+near\s+(?<numdefenses>\d+)\s+defences:\s+(?<percentage>\d+)\%\s*$/) {
             # Anti-camper bonus - not used
         } elsif ($line =~ /^\s*(?<time>\d+:\d+)\s*Stage:\s+(?<team>[A|H])\s+(?<stage>\d+):\s+(?<message>.+?)\s*$/) {
